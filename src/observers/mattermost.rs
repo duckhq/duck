@@ -43,7 +43,7 @@ impl Observer for MattermostObserver {
     }
 
     fn observe(&self, observation: Observation) -> DuckResult<()> {
-        if let Observation::BuildUpdated(build) = observation {
+        if let Observation::BuildStatusChanged(build) = observation {
             if build.status != BuildStatus::Unknown {
                 info!(
                     "Sending Mattermost message since build status changed ({:?})...",
