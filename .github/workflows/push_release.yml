@@ -1,0 +1,29 @@
+name: Publish release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'skip-ci')"
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Get the version
+      id: get_version
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
+    - name: Build Docker image
+      run: |
+        docker build -t spectresystems/duck:latest -t spectresystems/duck:${{ steps.get_version.outputs.VERSION }} .
+
+    - name: Publish Docker image
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_TOKEN }}
+      run: |
+        docker login -u ${DOCKER_USERNAME} -p "${DOCKER_PASSWORD}"
+        docker push spectresystems/duck:latest
+        docker push spectresystems/duck:${{ steps.get_version.outputs.VERSION }}

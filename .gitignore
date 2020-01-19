@@ -1,0 +1,6 @@
+# Rust
+/target
+**/*.rs.bk
+
+# Configuration
+config.json

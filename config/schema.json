@@ -1,0 +1,404 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$ref": "#/definitions/Duck",
+  "definitions": {
+    "Duck": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "interval": {
+          "type": "integer",
+          "title": "The update interval in seconds",
+          "default": 15,
+          "minimum": 15
+        },
+        "collectors": {
+          "type": "array",
+          "title": "Collectors",
+          "items": {
+            "$ref": "#/definitions/Collector"
+          }
+        },
+        "observers": {
+          "type": "array",
+          "title": "Observers",
+          "items": {
+            "$ref": "#/definitions/Observer"
+          }
+        }
+      },
+      "required": [
+        "$schema",
+        "collectors"
+      ],
+      "title": "Duck configuration"
+    },
+    "Collector": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "teamcity": {
+          "$ref": "#/definitions/TeamCity"
+        },
+        "azure": {
+          "$ref": "#/definitions/Azure"
+        }
+      },
+      "required": [],
+      "title": "Collector"
+    },
+    "Azure": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "The collector ID",
+          "pattern": "^[a-zA-Z0-9_]+$"
+        },
+        "enabled": {
+          "type": "boolean",
+          "title": "Whether or not the collector is enabled"
+        },
+        "organization": {
+          "type": "string",
+          "title": "The Azure DevOps organization"
+        },
+        "project": {
+          "type": "string",
+          "title": "The Azure DevOps project"
+        },
+        "credentials": {
+          "$ref": "#/definitions/AzureCredentials",
+          "title": "The Azure DevOps credentials"
+        },
+        "definitions": {
+          "type": "array",
+          "title": "The build definitions to include",
+          "items": {
+            "type": "string",
+            "format": "integer"
+          }
+        },
+        "branches": {
+          "type": "array",
+          "title": "The branches to include",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "branches",
+        "credentials",
+        "definitions",
+        "id",
+        "organization",
+        "project"
+      ],
+      "title": "Azure DevOps collector"
+    },
+    "AzureCredentials": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "pat": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "pat"
+          ],
+          "title": "Personal Access Token (PAT)"
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "title": "Azure DevOps credentials"
+    },
+    "TeamCity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "The collector ID",
+          "pattern": "^[a-zA-Z0-9_]+$"
+        },
+        "enabled": {
+          "type": "boolean",
+          "title": "Whether or not the collector is enabled"
+        },
+        "serverUrl": {
+          "type": "string",
+          "title": "The TeamCity server URL",
+          "format": "uri",
+          "qt-uri-protocols": [
+            "http",
+            "https"
+          ]
+        },
+        "credentials": {
+          "$ref": "#/definitions/TeamCityCredentials",
+          "title": "The TeamCity credentials"
+        },
+        "builds": {
+          "type": "array",
+          "title": "The TeamCity builds definitions to include",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "builds",
+        "credentials",
+        "id",
+        "serverUrl"
+      ],
+      "title": "TeamCity collector"
+    },
+    "TeamCityCredentials": {
+      "title": "TeamCity credentials",
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "basic": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "username": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "password",
+                "username"
+              ],
+              "title": "Basic authentication"
+            }
+          },
+          "required": [
+            "basic"
+          ],
+          "title": "Basic authentication"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "Observer": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "hue": {
+              "$ref": "#/definitions/Hue"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "slack": {
+              "$ref": "#/definitions/Slack"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mattermost": {
+              "$ref": "#/definitions/Mattermost"
+            }
+          }
+        }
+      ],
+      "title": "Observer"
+    },
+    "Slack": {
+      "type": "object",
+      "title": "Slack observer",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "The observer ID",
+          "pattern": "^[a-zA-Z0-9_]+$"
+        },
+        "enabled": {
+          "type": "boolean",
+          "title": "Whether or not the observer is enabled"
+        },
+        "collectors": {
+          "type": "array",
+          "title": "The collectors to include",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_]+$"
+          }
+        },
+        "credentials": {
+          "type": "object",
+          "title": "The Slack credentials",
+          "properties": {
+            "webhook": {
+              "type": "object",
+              "title": "Webhook authentication",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "title": "The webHook URL",
+                  "format": "uri",
+                  "qt-uri-protocols": [
+                    "http",
+                    "https"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "id",
+        "credentials"
+      ]
+    },
+    "Mattermost": {
+      "type": "object",
+      "title": "Mattermost observer",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "The observer ID",
+          "pattern": "^[a-zA-Z0-9_]+$"
+        },
+        "enabled": {
+          "type": "boolean",
+          "title": "Whether or not the observer is enabled"
+        },
+        "collectors": {
+          "type": "array",
+          "title": "The collectors to include",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_]+$"
+          }
+        },
+        "channel": {
+          "type": "string",
+          "title": "The Mattermost channel",
+          "pattern": "^[a-zA-Z0-9_-]+$"
+        },
+        "credentials": {
+          "title": "The Mattermost credentials",
+          "$ref": "#/definitions/MattermostCredentials"
+        }
+      },
+      "required": [
+        "id",
+        "channel",
+        "credentials"
+      ]
+    },
+    "MattermostCredentials": {
+      "title": "The Mattermost credentials",
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "webhook": {
+              "type": "object",
+              "title": "Webhook authentication",
+              "properties": {
+                "url": {
+                  "title": "The webhook URL",
+                  "format": "uri",
+                  "qt-uri-protocols": [
+                    "http",
+                    "https"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Hue": {
+      "type": "object",
+      "title": "Hue observer",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "The observer ID",
+          "pattern": "^[a-zA-Z0-9_]+$"
+        },
+        "enabled": {
+          "type": "boolean",
+          "title": "Whether or not the observer is enabled"
+        },
+        "collectors": {
+          "type": "array",
+          "title": "The collectors to include",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_]+$"
+          }
+        },
+        "hubUrl": {
+          "type": "string",
+          "title": "The Hue hub URL",
+          "format": "uri",
+          "qt-uri-protocols": [
+            "http",
+            "https"
+          ]
+        },
+        "username": {
+          "type": "string",
+          "title": "The Hue username"
+        },
+        "brightness": {
+          "type": "integer",
+          "title": "The brightness",
+          "default": 255,
+          "maximum": 255,
+          "minimum": 0
+        },
+        "lights": {
+          "type": "array",
+          "title": "A list of light IDs to include",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "hubUrl",
+        "lights",
+        "username"
+      ]
+    }
+  }
+}
