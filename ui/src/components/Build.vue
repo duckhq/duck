@@ -44,14 +44,14 @@
             <img
               v-if="build.provider == 'TeamCity'"
               src="../assets/teamcity.svg"
-              style="opacity: 0.6;"
+              style="opacity: 0.7;"
               width="28"
               height="28"
             />
             <img
               v-if="build.provider == 'AzureDevOps'"
               src="../assets/azuredevops.svg"
-              style="opacity: 0.6;"
+              style="opacity: 0.7;"
               width="28"
               height="28"
             />
