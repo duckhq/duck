@@ -100,7 +100,6 @@ fn run_collectors(
                 build_hashes.insert(build.id);
                 match state.builds.update(&build) {
                     BuildUpdateResult::Added | BuildUpdateResult::BuildUpdated => {
-                        info!("New build: {}", build.definition_id);
                         // The build was updated
                         match sender.send(EngineEvent::BuildUpdated(Box::new(build))) {
                             Result::Ok(_) => (),
@@ -216,19 +215,13 @@ fn run_observers(
                 }
 
                 // Send the BuildUpdated event to observers.
-                propagate_to_observers(&observers, &mut || {
-                    Observation::BuildUpdated(build.clone())
-                });
+                propagate_to_observers(&observers, &mut || Observation::BuildUpdated(&build));
             }
             EngineEvent::BuildStatusChanged(build) => {
                 // Send the BuildUpdated event to observers.
-                propagate_to_observers(&observers, &mut || {
-                    Observation::BuildUpdated(build.clone())
-                });
+                propagate_to_observers(&observers, &mut || Observation::BuildUpdated(&build));
                 // Send the BuildStatusChanged event to observers.
-                propagate_to_observers(&observers, &mut || {
-                    Observation::BuildStatusChanged(build.clone())
-                });
+                propagate_to_observers(&observers, &mut || Observation::BuildStatusChanged(&build));
             }
             EngineEvent::ShuttingDown => {
                 // Send the ShuttingDown event to observers.
@@ -241,9 +234,9 @@ fn run_observers(
     Ok(())
 }
 
-fn propagate_to_observers(
+fn propagate_to_observers<'a>(
     observers: &[Box<dyn Observer>],
-    observation: &mut dyn Fn() -> Observation,
+    observation: &mut dyn Fn() -> Observation<'a>,
 ) {
     // Iterate through all observers.
     for observer in observers.iter() {

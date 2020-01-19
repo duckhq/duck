@@ -24,10 +24,10 @@ pub struct ObserverInfo {
     pub collectors: Option<HashSet<String>>,
 }
 
-pub enum Observation {
+pub enum Observation<'a> {
     DuckStatusChanged(BuildStatus),
-    BuildUpdated(Box<Build>),
-    BuildStatusChanged(Box<Build>),
+    BuildUpdated(&'a Build),
+    BuildStatusChanged(&'a Build),
     ShuttingDown,
 }
 
@@ -36,7 +36,7 @@ pub enum ObservationOrigin<'a> {
     Collector(&'a str),
 }
 
-impl Observation {
+impl<'a> Observation<'a> {
     /// Gets the collector for an observation.
     pub fn get_origin(&self) -> ObservationOrigin {
         match self {
