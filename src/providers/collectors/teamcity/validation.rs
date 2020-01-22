@@ -113,7 +113,7 @@ mod tests {
         "#,
         )
         .unwrap();
-        
+
         let collection = DuckProviderCollection::new();
         collection.get_collectors(&config).unwrap();
     }
@@ -143,7 +143,7 @@ mod tests {
         "#,
         )
         .unwrap();
-        
+
         let collection = DuckProviderCollection::new();
         collection.get_collectors(&config).unwrap();
     }

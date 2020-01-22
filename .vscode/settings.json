@@ -1,0 +1,12 @@
+{
+    "files.exclude": {
+        ".github": true,
+        ".vscode": true,
+        "Cargo.lock": true,
+        "CODE_OF_CONDUCT.md": true,
+        "config": true,
+        "LICENSE": true,
+        "res": true,
+        "target": true
+    }
+}

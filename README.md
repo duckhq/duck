@@ -26,7 +26,7 @@ Below is an example configuration that specifies multiple collectors and observe
 
 ```json
 {
-    "$schema": "https://raw.githubusercontent.com/spectresystems/duck/master/config/schema.json",
+    "$schema": "https://raw.githubusercontent.com/spectresystems/duck/master/config/v0.3/schema.json",
     "interval": 30,
     "collectors": [
         {
@@ -77,14 +77,33 @@ Below is an example configuration that specifies multiple collectors and observe
                 "organization": "some-organization",
                 "project": "some-project",
                 "credentials": {
-                    "pat": "SUPER-SECRET-PERSONAL-ACCESS-TOKEN"
+                    "pat": "MY-PERSONAL-ACCESS-TOKEN"
                 },
                 "definitions": [ "1" ],
                 "branches": [
                     "refs/heads/master"
                 ]
             }
-        }
+        },
+        {
+            "octopus": {
+                "id": "octopus_local",
+                "serverUrl": "http://localhost:9000/",
+                "credentials": {
+                    "apiKey": "MY-API-KEY"
+                },
+                "projects": [
+                    {
+                        "projectId": "my-project",
+                        "environments": [
+                            "Development", 
+                            "Staging",
+                            "Production"
+                        ]
+                    }
+                ]
+            }
+        },
     ],
     "observers": [
         {

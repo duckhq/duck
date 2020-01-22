@@ -49,6 +49,7 @@ impl Configuration {
             .map(|i| match i {
                 CollectorConfiguration::TeamCity(c) => c.id.clone(),
                 CollectorConfiguration::Azure(c) => c.id.clone(),
+                CollectorConfiguration::OctopusDeploy(c) => c.id.clone(),
             })
             .collect();
         // Get all observer id:s
@@ -83,6 +84,8 @@ pub enum CollectorConfiguration {
     TeamCity(TeamCityConfiguration),
     #[serde(rename = "azure")]
     Azure(AzureDevOpsConfiguration),
+    #[serde(rename = "octopus")]
+    OctopusDeploy(OctopusDeployConfiguration),
 }
 
 #[derive(Deserialize, Clone)]
@@ -120,6 +123,29 @@ pub enum AzureDevOpsCredentials {
     Anonymous,
     #[serde(rename = "pat")]
     PersonalAccessToken(String),
+}
+
+#[derive(Deserialize, Clone)]
+pub struct OctopusDeployConfiguration {
+    pub id: String,
+    pub enabled: Option<bool>,
+    #[serde(rename = "serverUrl")]
+    pub server_url: String,
+    pub credentials: OctopusDeployCredentials,
+    pub projects: Vec<OctopusDeployProject>,
+}
+
+#[derive(Deserialize, Clone)]
+pub struct OctopusDeployProject {
+    #[serde(rename = "projectId")]
+    pub project_id: String,
+    pub environments: Vec<String>,
+}
+
+#[derive(Deserialize, Clone)]
+pub enum OctopusDeployCredentials {
+    #[serde(rename = "apiKey")]
+    ApiKey(String),
 }
 
 #[derive(Deserialize, Clone)]
