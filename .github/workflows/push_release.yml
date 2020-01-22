@@ -17,7 +17,7 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t spectresystems/duck:latest -t spectresystems/duck:${{ steps.get_version.outputs.VERSION }} --build-arg VERSION=${{ steps.get_version.outputs.VERSION }} .
+        ./build.sh --docker --version ${{ steps.get_version.outputs.VERSION }}
 
     - name: Publish Docker image
       env:
@@ -25,5 +25,7 @@ jobs:
         DOCKER_PASSWORD: ${{ secrets.DOCKER_TOKEN }}
       run: |
         docker login -u ${DOCKER_USERNAME} -p "${DOCKER_PASSWORD}"
+        docker push duckhq/duck:latest
+        docker push duckhq/duck:${{ steps.get_version.outputs.VERSION }}
         docker push spectresystems/duck:latest
         docker push spectresystems/duck:${{ steps.get_version.outputs.VERSION }}
