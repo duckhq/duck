@@ -1,4 +1,4 @@
-# web
+# Duck frontend
 
 ## Project setup
 ```

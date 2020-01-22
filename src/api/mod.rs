@@ -45,7 +45,7 @@ pub fn start_and_block(
 
         if cfg!(feature = "docker") {
             // Serve static files from the ui directory.
-            return app.service(fs::Files::new("/", "./ui").index_file("index.html"));
+            return app.service(fs::Files::new("/", "./web").index_file("index.html"));
         }
 
         return app;
