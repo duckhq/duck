@@ -103,7 +103,7 @@ Below is an example configuration that specifies multiple collectors and observe
                     }
                 ]
             }
-        },
+        }
     ],
     "observers": [
         {
