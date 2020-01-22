@@ -1,5 +1,10 @@
 <template>
-  <b-card :bg-variant="getBackground(build)" text-variant="light" tag="article" style="box-shadow:0px 0px 5px 5px rgba(0,0,0,0.2)">
+  <b-card
+    :bg-variant="getBackground(build)"
+    text-variant="light"
+    tag="article"
+    style="box-shadow:0px 0px 5px 5px rgba(0,0,0,0.2)"
+  >
     <template v-slot:header>
       <h6 class="mb-0">{{ build.project }}</h6>
       <span>{{ build.build }}</span>
@@ -34,7 +39,7 @@
             <span
               v-if="build.status != 'Running'"
               class="small"
-            >{{ build.finished | moment("from", "now") }}</span>
+            >&nbsp;{{ build.finished | moment("from", "now") }}</span>
             <table v-if="build.status == 'Running'">
               <tr>
                 <td>
@@ -112,6 +117,6 @@ export default {
   width: 32px;
   height: 32px;
   background: #fdfdfd;
-  box-shadow:0px 0px 3px 3px rgba(0,0,0,0.15);
+  box-shadow: 0px 0px 3px 3px rgba(0, 0, 0, 0.15);
 }
 </style>
