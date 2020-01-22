@@ -72,7 +72,7 @@ impl<'a> Engine<'a> {
         let observer_thread = std::thread::spawn({
             let state = self.state.clone();
             move || -> DuckResult<()> {
-                return run_observers(state, observers, receiver);
+                run_observers(state, observers, receiver)
             }
         });
 
@@ -82,7 +82,7 @@ impl<'a> Engine<'a> {
             let config = self.config.clone();
             let state = self.state.clone();
             move || -> DuckResult<()> {
-                return run_collectors(handle, state, config, collectors, sender);
+                run_collectors(handle, state, config, collectors, sender)
             }
         });
 
