@@ -1,4 +1,5 @@
 use log::warn;
+use url::Url;
 
 use crate::config::{OctopusDeployConfiguration, OctopusDeployProject};
 use crate::providers::collectors::*;
@@ -10,7 +11,7 @@ mod client;
 mod validation;
 
 pub struct OctopusDeployCollector {
-    server_url: String,
+    server_url: Url,
     projects: Vec<OctopusDeployProject>,
     client: OctopusDeployClient,
     info: CollectorInfo,
@@ -19,9 +20,12 @@ pub struct OctopusDeployCollector {
 impl OctopusDeployCollector {
     pub fn new(config: &OctopusDeployConfiguration) -> Self {
         OctopusDeployCollector {
-            server_url: config.server_url.clone(),
+            server_url: Url::parse(&config.server_url[..]).unwrap(),
             projects: config.projects.clone(),
-            client: OctopusDeployClient::new(config.server_url.clone(), config.credentials.clone()),
+            client: OctopusDeployClient::new(
+                Url::parse(&config.server_url[..]).unwrap(),
+                config.credentials.clone(),
+            ),
             info: CollectorInfo {
                 id: config.id.clone(),
                 enabled: match config.enabled {

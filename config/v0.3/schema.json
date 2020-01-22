@@ -242,11 +242,11 @@
               "properties": {
                 "projectId": {
                   "type": "string",
-                  "title": "The Octopus Deploy project id"
+                  "title": "The Octopus Deploy project ID"
                 },
                 "environments": {
                   "type": "array",
-                  "title": "The Octopus Deploy environments within the project",
+                  "title": "The Octopus Deploy environment IDs within the project",
                   "items": {
                     "type": "string"
                   }
