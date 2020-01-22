@@ -1,98 +1,18 @@
-use std::sync::Arc;
-
 use log::trace;
 use reqwest::header::ACCEPT;
 use reqwest::{Client, ClientBuilder, RequestBuilder};
-use waithandle::{EventWaitHandle, WaitHandle};
 
-use crate::builds::{Build, BuildProvider, BuildStatus};
-use crate::collectors::{Collector, CollectorInfo};
+use crate::builds::BuildStatus;
 use crate::config::{AzureDevOpsConfiguration, AzureDevOpsCredentials};
-use crate::utils::date;
 use crate::utils::DuckResult;
 
-#[allow(dead_code)]
-pub struct AzureDevOpsCollector {
-    client: AzureDevOpsClient,
-    branches: Vec<String>,
-    definitions: Vec<String>,
-    info: CollectorInfo,
-}
-
-impl AzureDevOpsCollector {
-    pub fn new(config: &AzureDevOpsConfiguration) -> Self {
-        return AzureDevOpsCollector {
-            client: AzureDevOpsClient::new(config),
-            branches: config.branches.clone(),
-            definitions: config.definitions.clone(),
-            info: CollectorInfo {
-                id: config.id.clone(),
-                enabled: match config.enabled {
-                    Option::None => true,
-                    Option::Some(e) => e,
-                },
-                provider: BuildProvider::AzureDevOps,
-            },
-        };
-    }
-}
-
-impl Collector for AzureDevOpsCollector {
-    fn info(&self) -> &CollectorInfo {
-        &self.info
-    }
-
-    fn collect(
-        &self,
-        handle: Arc<EventWaitHandle>,
-        callback: &mut dyn FnMut(Build),
-    ) -> DuckResult<()> {
-        for branch in self.branches.iter() {
-            if handle.check().unwrap() {
-                return Ok(());
-            }
-
-            let builds = self.client.get_builds(branch, &self.definitions)?;
-            for build in builds.value.iter() {
-                callback(Build::new(
-                    build.id.to_string(),
-                    BuildProvider::AzureDevOps,
-                    self.info.id.clone(),
-                    build.project.id.clone(),
-                    build.project.name.clone(),
-                    build.definition.id.to_string(),
-                    build.definition.name.clone(),
-                    build.build_number.clone(),
-                    build.get_build_status(),
-                    build.branch.clone(),
-                    build.links.web.href.clone(),
-                    date::to_iso8601(&build.start_time, date::AZURE_DEVOPS_FORMAT)?,
-                    match &build.finish_time {
-                        Option::None => None,
-                        Option::Some(value) => {
-                            Option::Some(date::to_iso8601(&value[..], date::AZURE_DEVOPS_FORMAT)?)
-                        }
-                    },
-                ));
-            }
-
-            // Wait for a litle time between calls.
-            if handle.wait(std::time::Duration::from_millis(300)).unwrap() {
-                return Ok(());
-            }
-        }
-
-        return Ok(());
-    }
-}
-
 #[derive(Deserialize, Debug)]
-struct AzureResponse {
+pub struct AzureResponse {
     pub value: Vec<AzureBuild>,
 }
 
 #[derive(Deserialize, Debug)]
-struct AzureBuild {
+pub struct AzureBuild {
     pub id: u64,
     #[serde(alias = "buildNumber")]
     pub build_number: String,
@@ -111,17 +31,17 @@ struct AzureBuild {
 }
 
 #[derive(Deserialize, Debug)]
-struct AzureLinks {
+pub struct AzureLinks {
     pub web: AzureWebLink,
 }
 
 #[derive(Deserialize, Debug)]
-struct AzureWebLink {
+pub struct AzureWebLink {
     pub href: String,
 }
 
 impl AzureBuild {
-    fn get_build_status(&self) -> BuildStatus {
+    pub fn get_build_status(&self) -> BuildStatus {
         if self.result.is_none() {
             return BuildStatus::Running;
         } else {
@@ -137,18 +57,18 @@ impl AzureBuild {
 }
 
 #[derive(Deserialize, Debug)]
-struct AzureProject {
+pub struct AzureProject {
     pub id: String,
     pub name: String,
 }
 
 #[derive(Deserialize, Debug)]
-struct AzureBuildDefinition {
+pub struct AzureBuildDefinition {
     pub id: u64,
     pub name: String,
 }
 
-struct AzureDevOpsClient {
+pub struct AzureDevOpsClient {
     pub organization: String,
     pub project: String,
     client: Client,

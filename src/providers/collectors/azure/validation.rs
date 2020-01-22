@@ -43,11 +43,11 @@ impl Validate for AzureDevOpsCredentials {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::config::Configuration;
+    use crate::providers::DuckProviderCollection;
 
     #[test]
-    #[should_panic(expected = "Azure DevOps collector have no ID.")]
+    #[should_panic(expected = "The id \\'\\' is invalid.")]
     fn should_return_error_if_azure_devops_id_is_empty() {
         let config = Configuration::from_json(
             r#"
@@ -68,7 +68,9 @@ mod tests {
         "#,
         )
         .unwrap();
-        config.validate().unwrap();
+
+        let collection = DuckProviderCollection::new();
+        collection.get_collectors(&config).unwrap();
     }
 
     #[test]
@@ -93,7 +95,9 @@ mod tests {
         "#,
         )
         .unwrap();
-        config.validate().unwrap();
+
+        let collection = DuckProviderCollection::new();
+        collection.get_collectors(&config).unwrap();
     }
 
     #[test]
@@ -118,7 +122,9 @@ mod tests {
         "#,
         )
         .unwrap();
-        config.validate().unwrap();
+
+        let collection = DuckProviderCollection::new();
+        collection.get_collectors(&config).unwrap();
     }
 
     #[test]
@@ -145,7 +151,9 @@ mod tests {
         "#,
         )
         .unwrap();
-        config.validate().unwrap();
+
+        let collection = DuckProviderCollection::new();
+        collection.get_collectors(&config).unwrap();
     }
 
     #[test]
@@ -170,7 +178,9 @@ mod tests {
         "#,
         )
         .unwrap();
-        config.validate().unwrap();
+
+        let collection = DuckProviderCollection::new();
+        collection.get_collectors(&config).unwrap();
     }
 
     #[test]
@@ -197,6 +207,8 @@ mod tests {
         "#,
         )
         .unwrap();
-        config.validate().unwrap();
+
+        let collection = DuckProviderCollection::new();
+        collection.get_collectors(&config).unwrap();
     }
 }

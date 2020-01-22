@@ -13,6 +13,7 @@ static DOCKER_SERVER_ADDRESS: &str = "0.0.0.0:15825";
 
 use crate::engine::state::EngineState;
 use crate::utils::DuckResult;
+
 pub fn start_and_block(
     context: Arc<EngineState>,
     server_address: Option<String>,

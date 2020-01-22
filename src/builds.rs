@@ -1,6 +1,5 @@
 use std::collections::hash_map::DefaultHasher;
-use std::fmt::Result as FormatResult;
-use std::fmt::{Display, Formatter};
+use std::fmt::{Display, Formatter, Result as FormatResult};
 use std::hash::{Hash, Hasher};
 
 #[derive(Clone, Debug, PartialEq, Eq)]

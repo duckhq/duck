@@ -35,8 +35,33 @@ impl Validate for TeamCityAuth {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::config::Configuration;
+    use crate::providers::DuckProviderCollection;
+
+    #[test]
+    #[should_panic(expected = "The id \\'\\' is invalid.")]
+    fn should_return_error_if_id_is_empty() {
+        let config = Configuration::from_json(
+            r#"
+            { 
+                "collectors": [ 
+                    {
+                        "teamcity": {
+                            "id": "",
+                            "serverUrl": "https://localhost:5000",
+                            "credentials": "guest",
+                            "builds": [ "Foo" ]
+                        }
+                    }
+                ] 
+            }
+        "#,
+        )
+        .unwrap();
+
+        let collection = DuckProviderCollection::new();
+        collection.get_collectors(&config).unwrap();
+    }
 
     #[test]
     #[should_panic(expected = "TeamCity server URL is invalid: relative URL without a base")]
@@ -58,7 +83,9 @@ mod tests {
         "#,
         )
         .unwrap();
-        config.validate().unwrap();
+
+        let collection = DuckProviderCollection::new();
+        collection.get_collectors(&config).unwrap();
     }
 
     #[test]
@@ -86,7 +113,9 @@ mod tests {
         "#,
         )
         .unwrap();
-        config.validate().unwrap();
+        
+        let collection = DuckProviderCollection::new();
+        collection.get_collectors(&config).unwrap();
     }
 
     #[test]
@@ -114,6 +143,8 @@ mod tests {
         "#,
         )
         .unwrap();
-        config.validate().unwrap();
+        
+        let collection = DuckProviderCollection::new();
+        collection.get_collectors(&config).unwrap();
     }
 }

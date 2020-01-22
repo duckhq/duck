@@ -2,7 +2,6 @@ use std::path::PathBuf;
 
 use serde::Deserialize;
 
-use crate::config::validation::Validate;
 use crate::utils::DuckResult;
 
 mod validation;
@@ -14,7 +13,34 @@ pub struct Configuration {
     pub observers: Option<Vec<ObserverConfiguration>>,
 }
 
+pub trait Validate {
+    fn validate(&self) -> DuckResult<()>;
+}
+
 impl Configuration {
+    #[allow(dead_code)]
+    pub fn from_json<T: Into<String>>(json: T) -> DuckResult<Self> {
+        let config: Configuration = serde_json::from_str(&json.into()[..])?;
+        config.validate()?;
+        Ok(config)
+    }
+
+    pub fn from_file(path: PathBuf) -> DuckResult<Self> {
+        let json = std::fs::read_to_string(path)?;
+        let config: Configuration = serde_json::from_str(&json[..])?;
+        config.validate()?;
+        Ok(config)
+    }
+
+    pub fn get_interval(&self) -> u64 {
+        if let Some(i) = &self.interval {
+            if i.0 >= 15 {
+                return u64::from(i.0);
+            }
+        }
+        return 15;
+    }
+
     pub fn get_all_ids(&self) -> Vec<String> {
         // Get all collector id:s
         let mut result: Vec<String> = self
@@ -175,20 +201,4 @@ pub struct MattermostConfiguration {
 pub enum MattermostCredentials {
     #[serde(rename = "webhook")]
     Webhook { url: String },
-}
-
-impl Configuration {
-    #[allow(dead_code)]
-    pub fn from_json<T: Into<String>>(json: T) -> DuckResult<Self> {
-        let config: Configuration = serde_json::from_str(&json.into()[..])?;
-        config.validate()?;
-        Ok(config)
-    }
-
-    pub fn from_file(path: PathBuf) -> DuckResult<Self> {
-        let json = std::fs::read_to_string(path)?;
-        let config: Configuration = serde_json::from_str(&json[..])?;
-        config.validate()?;
-        Ok(config)
-    }
 }

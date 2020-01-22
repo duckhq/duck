@@ -20,11 +20,11 @@ impl Validate for HueConfiguration {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::config::Configuration;
+    use crate::providers::DuckProviderCollection;
 
     #[test]
-    #[should_panic(expected = "Hue ID is empty.")]
+    #[should_panic(expected = "The id \\'\\' is invalid.")]
     fn should_return_error_if_hue_id_is_empty() {
         let config = Configuration::from_json(
             r#"
@@ -37,14 +37,16 @@ mod tests {
                             "hubUrl": "https://localhost:5000",
                             "username": "vpBIFkq-2iWFvSLf62u1HvcmLbqbDf76N-CTom8b",
                             "lights": [ "3" ]
-                        }             
+                        }
                     }
                 ]
             }
         "#,
         )
         .unwrap();
-        config.validate().unwrap();
+
+        let collection = DuckProviderCollection::new();
+        collection.get_observers(&config).unwrap();
     }
 
     #[test]
@@ -61,14 +63,16 @@ mod tests {
                             "hubUrl": "",
                             "username": "vpBIFkq-2iWFvSLf62u1HvcmLbqbDf76N-CTom8b",
                             "lights": [ "3" ]
-                        }             
+                        }
                     }
                 ]
             }
         "#,
         )
         .unwrap();
-        config.validate().unwrap();
+
+        let collection = DuckProviderCollection::new();
+        collection.get_observers(&config).unwrap();
     }
 
     #[test]
@@ -85,13 +89,15 @@ mod tests {
                             "hubUrl": "https://localhost:6000",
                             "username": "",
                             "lights": [ "3" ]
-                        }             
+                        }
                     }
                 ]
             }
         "#,
         )
         .unwrap();
-        config.validate().unwrap();
+
+        let collection = DuckProviderCollection::new();
+        collection.get_observers(&config).unwrap();
     }
 }

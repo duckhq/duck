@@ -3,18 +3,25 @@ use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::Arc;
 use std::thread::JoinHandle;
 
-pub mod state;
-
 use crate::builds::{Build, BuildStatus};
-use crate::collectors;
 use crate::config::Configuration;
-use crate::engine::state::{BuildUpdateResult, EngineState};
-use crate::observers;
-use crate::observers::{Observation, ObservationOrigin, Observer};
+use crate::providers::collectors::*;
+use crate::providers::observers::*;
+use crate::providers::*;
 use crate::utils::DuckResult;
 
-use log::{error, info};
+use self::state::{BuildUpdateResult, EngineState};
+
+use log::{debug, error, info};
 use waithandle::{EventWaitHandle, WaitHandle};
+
+pub mod state;
+
+pub struct Engine<'a> {
+    config: &'a Configuration,
+    state: Arc<EngineState>,
+    providers: DuckProviderCollection<'a>,
+}
 
 pub struct EngineHandle {
     wait_handle: Arc<EventWaitHandle>,
@@ -40,35 +47,51 @@ pub enum EngineEvent {
     ShuttingDown,
 }
 
-pub fn run(config: &Configuration, state: &Arc<EngineState>) -> EngineHandle {
-    let handle = Arc::new(EventWaitHandle::new());
+impl<'a> Engine<'a> {
+    pub fn new(config: &'a Configuration) -> DuckResult<Self> {
+        Ok(Engine {
+            config,
+            state: Arc::new(EngineState::new()),
+            providers: DuckProviderCollection::new(),
+        })
+    }
 
-    let (sender, receiver) = channel::<EngineEvent>();
+    pub fn get_state(&self) -> Arc<EngineState> {
+        self.state.clone()
+    }
 
-    info!("Starting observers...");
-    let observer_thread = std::thread::spawn({
-        let config = config.clone();
-        let state = state.clone();
-        move || -> DuckResult<()> {
-            return run_observers(config, state, receiver);
-        }
-    });
+    pub fn run(&self) -> DuckResult<EngineHandle> {
+        let handle = Arc::new(EventWaitHandle::new());
+        let (sender, receiver) = channel::<EngineEvent>();
 
-    info!("Starting collectors...");
-    let collector_thread = std::thread::spawn({
-        let handle = handle.clone();
-        let config = config.clone();
-        let state = state.clone();
-        move || -> DuckResult<()> {
-            return run_collectors(handle, state, config, sender);
-        }
-    });
+        // Create all collectors.
+        let collectors = self.providers.get_collectors(self.config)?;
+        let observers = self.providers.get_observers(self.config)?;
 
-    info!("Engine started.");
-    EngineHandle {
-        wait_handle: handle,
-        collector_thread,
-        observer_thread,
+        debug!("Starting observer thread...");
+        let observer_thread = std::thread::spawn({
+            let state = self.state.clone();
+            move || -> DuckResult<()> {
+                return run_observers(state, observers, receiver);
+            }
+        });
+
+        debug!("Starting collector thread...");
+        let collector_thread = std::thread::spawn({
+            let handle = handle.clone();
+            let config = self.config.clone();
+            let state = self.state.clone();
+            move || -> DuckResult<()> {
+                return run_collectors(handle, state, config, collectors, sender);
+            }
+        });
+
+        info!("Engine started.");
+        Ok(EngineHandle {
+            wait_handle: handle,
+            collector_thread,
+            observer_thread,
+        })
     }
 }
 
@@ -76,17 +99,13 @@ fn run_collectors(
     handle: Arc<EventWaitHandle>,
     state: Arc<EngineState>,
     config: Configuration,
+    collectors: Vec<Box<dyn Collector>>,
     sender: Sender<EngineEvent>,
 ) -> DuckResult<()> {
-    // Create the collectors from the configuration
-    let collectors = collectors::create_collectors(&config);
+    let interval: u64 = config.get_interval();
 
-    // Get the update interval and clamp it to at least 15 seconds.
-    let mut interval: u64 = 15;
-    if let Some(i) = config.interval {
-        if interval > 15 {
-            interval = u64::from(i.0);
-        }
+    for collector in collectors.iter() {
+        info!("Added collector '{}'.", collector.info().id);
     }
 
     while !handle.check().unwrap() {
@@ -96,7 +115,7 @@ fn run_collectors(
             }
 
             let mut build_hashes = std::collections::HashSet::<u64>::new();
-            if let Err(e) = collector.collect(handle.clone(), &mut |build: crate::builds::Build| {
+            if let Err(e) = collector.collect(handle.clone(), &mut |build: Build| {
                 build_hashes.insert(build.id);
                 match state.builds.update(&build) {
                     BuildUpdateResult::Added | BuildUpdateResult::BuildUpdated => {
@@ -151,15 +170,26 @@ fn run_collectors(
 }
 
 fn run_observers(
-    config: Configuration,
     state: Arc<EngineState>,
+    observers: Vec<Box<dyn Observer>>,
     receiver: Receiver<EngineEvent>,
 ) -> DuckResult<()> {
-    let observers = observers::create_observers(&config);
-
     let mut stopped = false;
     let mut observer_status = HashMap::<&str, BuildStatus>::new();
     let mut overall_status = BuildStatus::Unknown;
+
+    for observer in observers.iter() {
+        info!("Added observer '{}'.", observer.info().id);
+        if let Some(collectors) = &observer.info().collectors {
+            for collector in collectors {
+                info!(
+                    "Observer '{}' is interested in collector '{}'",
+                    observer.info().id,
+                    collector
+                );
+            }
+        };
+    }
 
     while !stopped {
         let result = receiver.recv();
