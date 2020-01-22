@@ -1,5 +1,5 @@
 {
-    "$schema": "./schema.json",
+    "$schema": "https://raw.githubusercontent.com/spectresystems/duck/master/config/schema.json",
     "interval": 30,
     "collectors": [
         {
