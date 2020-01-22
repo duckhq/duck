@@ -26,6 +26,7 @@ impl<'a> DuckProviderCollection<'a> {
         let mut providers = Vec::<&'a dyn DuckProvider>::new();
         providers.push(&AzureDevOpsProvider {});
         providers.push(&TeamCityProvider {});
+        providers.push(&OctopusDeployProvider {});
         providers.push(&HueProvider {});
         providers.push(&SlackProvider {});
         providers.push(&MattermostProvider {});

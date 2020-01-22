@@ -55,6 +55,13 @@
               width="28"
               height="28"
             />
+            <img
+              v-if="build.provider == 'OctopusDeploy'"
+              src="../assets/octopus.svg"
+              style="opacity: 1.0;"
+              width="28"
+              height="28"
+            />
             </a>
           </td>
         </tr>

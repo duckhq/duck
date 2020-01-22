@@ -7,11 +7,13 @@ use crate::config::{CollectorConfiguration, Configuration, Validate};
 use crate::utils::DuckResult;
 
 use self::azure::AzureDevOpsCollector;
+use self::octopus::OctopusDeployCollector;
 use self::teamcity::TeamCityCollector;
 
 use super::DuckProvider;
 
 mod azure;
+mod octopus;
 mod teamcity;
 
 pub trait Collector: Send {
@@ -51,6 +53,20 @@ impl<'a> DuckProvider<'a> for TeamCityProvider {
             if let CollectorConfiguration::TeamCity(c) = item {
                 c.validate()?;
                 result.push(Box::new(TeamCityCollector::new(&c)));
+            }
+        }
+        return Ok(result);
+    }
+}
+
+pub struct OctopusDeployProvider {}
+impl<'a> DuckProvider<'a> for OctopusDeployProvider {
+    fn get_collectors(&self, config: &Configuration) -> DuckResult<Vec<Box<dyn Collector>>> {
+        let mut result = Vec::<Box<dyn Collector>>::new();
+        for item in config.collectors.iter() {
+            if let CollectorConfiguration::OctopusDeploy(c) = item {
+                c.validate()?;
+                result.push(Box::new(OctopusDeployCollector::new(&c)));
             }
         }
         return Ok(result);

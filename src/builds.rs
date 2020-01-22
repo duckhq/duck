@@ -1,5 +1,4 @@
 use std::collections::hash_map::DefaultHasher;
-use std::fmt::{Display, Formatter, Result as FormatResult};
 use std::hash::{Hash, Hasher};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -84,15 +83,7 @@ impl Build {
 pub enum BuildProvider {
     TeamCity,
     AzureDevOps,
-}
-
-impl Display for BuildProvider {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FormatResult {
-        match self {
-            BuildProvider::TeamCity => write!(f, "TeamCity"),
-            BuildProvider::AzureDevOps => write!(f, "Azure DevOps"),
-        }
-    }
+    OctopusDeploy,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
