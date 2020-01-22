@@ -71,9 +71,7 @@ impl<'a> Engine<'a> {
         debug!("Starting observer thread...");
         let observer_thread = std::thread::spawn({
             let state = self.state.clone();
-            move || -> DuckResult<()> {
-                run_observers(state, observers, receiver)
-            }
+            move || -> DuckResult<()> { run_observers(state, observers, receiver) }
         });
 
         debug!("Starting collector thread...");
@@ -81,9 +79,7 @@ impl<'a> Engine<'a> {
             let handle = handle.clone();
             let config = self.config.clone();
             let state = self.state.clone();
-            move || -> DuckResult<()> {
-                run_collectors(handle, state, config, collectors, sender)
-            }
+            move || -> DuckResult<()> { run_collectors(handle, state, config, collectors, sender) }
         });
 
         info!("Engine started.");
