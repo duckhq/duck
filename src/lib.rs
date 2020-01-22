@@ -8,32 +8,29 @@ extern crate serde;
 #[macro_use]
 extern crate serde_json;
 
-mod api;
-mod builds;
-mod collectors;
-mod config;
-mod engine;
-mod observers;
-mod utils;
-
 use std::path::PathBuf;
-use std::sync::Arc;
 
 use crate::config::Configuration;
-use crate::engine::state::EngineState;
 use crate::utils::DuckResult;
+
+mod api;
+mod builds;
+mod config;
+mod engine;
+mod providers;
+mod utils;
 
 pub fn run<T: Into<PathBuf>>(config_path: T, server_address: Option<String>) -> DuckResult<()> {
     // Load and validate the configuration file.
     let config = Configuration::from_file(config_path.into())?;
 
     // Start the engine.
-    let state = Arc::new(EngineState::new());
-    let engine_handle = engine::run(&config, &state);
+    let engine = engine::Engine::new(&config)?;
+    let engine_handle = engine.run()?;
 
     // Start the HTTP server.
     // This will block until CTRL+C is pressed.
-    api::start_and_block(state, server_address)?;
+    api::start_and_block(engine.get_state(), server_address)?;
 
     // Stop the engine.
     engine_handle.stop()?;

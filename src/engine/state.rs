@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use std::sync::Mutex;
 
 use crate::builds::{Build, BuildStatus};
-use crate::collectors::CollectorInfo;
+use crate::providers::collectors::CollectorInfo;
 
 pub struct EngineState {
     pub builds: BuildRepository,

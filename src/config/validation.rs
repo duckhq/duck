@@ -3,45 +3,13 @@ use std::collections::HashMap;
 
 use log::warn;
 
-use crate::config::{CollectorConfiguration, Configuration, ObserverConfiguration};
+use super::{CollectorConfiguration, Configuration, Validate};
 use crate::utils::DuckResult;
-
-mod azure;
-mod hue;
-mod mattermost;
-mod slack;
-mod teamcity;
-
-pub trait Validate {
-    fn validate(&self) -> DuckResult<()>;
-}
 
 impl Validate for Configuration {
     fn validate(&self) -> DuckResult<()> {
         if self.collectors.is_empty() {
             warn!("No collectors have been specified.");
-        }
-
-        // Validate collectors
-        for collector in self.collectors.iter() {
-            match collector {
-                CollectorConfiguration::TeamCity(tc) => tc.validate()?,
-                CollectorConfiguration::Azure(azure) => azure.validate()?,
-            };
-        }
-
-        // Validate observers
-        match self.observers {
-            Option::None => (),
-            Option::Some(ref observers) => {
-                for observer in observers.iter() {
-                    match observer {
-                        ObserverConfiguration::Hue(c) => c.validate()?,
-                        ObserverConfiguration::Slack(c) => c.validate()?,
-                        ObserverConfiguration::Mattermost(c) => c.validate()?,
-                    }
-                }
-            }
         }
 
         validate_ids(&self)?;

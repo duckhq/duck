@@ -3,8 +3,9 @@ use std::sync::Arc;
 use actix_web::{get, web};
 use actix_web::{HttpResponse, Responder};
 
-use crate::api::models::BuildViewModel;
 use crate::engine::state::EngineState;
+
+use super::models::BuildViewModel;
 
 #[get("/builds")]
 pub fn get_builds(state: web::Data<Arc<EngineState>>) -> impl Responder {

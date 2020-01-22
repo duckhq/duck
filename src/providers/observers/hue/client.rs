@@ -1,66 +1,11 @@
-use std::collections::HashSet;
-use std::iter::FromIterator;
-
-use log::{error, info};
+use log::error;
 use reqwest::header::{ACCEPT, CONTENT_TYPE};
 use reqwest::{Client, ClientBuilder};
 use url::Url;
 
 use crate::builds::BuildStatus;
 use crate::config::HueConfiguration;
-use crate::observers::{Observation, Observer, ObserverInfo};
-use crate::utils::colors::Rgb;
-use crate::utils::DuckResult;
-
-pub struct HueObserver {
-    info: ObserverInfo,
-    client: HueClient,
-}
-
-impl HueObserver {
-    pub fn new(config: &HueConfiguration) -> Self {
-        HueObserver {
-            client: HueClient::new(config),
-            info: ObserverInfo {
-                id: config.id.clone(),
-                enabled: match config.enabled {
-                    None => true,
-                    Some(e) => e,
-                },
-                collectors: match &config.collectors {
-                    Option::None => Option::None,
-                    Option::Some(collectors) => {
-                        Some(HashSet::from_iter(collectors.iter().cloned()))
-                    }
-                },
-            },
-        }
-    }
-}
-
-impl Observer for HueObserver {
-    fn info(&self) -> &ObserverInfo {
-        &self.info
-    }
-
-    fn observe(&self, observation: Observation) -> DuckResult<()> {
-        match observation {
-            Observation::DuckStatusChanged(status) => {
-                info!(
-                    "[{}] Setting light state to '{:?}'...",
-                    self.info.id, status
-                );
-                self.client.set_state(status)?;
-            }
-            Observation::ShuttingDown => {
-                info!("[{}] Turning off all lights...", self.info.id);
-                self.client.turn_off()?;
-            }
-            _ => {}
-        }
-        Ok(())
-    }
-}
+use crate::utils::{colors::Rgb, DuckResult};
 
 pub struct HueClient {
     client: Client,
