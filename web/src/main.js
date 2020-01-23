@@ -9,6 +9,7 @@ import { faCheckCircle } from '@fortawesome/free-solid-svg-icons'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { faCodeBranch } from '@fortawesome/free-solid-svg-icons'
 import { faTools } from '@fortawesome/free-solid-svg-icons'
+import { faTimesCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 const options = {
@@ -29,6 +30,7 @@ library.add(faCheckCircle)
 library.add(faExclamationTriangle)
 library.add(faCodeBranch)
 library.add(faTools)
+library.add(faTimesCircle)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 Vue.use(BootstrapVue)

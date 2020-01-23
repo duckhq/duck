@@ -3,7 +3,7 @@ use std::iter::FromIterator;
 
 use log::info;
 
-use crate::builds::{Build, BuildStatus};
+use crate::builds::BuildStatus;
 use crate::config::SlackConfiguration;
 use crate::providers::observers::{Observation, Observer, ObserverInfo};
 use crate::utils::DuckResult;
@@ -46,7 +46,7 @@ impl Observer for SlackObserver {
 
     fn observe(&self, observation: Observation) -> DuckResult<()> {
         if let Observation::BuildStatusChanged(build) = observation {
-            if build.status != BuildStatus::Unknown {
+            if is_interesting_status(&build.status) {
                 info!(
                     "Sending Slack message since build status changed ({:?})...",
                     build.status
@@ -60,7 +60,11 @@ impl Observer for SlackObserver {
                         build.branch,
                         build.status
                     )[..],
-                    get_message_icon(&build),
+                    match build.status {
+                        BuildStatus::Success => ":heavy_check_mark:",
+                        BuildStatus::Failed => ":heavy_multiplication_x:",
+                        _ => ":question:",
+                    },
                 )?;
             }
         };
@@ -69,11 +73,9 @@ impl Observer for SlackObserver {
     }
 }
 
-fn get_message_icon(build: &Build) -> &str {
-    match build.status {
-        BuildStatus::Success => ":heavy_check_mark:",
-        BuildStatus::Failed => ":heavy_multiplication_x:",
-        BuildStatus::Running => ":shipit:",
-        BuildStatus::Unknown => ":question:",
+fn is_interesting_status(status: &BuildStatus) -> bool {
+    match status {
+        BuildStatus::Success | BuildStatus::Failed => true,
+        _ => false,
     }
 }

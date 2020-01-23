@@ -92,4 +92,5 @@ pub enum BuildStatus {
     Success,
     Failed,
     Running,
+    Canceled,
 }

@@ -1,9 +1,8 @@
-use log::{debug, trace};
+use log::trace;
 use reqwest::header::ACCEPT;
 use reqwest::{Client, ClientBuilder, RequestBuilder};
 use url::Url;
 
-use crate::builds::BuildStatus;
 use crate::config::OctopusDeployCredentials;
 use crate::utils::DuckResult;
 
@@ -11,16 +10,6 @@ pub struct OctopusDeployClient {
     url: Url,
     credentials: OctopusDeployCredentials,
     client: Client,
-}
-
-impl OctopusDeployCredentials {
-    fn authenticate(&self, builder: RequestBuilder) -> RequestBuilder {
-        return match self {
-            OctopusDeployCredentials::ApiKey(api_key) => {
-                builder.header("X-Octopus-ApiKey", api_key)
-            }
-        };
-    }
 }
 
 impl OctopusDeployClient {
@@ -40,7 +29,7 @@ impl OctopusDeployClient {
     }
 
     fn send_get_request(&self, url: &str) -> DuckResult<reqwest::Response> {
-        debug!("Sending request to: {}", url);
+        trace!("Sending request to: {}", url);
         let response = self.client.get(url).header(ACCEPT, "application/json");
         let response = self.credentials.authenticate(response).send()?;
 
@@ -56,6 +45,16 @@ impl OctopusDeployClient {
     }
 }
 
+impl OctopusDeployCredentials {
+    fn authenticate(&self, builder: RequestBuilder) -> RequestBuilder {
+        return match self {
+            OctopusDeployCredentials::ApiKey(api_key) => {
+                builder.header("X-Octopus-ApiKey", api_key)
+            }
+        };
+    }
+}
+
 #[derive(Deserialize, Debug)]
 pub struct OctopusDashboard {
     #[serde(rename = "Projects")]
@@ -64,26 +63,6 @@ pub struct OctopusDashboard {
     pub environments: Vec<OctopusEnvironment>,
     #[serde(rename = "Items")]
     pub deployments: Vec<OctopusDeployment>,
-}
-
-impl OctopusDashboard {
-    pub fn find_project(&self, id: &str) -> Option<&OctopusProject> {
-        self.projects.iter().find(|&p| p.id == id)
-    }
-
-    pub fn get_environment(&self, name: &str) -> Option<&OctopusEnvironment> {
-        self.environments.iter().find(|&e| e.id == name)
-    }
-
-    pub fn find_deployment(
-        &self,
-        project: &OctopusProject,
-        environment: &OctopusEnvironment,
-    ) -> Option<&OctopusDeployment> {
-        self.deployments
-            .iter()
-            .find(|&d| d.project == project.id && d.environment == environment.id)
-    }
 }
 
 #[derive(Deserialize, Debug)]
@@ -96,12 +75,6 @@ pub struct OctopusProject {
     pub slug: String,
     #[serde(rename = "EnvironmentIds")]
     pub environments: Vec<String>,
-}
-
-impl OctopusProject {
-    pub fn has_environment(&self, id: &str) -> bool {
-        self.environments.iter().any(|e| e == id)
-    }
 }
 
 #[derive(Deserialize, Debug)]
@@ -142,25 +115,4 @@ pub struct OctopusDeployment {
 pub struct OctopusDeploymentLinks {
     #[serde(rename = "Self")]
     pub deployment: String,
-}
-
-impl OctopusDeployment {
-    pub fn get_status(&self) -> BuildStatus {
-        match &self.status[..] {
-            "Success" => BuildStatus::Success,
-            "Executing" | "Queued" | "Cancelling" | "Canceled" | "Failed" | "" => {
-                BuildStatus::Running
-            }
-            _ => BuildStatus::Failed,
-        }
-    }
-
-    pub fn get_start_time(&self) -> String {
-        match &self.status[..] {
-            "Cancelling" | "Canceled" | "Success" | "Executing" => self.start_time.clone(),
-            "Queued" => self.queue_time.clone(),
-            _ => None,
-        }
-        .unwrap_or_else(|| self.created_time.clone())
-    }
 }

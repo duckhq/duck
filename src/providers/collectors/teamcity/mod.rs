@@ -3,12 +3,12 @@ use std::sync::Arc;
 use log::{error, trace, warn};
 use waithandle::{EventWaitHandle, WaitHandle};
 
-use crate::builds::{Build, BuildProvider};
+use crate::builds::{Build, BuildProvider, BuildStatus};
 use crate::config::TeamCityConfiguration;
 use crate::providers::collectors::{Collector, CollectorInfo};
 use crate::utils::{date, DuckResult};
 
-use self::client::TeamCityClient;
+use self::client::*;
 
 mod client;
 mod validation;
@@ -111,5 +111,19 @@ impl Collector for TeamCityCollector {
         }
 
         Ok(())
+    }
+}
+
+impl TeamCityBuildModel {
+    pub fn get_build_status(&self) -> BuildStatus {
+        return if self.running {
+            BuildStatus::Running
+        } else {
+            match self.status.as_ref() {
+                "SUCCESS" => BuildStatus::Success,
+                "UNKNOWN" => BuildStatus::Canceled,
+                _ => BuildStatus::Failed,
+            }
+        };
     }
 }

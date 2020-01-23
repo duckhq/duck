@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use waithandle::{EventWaitHandle, WaitHandle};
 
-use crate::builds::{Build, BuildProvider};
+use crate::builds::{Build, BuildProvider, BuildStatus};
 use crate::config::AzureDevOpsConfiguration;
 use crate::providers::collectors::{Collector, CollectorInfo};
 use crate::utils::{date, DuckResult};
@@ -84,5 +84,22 @@ impl Collector for AzureDevOpsCollector {
         }
 
         return Ok(());
+    }
+}
+
+impl AzureBuild {
+    pub fn get_build_status(&self) -> BuildStatus {
+        if self.result.is_none() {
+            return BuildStatus::Running;
+        } else {
+            if self.status == "inProgress" || self.status == "notStarted" {
+                return BuildStatus::Running;
+            }
+            match self.result.as_ref().unwrap().as_ref() {
+                "succeeded" => BuildStatus::Success,
+                "canceled" => BuildStatus::Canceled,
+                _ => BuildStatus::Failed,
+            }
+        }
     }
 }

@@ -35,26 +35,28 @@ impl HueClient {
     }
 
     pub fn set_state(&self, status: BuildStatus) -> DuckResult<()> {
-        let (x, y) = HueClient::get_cie_coordinates(&status);
-        self.set_light_state(format!(
-            "{{\"alert\":\"{alert}\",\"xy\":[{x},{y}],\"on\":{on},\"bri\": {brightness} }}",
-            alert = match status {
-                BuildStatus::Failed => "select",
-                _ => "none",
-            },
-            x = x,
-            y = y,
-            brightness = self.brightness,
-            on = true
-        ))
+        if let Some((x, y)) = HueClient::get_cie_coordinates(&status) {
+            self.set_light_state(format!(
+                "{{\"alert\":\"{alert}\",\"xy\":[{x},{y}],\"on\":{on},\"bri\": {brightness} }}",
+                alert = match status {
+                    BuildStatus::Failed => "select",
+                    _ => "none",
+                },
+                x = x,
+                y = y,
+                brightness = self.brightness,
+                on = true
+            ))?;
+        }
+        Ok(())
     }
 
-    fn get_cie_coordinates(status: &BuildStatus) -> (f32, f32) {
+    fn get_cie_coordinates(status: &BuildStatus) -> Option<(f32, f32)> {
         return match status {
-            BuildStatus::Unknown => Rgb::new(255, 255, 255).to_cie_coordinates(),
-            BuildStatus::Success => Rgb::new(0, 255, 0).to_cie_coordinates(),
-            BuildStatus::Failed => Rgb::new(255, 0, 0).to_cie_coordinates(),
-            BuildStatus::Running => Rgb::new(127, 200, 255).to_cie_coordinates(),
+            BuildStatus::Success => Some(Rgb::new(0, 255, 0).to_cie_coordinates()),
+            BuildStatus::Failed => Some(Rgb::new(255, 0, 0).to_cie_coordinates()),
+            BuildStatus::Running => Some(Rgb::new(127, 200, 255).to_cie_coordinates()),
+            _ => None,
         };
     }
 

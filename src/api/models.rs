@@ -26,6 +26,7 @@ pub enum BuildStatusViewModel {
     Success,
     Failed,
     Running,
+    Canceled,
 }
 
 impl From<&Build> for BuildViewModel {
@@ -54,6 +55,7 @@ impl From<&BuildStatus> for BuildStatusViewModel {
             BuildStatus::Success => BuildStatusViewModel::Success,
             BuildStatus::Failed => BuildStatusViewModel::Failed,
             BuildStatus::Running => BuildStatusViewModel::Running,
+            BuildStatus::Canceled => BuildStatusViewModel::Canceled,
         }
     }
 }
