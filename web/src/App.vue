@@ -1,7 +1,12 @@
 <template>
   <div id="app">
-    <section v-if="errored">
+    <section v-if="errored && !docker">
       <p>The Duck server could not be reached at {{ this.address }}. Retrying...
+        <pulse-loader color="#DDDDDD" size="8px" style="text-align: left;" />
+      </p>
+    </section>
+    <section v-else-if="errored && docker">
+      <p>The Duck server could not be reached. Retrying...
         <pulse-loader color="#DDDDDD" size="8px" style="text-align: left;" />
       </p>
     </section>
@@ -29,6 +34,7 @@ export default {
   data() {
     return {
       address: process.env.VUE_APP_MY_DUCK_SERVER,
+      docker: process.env.VUE_APP_MY_DUCK_SERVER == '',
       builds: null,
       loading: true,
       errored: false
