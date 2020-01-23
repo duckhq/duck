@@ -3,9 +3,78 @@ use reqwest::header::ACCEPT;
 use reqwest::{Client, ClientBuilder, RequestBuilder};
 use url::Url;
 
-use crate::builds::BuildStatus;
 use crate::config::{TeamCityAuth, TeamCityConfiguration};
 use crate::utils::DuckResult;
+
+pub struct TeamCityClient {
+    pub url: Url,
+    credentials: TeamCityAuth,
+    client: Client,
+}
+
+impl TeamCityClient {
+    pub fn new(settings: &TeamCityConfiguration) -> Self {
+        Self {
+            url: Url::parse(&settings.server_url[..]).unwrap(),
+            credentials: settings.credentials.clone(),
+            client: ClientBuilder::new().build().unwrap(),
+        }
+    }
+
+    pub fn is_online(&self) -> bool {
+        self.send_get_request(format!(
+            "{url}{authtype}/app/rest/server",
+            url = self.url,
+            authtype = self.credentials.get_auth_type()
+        ))
+        .is_ok()
+    }
+
+    pub fn get_build_types(&self) -> DuckResult<Vec<TeamCityBuildTypeModel>> {
+        // Get all branches for this build configuration.
+        let mut response = self.send_get_request(format!(
+            "{url}{authtype}/app/rest/buildTypes",
+            url = self.url,
+            authtype = self.credentials.get_auth_type()
+        ))?;
+
+        let result: TeamCityBuildTypeCollectionModel = response.json()?;
+
+        Ok(result.build_types)
+    }
+
+    pub fn get_builds(
+        &self,
+        build_type: &TeamCityBuildTypeModel,
+    ) -> DuckResult<TeamCityBranchCollectionModel> {
+        // Get all branches for this build configuration.
+        let mut response = self.send_get_request(format!(
+            "{url}{authtype}/app/rest/buildTypes/id:{id}/branches?locator=default:any\
+             &fields=count,branch(name,default,active,builds(build(id,number,running,status,\
+             branchName,webUrl,startDate,finishDate),count,$locator(running:any,canceled:any,count:1)))",
+            url = self.url,
+            authtype = self.credentials.get_auth_type(),
+            id = build_type.id
+        ))?;
+
+        let result: TeamCityBranchCollectionModel = response.json()?;
+
+        Ok(result)
+    }
+
+    fn send_get_request(&self, url: String) -> DuckResult<reqwest::Response> {
+        trace!("Sending request to: {}", url);
+        let response = self.client.get(&url).header(ACCEPT, "application/json");
+        let response = self.credentials.authenticate(response).send()?;
+
+        trace!("Received response: {}", response.status());
+        if !response.status().is_success() {
+            return Err(format_err!("Received non 200 HTTP status code."));
+        }
+
+        Ok(response)
+    }
+}
 
 impl TeamCityAuth {
     pub fn get_auth_type(&self) -> String {
@@ -76,87 +145,4 @@ pub struct TeamCityBuildModel {
     pub started_at: String,
     #[serde(alias = "finishDate")]
     pub finished_at: Option<String>,
-}
-
-impl TeamCityBuildModel {
-    pub fn get_build_status(&self) -> BuildStatus {
-        return if self.running {
-            BuildStatus::Running
-        } else {
-            match self.status.as_ref() {
-                "SUCCESS" => BuildStatus::Success,
-                _ => BuildStatus::Failed,
-            }
-        };
-    }
-}
-
-pub struct TeamCityClient {
-    pub url: Url,
-    credentials: TeamCityAuth,
-    client: Client,
-}
-
-impl TeamCityClient {
-    pub fn new(settings: &TeamCityConfiguration) -> Self {
-        Self {
-            url: Url::parse(&settings.server_url[..]).unwrap(),
-            credentials: settings.credentials.clone(),
-            client: ClientBuilder::new().build().unwrap(),
-        }
-    }
-
-    pub fn is_online(&self) -> bool {
-        self.send_get_request(format!(
-            "{url}{authtype}/app/rest/server",
-            url = self.url,
-            authtype = self.credentials.get_auth_type()
-        ))
-        .is_ok()
-    }
-
-    pub fn get_build_types(&self) -> DuckResult<Vec<TeamCityBuildTypeModel>> {
-        // Get all branches for this build configuration.
-        let mut response = self.send_get_request(format!(
-            "{url}{authtype}/app/rest/buildTypes",
-            url = self.url,
-            authtype = self.credentials.get_auth_type()
-        ))?;
-
-        let result: TeamCityBuildTypeCollectionModel = response.json()?;
-
-        Ok(result.build_types)
-    }
-
-    pub fn get_builds(
-        &self,
-        build_type: &TeamCityBuildTypeModel,
-    ) -> DuckResult<TeamCityBranchCollectionModel> {
-        // Get all branches for this build configuration.
-        let mut response = self.send_get_request(format!(
-            "{url}{authtype}/app/rest/buildTypes/id:{id}/branches?locator=default:any\
-             &fields=count,branch(name,default,active,builds(build(id,number,running,status,\
-             branchName,webUrl,startDate,finishDate),count,$locator(running:any,count:1)))",
-            url = self.url,
-            authtype = self.credentials.get_auth_type(),
-            id = build_type.id
-        ))?;
-
-        let result: TeamCityBranchCollectionModel = response.json()?;
-
-        Ok(result)
-    }
-
-    fn send_get_request(&self, url: String) -> DuckResult<reqwest::Response> {
-        trace!("Sending request to: {}", url);
-        let response = self.client.get(&url).header(ACCEPT, "application/json");
-        let response = self.credentials.authenticate(response).send()?;
-
-        trace!("Received response: {}", response.status());
-        if !response.status().is_success() {
-            return Err(format_err!("Received non 200 HTTP status code."));
-        }
-
-        Ok(response)
-    }
 }

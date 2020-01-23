@@ -2,88 +2,14 @@ use log::trace;
 use reqwest::header::ACCEPT;
 use reqwest::{Client, ClientBuilder, RequestBuilder};
 
-use crate::builds::BuildStatus;
 use crate::config::{AzureDevOpsConfiguration, AzureDevOpsCredentials};
 use crate::utils::DuckResult;
-
-#[derive(Deserialize, Debug)]
-pub struct AzureResponse {
-    pub value: Vec<AzureBuild>,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct AzureBuild {
-    pub id: u64,
-    #[serde(alias = "buildNumber")]
-    pub build_number: String,
-    pub project: AzureProject,
-    pub definition: AzureBuildDefinition,
-    pub status: String,
-    pub result: Option<String>,
-    #[serde(alias = "startTime")]
-    pub start_time: String,
-    #[serde(alias = "finishTime")]
-    pub finish_time: Option<String>,
-    #[serde(alias = "sourceBranch")]
-    pub branch: String,
-    #[serde(alias = "_links")]
-    pub links: AzureLinks,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct AzureLinks {
-    pub web: AzureWebLink,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct AzureWebLink {
-    pub href: String,
-}
-
-impl AzureBuild {
-    pub fn get_build_status(&self) -> BuildStatus {
-        if self.result.is_none() {
-            return BuildStatus::Running;
-        } else {
-            if self.status == "inProgress" || self.status == "notStarted" {
-                return BuildStatus::Running;
-            }
-            match self.result.as_ref().unwrap().as_ref() {
-                "succeeded" => BuildStatus::Success,
-                _ => BuildStatus::Failed,
-            }
-        }
-    }
-}
-
-#[derive(Deserialize, Debug)]
-pub struct AzureProject {
-    pub id: String,
-    pub name: String,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct AzureBuildDefinition {
-    pub id: u64,
-    pub name: String,
-}
 
 pub struct AzureDevOpsClient {
     pub organization: String,
     pub project: String,
     client: Client,
     credentials: AzureDevOpsCredentials,
-}
-
-impl AzureDevOpsCredentials {
-    fn authenticate(&self, builder: RequestBuilder) -> RequestBuilder {
-        match self {
-            AzureDevOpsCredentials::Anonymous => builder,
-            AzureDevOpsCredentials::PersonalAccessToken(token) => {
-                (builder.basic_auth("", Some(token)))
-            }
-        }
-    }
 }
 
 impl AzureDevOpsClient {
@@ -128,4 +54,61 @@ impl AzureDevOpsClient {
 
         Ok(response)
     }
+}
+
+impl AzureDevOpsCredentials {
+    fn authenticate(&self, builder: RequestBuilder) -> RequestBuilder {
+        match self {
+            AzureDevOpsCredentials::Anonymous => builder,
+            AzureDevOpsCredentials::PersonalAccessToken(token) => {
+                (builder.basic_auth("", Some(token)))
+            }
+        }
+    }
+}
+
+#[derive(Deserialize, Debug)]
+pub struct AzureResponse {
+    pub value: Vec<AzureBuild>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct AzureBuild {
+    pub id: u64,
+    #[serde(alias = "buildNumber")]
+    pub build_number: String,
+    pub project: AzureProject,
+    pub definition: AzureBuildDefinition,
+    pub status: String,
+    pub result: Option<String>,
+    #[serde(alias = "startTime")]
+    pub start_time: String,
+    #[serde(alias = "finishTime")]
+    pub finish_time: Option<String>,
+    #[serde(alias = "sourceBranch")]
+    pub branch: String,
+    #[serde(alias = "_links")]
+    pub links: AzureLinks,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct AzureLinks {
+    pub web: AzureWebLink,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct AzureWebLink {
+    pub href: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct AzureProject {
+    pub id: String,
+    pub name: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct AzureBuildDefinition {
+    pub id: u64,
+    pub name: String,
 }

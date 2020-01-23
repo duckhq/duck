@@ -19,6 +19,7 @@
               :icon="['fas', 'exclamation-triangle']"
             />
             <font-awesome-icon v-if="build.status == 'Running'" :icon="['fas', 'tools']" />
+            <font-awesome-icon v-if="build.status == 'Canceled'" :icon="['fas', 'times-circle']" />
           </td>
           <td style="padding-left:10px">Build {{ build.buildNumber }}</td>
         </tr>
@@ -35,11 +36,14 @@
       <table style="width:100%;">
         <tr>
           <td>
+            <!-- Running -->
             <span v-if="build.status != 'Running'" class="small">{{ getBuildStatus(build) }}</span>
+            <!-- Not running -->
             <span
               v-if="build.status != 'Running'"
               class="small"
             >&nbsp;{{ build.finished | moment("from", "now") }}</span>
+            <!-- Running -->
             <table v-if="build.status == 'Running'">
               <tr>
                 <td>
@@ -99,6 +103,8 @@ export default {
         return "success";
       } else if (build.status == "Failed") {
         return "danger";
+      } else if (build.status == "Canceled") {
+        return "secondary";
       }
       return "info";
     }

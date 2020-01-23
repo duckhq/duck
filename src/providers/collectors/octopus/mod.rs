@@ -1,11 +1,12 @@
 use log::warn;
 use url::Url;
 
+use crate::builds::BuildStatus;
 use crate::config::{OctopusDeployConfiguration, OctopusDeployProject};
 use crate::providers::collectors::*;
 use crate::utils::date;
 
-use self::client::OctopusDeployClient;
+use self::client::*;
 
 mod client;
 mod validation;
@@ -117,5 +118,51 @@ impl Collector for OctopusDeployCollector {
         }
 
         Ok(())
+    }
+}
+
+impl OctopusDashboard {
+    pub fn find_project(&self, id: &str) -> Option<&OctopusProject> {
+        self.projects.iter().find(|&p| p.id == id)
+    }
+
+    pub fn get_environment(&self, name: &str) -> Option<&OctopusEnvironment> {
+        self.environments.iter().find(|&e| e.id == name)
+    }
+
+    pub fn find_deployment(
+        &self,
+        project: &OctopusProject,
+        environment: &OctopusEnvironment,
+    ) -> Option<&OctopusDeployment> {
+        self.deployments
+            .iter()
+            .find(|&d| d.project == project.id && d.environment == environment.id)
+    }
+}
+
+impl OctopusProject {
+    pub fn has_environment(&self, id: &str) -> bool {
+        self.environments.iter().any(|e| e == id)
+    }
+}
+
+impl OctopusDeployment {
+    pub fn get_status(&self) -> BuildStatus {
+        match &self.status[..] {
+            "Success" => BuildStatus::Success,
+            "Executing" | "Queued" | "Cancelling" | "Failed" | "" => BuildStatus::Running,
+            "Canceled" => BuildStatus::Canceled,
+            _ => BuildStatus::Failed,
+        }
+    }
+
+    pub fn get_start_time(&self) -> String {
+        match &self.status[..] {
+            "Cancelling" | "Canceled" | "Success" | "Executing" => self.start_time.clone(),
+            "Queued" => self.queue_time.clone(),
+            _ => None,
+        }
+        .unwrap_or_else(|| self.created_time.clone())
     }
 }
