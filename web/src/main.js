@@ -3,6 +3,7 @@ import App from './App.vue'
 import BootstrapVue from 'bootstrap-vue'
 import './styles/custom.scss'
 import VueProgressBar from 'vue-progressbar'
+import vueHeadful from 'vue-headful';
 import Moment from 'vue-moment'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faCheckCircle } from '@fortawesome/free-solid-svg-icons'
@@ -32,6 +33,8 @@ library.add(faCodeBranch)
 library.add(faTools)
 library.add(faTimesCircle)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
+
+Vue.component('vue-headful', vueHeadful);
 
 Vue.use(BootstrapVue)
 Vue.use(Moment);

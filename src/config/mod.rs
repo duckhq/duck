@@ -9,6 +9,7 @@ mod validation;
 #[derive(Deserialize, Clone)]
 pub struct Configuration {
     pub interval: Option<Interval>,
+    pub title: Option<String>,
     pub collectors: Vec<CollectorConfiguration>,
     pub observers: Option<Vec<ObserverConfiguration>>,
 }
@@ -30,6 +31,13 @@ impl Configuration {
         let config: Configuration = serde_json::from_str(&json[..])?;
         config.validate()?;
         Ok(config)
+    }
+
+    pub fn get_title(&self) -> &str {
+        match &self.title {
+            Some(title) => title,
+            None => "Duck"
+        }
     }
 
     pub fn get_interval(&self) -> u64 {

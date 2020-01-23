@@ -3,15 +3,18 @@ use std::collections::HashSet;
 use std::sync::Mutex;
 
 use crate::builds::{Build, BuildStatus};
+use crate::config::Configuration;
 use crate::providers::collectors::CollectorInfo;
 
 pub struct EngineState {
+    pub title: String,
     pub builds: BuildRepository,
 }
 
 impl EngineState {
-    pub fn new() -> Self {
+    pub fn new(config: &Configuration) -> Self {
         return EngineState {
+            title: config.get_title().to_string(),
             builds: BuildRepository::new(),
         };
     }

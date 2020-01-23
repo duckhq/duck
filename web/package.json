@@ -16,6 +16,7 @@
     "bootstrap-vue": "^2.1.0",
     "core-js": "^3.4.4",
     "vue": "^2.6.10",
+    "vue-headful": "^2.1.0",
     "vue-moment": "^4.1.0",
     "vue-progressbar": "^0.7.5",
     "vue-spinner": "^1.0.3"

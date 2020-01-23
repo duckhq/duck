@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <vue-headful :title="title"/>
     <section v-if="errored && !docker">
       <p>The Duck server could not be reached at {{ this.address }}. Retrying...
         <pulse-loader color="#DDDDDD" size="8px" style="text-align: left;" />
@@ -35,12 +36,20 @@ export default {
     return {
       address: process.env.VUE_APP_MY_DUCK_SERVER,
       docker: process.env.VUE_APP_MY_DUCK_SERVER == '',
+      serverInfo: null,
       builds: null,
       loading: true,
       errored: false
     };
   },
   computed: {
+    title() {
+      if(this.serverInfo == null) {
+        return "Duck";
+      } else {
+        return this.serverInfo.title;
+      }
+    },
     allBuilds() {
       return this.builds
         .slice()
@@ -56,12 +65,26 @@ export default {
           this.builds = response.data;
           this.errored = false;
           this.$Progress.finish();
+
+          if(this.serverInfo == null) {
+            this.updateServerInfo();
+          }
         })
         .catch(() => {
           this.errored = true;
           this.$Progress.fail();
         })
         .finally(() => (this.loading = false));
+    },
+    updateServerInfo: function() {
+      axios
+        .get(this.address + '/server')
+        .then(response => {
+          this.serverInfo = response.data;
+        })
+        .catch(() => {
+          console.log("Could not get server information.")
+        });
     }
   },
   mounted() {

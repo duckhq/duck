@@ -5,7 +5,18 @@ use actix_web::{HttpResponse, Responder};
 
 use crate::engine::state::EngineState;
 
-use super::models::BuildViewModel;
+use super::models::{BuildViewModel, ServerInfoModel};
+
+#[get("/server")]
+pub fn server_info(state: web::Data<Arc<EngineState>>) -> impl Responder {
+    let info = ServerInfoModel {
+        title: &state.title[..]
+    };
+    let json = serde_json::to_string(&info).unwrap();
+    HttpResponse::Ok()
+        .content_type("application/json")
+        .body(json)
+}
 
 #[get("/builds")]
 pub fn get_builds(state: web::Data<Arc<EngineState>>) -> impl Responder {
