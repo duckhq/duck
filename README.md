@@ -4,6 +4,17 @@ Duck is a build system agnostic build monitor written in Rust (backend server) a
 
 ![The frontend](res/images/frontend.png)
 
+## Table of Contents
+
+1. [Running](https://github.com/spectresystems/duck#documentation)
+2. [How it works](https://github.com/spectresystems/duck#how-it-works)
+3. [Supported providers](https://github.com/spectresystems/duck#supported-providers)
+   - [Collectors](https://github.com/spectresystems/duck#collectors)
+   - [Observers](https://github.com/spectresystems/duck#observers)
+3. [Configuration](https://github.com/spectresystems/duck#configuration)
+   - [Example](https://github.com/spectresystems/duck#example)
+4. [License](https://github.com/spectresystems/duck#license)
+
 ## Running
 
 The absolute easiest way of getting started with Duck is to use the docker image. You will have to provide a configuration file for it to work.
@@ -20,7 +31,29 @@ Observers can either be dependent on events from all collectors, or opt in to on
 
 ![Overview](res/images/overview.svg)
 
+## Supported providers
+
+### Collectors
+
+Collectors are responsible for collecting builds and deployments from
+other systems such as build servers.
+
+* TeamCity
+* Azure DevOps
+* Octopus Deploy
+
+### Observers
+
+Observers monitor builds and deployments and react to any
+changes that is made to their state.
+
+* Philips Hue
+* Slack
+* Mattermost
+
 ## Configuration
+
+### Example
 
 Below is an example configuration that specifies multiple collectors and observers. By specifying the schema you will get autocomplete support in editors that support it like Visual Studio Code.
 
@@ -150,3 +183,9 @@ Below is an example configuration that specifies multiple collectors and observe
     ]
 }
 ```
+
+## License
+
+Copyright © Patrik Svensson and contributors.
+
+Duck is provided as-is under the MIT license. For more information see [LICENSE](https://github.com/spectresystems/duck/blob/master/LICENSE).
