@@ -26,7 +26,7 @@ Below is an example configuration that specifies multiple collectors and observe
 
 ```json
 {
-    "$schema": "https://raw.githubusercontent.com/spectresystems/duck/master/config/v0.3/schema.json",
+    "$schema": "https://raw.githubusercontent.com/spectresystems/duck/master/schemas/v0.3.json",
     "interval": 30,
     "collectors": [
         {

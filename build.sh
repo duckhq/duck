@@ -12,12 +12,9 @@ done
 # Generate the JSON schema?
 if [ $SCHEMA ]; then
   if [ ! -z $VERSION ]; then
-    if [ ! -d "./config/v$VERSION" ]; then
-      mkdir -p "./config/v$VERSION"
-    fi
-    cargo run -- schema > "./config/v$VERSION/schema.json"
+    cargo run -- schema > "./schemas/v$VERSION.json"
   else
-    echo "Version has not been specified!"
+    echo "You must specify a version using the --version option."
     exit -1;
   fi
 fi
