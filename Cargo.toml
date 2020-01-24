@@ -26,6 +26,7 @@ env_logger = "0.7.1"
 actix-cors = "0.1.0"
 chrono = "0.4.10"
 regex = "1.3.3"
+schemars = "0.7.0-alpha-1"
 
 [profile.release]
 panic = 'abort'
