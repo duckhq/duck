@@ -51,7 +51,7 @@ impl<'a> Engine<'a> {
     pub fn new(config: &'a Configuration) -> DuckResult<Self> {
         Ok(Engine {
             config,
-            state: Arc::new(EngineState::new()),
+            state: Arc::new(EngineState::new(config)),
             providers: DuckProviderCollection::new(),
         })
     }

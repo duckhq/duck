@@ -41,6 +41,7 @@ pub fn start_and_block(
         let app = App::new()
             .register_data(state.clone())
             .wrap(Cors::new())
+            .service(endpoints::server_info)
             .service(endpoints::get_builds);
 
         if cfg!(feature = "docker") {

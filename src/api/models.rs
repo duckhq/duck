@@ -3,6 +3,11 @@ use serde::Serialize;
 use crate::builds::{Build, BuildStatus};
 
 #[derive(Serialize, Clone)]
+pub struct ServerInfoModel<'a> {
+    pub title: &'a str
+}
+
+#[derive(Serialize, Clone)]
 pub struct BuildViewModel {
     pub id: u64,
     pub provider: String,
