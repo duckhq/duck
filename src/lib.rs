@@ -36,3 +36,13 @@ pub fn run<T: Into<PathBuf>>(config_path: T, server_address: Option<String>) -> 
     engine_handle.stop()?;
     Ok(())
 }
+
+pub fn get_schema() -> String {
+    let settings = schemars::gen::SchemaSettings::draft07().with(|s| {
+        s.option_nullable = false;
+        s.option_add_null_type = false;
+    });
+    let gen = settings.into_generator();
+    let schema = gen.into_root_schema_for::<config::Configuration>();
+    serde_json::to_string_pretty(&schema).unwrap()
+}
