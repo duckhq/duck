@@ -6,7 +6,7 @@ Duck is a build system agnostic build monitor written in Rust (backend server) a
 
 ## Table of Contents
 
-1. [Running](https://github.com/spectresystems/duck#documentation)
+1. [Getting started](https://github.com/spectresystems/duck#getting-started)
 2. [How it works](https://github.com/spectresystems/duck#how-it-works)
 3. [Supported providers](https://github.com/spectresystems/duck#supported-providers)
    - [Collectors](https://github.com/spectresystems/duck#collectors)
@@ -15,7 +15,7 @@ Duck is a build system agnostic build monitor written in Rust (backend server) a
    - [Example](https://github.com/spectresystems/duck#example)
 4. [License](https://github.com/spectresystems/duck#license)
 
-## Running
+## Getting started
 
 The absolute easiest way of getting started with Duck is to use the docker image. You will have to provide a configuration file for it to work.
 
