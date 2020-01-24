@@ -2,7 +2,7 @@
 
 Duck is a build system agnostic build monitor written in Rust (backend server) and Vue (frontend). It also support sending messages to Slack and controlling [Philips Hue](https://www2.meethue.com/) lights.
 
-![The frontend](res/images/frontend.png)
+![The frontend](media/images/frontend.png)
 
 ## Table of Contents
 
@@ -29,7 +29,7 @@ The server part is responsible for collecting information from different `collec
 
 Observers can either be dependent on events from all collectors, or opt in to one or more collectors. This makes it easy to setup team specific build lights or Slack integration that's only dependent on specific collectors.
 
-![Overview](res/images/overview.svg)
+![Overview](media/images/overview.svg)
 
 ## Supported providers
 
