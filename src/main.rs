@@ -27,13 +27,13 @@ struct Opt {
     #[structopt(short, long)]
     verbose: bool,
     #[structopt(subcommand)]
-    commands: Option<Command>
+    commands: Option<Command>,
 }
 
 #[derive(StructOpt)]
 enum Command {
     /// Generates the JSON schema
-    Schema
+    Schema,
 }
 
 fn main() {
@@ -42,7 +42,7 @@ fn main() {
     // Was a sub command invoked?
     if let Some(command) = &args.commands {
         match command {
-            Command::Schema => { 
+            Command::Schema => {
                 println!("{}", duck::get_schema());
             }
         }

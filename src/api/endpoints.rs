@@ -10,7 +10,7 @@ use super::models::{BuildViewModel, ServerInfoModel};
 #[get("/server")]
 pub fn server_info(state: web::Data<Arc<EngineState>>) -> impl Responder {
     let info = ServerInfoModel {
-        title: &state.title[..]
+        title: &state.title[..],
     };
     let json = serde_json::to_string(&info).unwrap();
     HttpResponse::Ok()

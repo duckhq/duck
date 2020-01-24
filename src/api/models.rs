@@ -4,7 +4,7 @@ use crate::builds::{Build, BuildStatus};
 
 #[derive(Serialize, Clone)]
 pub struct ServerInfoModel<'a> {
-    pub title: &'a str
+    pub title: &'a str,
 }
 
 #[derive(Serialize, Clone)]

@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
-use serde::Deserialize;
 use schemars::JsonSchema;
+use serde::Deserialize;
 
 use crate::utils::DuckResult;
 
@@ -46,7 +46,7 @@ impl Configuration {
     pub fn get_title(&self) -> &str {
         match &self.title {
             Some(title) => title,
-            None => "Duck"
+            None => "Duck",
         }
     }
 
