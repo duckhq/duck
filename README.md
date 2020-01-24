@@ -38,18 +38,18 @@ Observers can either be dependent on events from all collectors, or opt in to on
 Collectors are responsible for collecting builds and deployments from
 other systems such as build servers.
 
-* TeamCity
-* Azure DevOps
-* Octopus Deploy
+* [TeamCity](https://www.jetbrains.com/teamcity/)
+* [Azure DevOps](https://azure.microsoft.com/en-us/services/devops)
+* [Octopus Deploy](https://octopus.com/)
 
 ### Observers
 
 Observers monitor builds and deployments and react to any
 changes that is made to their state.
 
-* Philips Hue
-* Slack
-* Mattermost
+* [Philips Hue](https://www2.meethue.com/)
+* [Slack](https://slack.com/)
+* [Mattermost](https://mattermost.com/)
 
 ## Configuration
 
