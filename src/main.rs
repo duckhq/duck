@@ -23,8 +23,10 @@ struct Opt {
     /// The server address to bind to
     #[structopt(name = "bind", short, long, env = "DUCK_BIND")]
     server_address: Option<String>,
-    #[structopt(short, long, parse(from_str = parse_level))]
+    /// The log level to use (info, debug, trace)
+    #[structopt(short, long, parse(from_str = parse_level), env = "DUCK_LEVEL")]
     level: Option<LogLevel>,
+    /// Available subcommands
     #[structopt(subcommand)]
     commands: Option<Command>,
 }
