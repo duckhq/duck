@@ -23,11 +23,25 @@ struct Opt {
     /// The server address to bind to
     #[structopt(name = "bind", short, long, env = "DUCK_BIND")]
     server_address: Option<String>,
-    /// Show verbose output
-    #[structopt(short, long)]
-    verbose: bool,
+    #[structopt(short, long, parse(from_str = parse_level))]
+    level: Option<LogLevel>,
     #[structopt(subcommand)]
     commands: Option<Command>,
+}
+
+#[derive(Debug)]
+enum LogLevel {
+    Information,
+    Debug,
+    Trace,
+}
+
+fn parse_level(src: &str) -> LogLevel {
+    match src {
+        "debug" => LogLevel::Debug,
+        "trace" => LogLevel::Trace,
+        _ => LogLevel::Information,
+    }
 }
 
 #[derive(StructOpt)]
@@ -49,7 +63,7 @@ fn main() {
         exit(0);
     };
 
-    initialize_logging(&args);
+    initialize_logging(&args.level);
 
     match duck::run(args.config, args.server_address) {
         Result::Ok(_) => exit(0),
@@ -60,8 +74,16 @@ fn main() {
     };
 }
 
-fn initialize_logging(args: &Opt) {
-    let level = if args.verbose { "debug" } else { "info" };
+fn initialize_logging(level: &Option<LogLevel>) {
+    let level = match level {
+        None => "info",
+        Some(level) => match level {
+            LogLevel::Information => "info",
+            LogLevel::Debug => "debug",
+            LogLevel::Trace => "trace",
+        },
+    };
+
     let filter = format!(
         "{},actix=off,mio=off,tokio=off,want=off,hyper=off,reqwest=off",
         level
