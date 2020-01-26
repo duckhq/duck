@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use waithandle::{EventWaitHandle, WaitHandle};
 
-use crate::builds::{Build, BuildProvider, BuildStatus};
+use crate::builds::{Build, BuildBuilder, BuildProvider, BuildStatus};
 use crate::config::AzureDevOpsConfiguration;
 use crate::providers::collectors::{Collector, CollectorInfo};
 use crate::utils::{date, DuckResult};
@@ -55,26 +55,33 @@ impl Collector for AzureDevOpsCollector {
 
             let builds = self.client.get_builds(branch, &self.definitions)?;
             for build in builds.value.iter() {
-                callback(Build::new(
-                    build.id.to_string(),
-                    BuildProvider::AzureDevOps,
-                    self.info.id.clone(),
-                    build.project.id.clone(),
-                    build.project.name.clone(),
-                    build.definition.id.to_string(),
-                    build.definition.name.clone(),
-                    build.build_number.clone(),
-                    build.get_build_status(),
-                    build.branch.clone(),
-                    build.links.web.href.clone(),
-                    date::to_iso8601(&build.start_time, date::AZURE_DEVOPS_FORMAT)?,
-                    match &build.finish_time {
-                        Option::None => None,
-                        Option::Some(value) => {
-                            Option::Some(date::to_iso8601(&value[..], date::AZURE_DEVOPS_FORMAT)?)
-                        }
-                    },
-                ));
+                callback(
+                    BuildBuilder::new()
+                        .build_id(build.id.to_string())
+                        .provider(BuildProvider::AzureDevOps)
+                        .collector(&self.info.id)
+                        .project_id(&build.project.id)
+                        .project_name(&build.project.name)
+                        .definition_id(build.definition.id.to_string())
+                        .definition_name(&build.definition.name)
+                        .build_number(&build.build_number)
+                        .status(build.get_build_status())
+                        .url(&build.links.web.href)
+                        .started_at(date::to_iso8601(
+                            &build.start_time,
+                            date::AZURE_DEVOPS_FORMAT,
+                        )?)
+                        .finished_at(match &build.finish_time {
+                            Option::None => None,
+                            Option::Some(value) => Option::Some(date::to_iso8601(
+                                &value[..],
+                                date::AZURE_DEVOPS_FORMAT,
+                            )?),
+                        })
+                        .branch(&build.branch)
+                        .build()
+                        .unwrap(),
+                );
             }
 
             // Wait for a litle time between calls.

@@ -146,32 +146,7 @@ impl BuildRepository {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::builds::BuildProvider;
-
-    fn create_build<T: Into<String>>(
-        id: T,
-        collector: T,
-        project: T,
-        definition: T,
-        branch: T,
-        status: BuildStatus,
-    ) -> Build {
-        Build::new(
-            id.into(),
-            BuildProvider::TeamCity,
-            collector.into(),
-            project.into(),
-            "project".to_string(),
-            definition.into(),
-            "definition".to_string(),
-            "1".to_string(),
-            status,
-            branch.into(),
-            "https://dummy".to_string(),
-            "".to_string(),
-            Option::None,
-        )
-    }
+    use crate::builds::BuildBuilder;
 
     #[test]
     fn should_have_successful_as_current_state_if_there_are_no_builds() {
@@ -182,136 +157,124 @@ mod tests {
     #[test]
     fn should_set_state_to_running_if_one_build_is_running() {
         let state = BuildRepository::new();
-        state.update(&create_build(
-            "1",
-            "collector",
-            "project1",
-            "ci/cd",
-            "develop",
-            BuildStatus::Success,
-        ));
-        state.update(&create_build(
-            "1",
-            "collector",
-            "project2",
-            "ci/cd",
-            "develop",
-            BuildStatus::Running,
-        ));
-        state.update(&create_build(
-            "1",
-            "collector",
-            "project3",
-            "ci/cd",
-            "develop",
-            BuildStatus::Success,
-        ));
+        state.update(
+            &BuildBuilder::dummy()
+                .build_id("1")
+                .collector("collector")
+                .project_id("project1")
+                .definition_id("ci/cd")
+                .branch("develop")
+                .status(BuildStatus::Success)
+                .unwrap(),
+        );
+        state.update(
+            &BuildBuilder::dummy()
+                .build_id("1")
+                .collector("collector")
+                .project_id("project2")
+                .definition_id("ci/cd")
+                .branch("develop")
+                .status(BuildStatus::Running)
+                .unwrap(),
+        );
+        state.update(
+            &BuildBuilder::dummy()
+                .build_id("1")
+                .collector("collector")
+                .project_id("project3")
+                .definition_id("ci/cd")
+                .branch("develop")
+                .status(BuildStatus::Success)
+                .unwrap(),
+        );
         assert!(state.current_status() == BuildStatus::Running);
     }
 
     #[test]
     fn should_set_state_to_failed_if_one_build_is_failed() {
         let state = BuildRepository::new();
-        state.update(&create_build(
-            "1",
-            "collector",
-            "project1",
-            "ci/cd",
-            "develop",
-            BuildStatus::Success,
-        ));
-        state.update(&create_build(
-            "1",
-            "collector",
-            "project2",
-            "ci/cd",
-            "develop",
-            BuildStatus::Failed,
-        ));
-        state.update(&create_build(
-            "1",
-            "collector",
-            "project3",
-            "ci/cd",
-            "develop",
-            BuildStatus::Success,
-        ));
+        state.update(
+            &BuildBuilder::dummy()
+                .project_id("project1")
+                .status(BuildStatus::Success)
+                .unwrap(),
+        );
+        state.update(
+            &BuildBuilder::dummy()
+                .project_id("project2")
+                .status(BuildStatus::Failed)
+                .unwrap(),
+        );
+        state.update(
+            &BuildBuilder::dummy()
+                .project_id("project3")
+                .status(BuildStatus::Success)
+                .unwrap(),
+        );
         assert!(state.current_status() == BuildStatus::Failed);
     }
 
     #[test]
     fn should_set_state_to_running_even_if_there_are_failed_builds() {
         let state = BuildRepository::new();
-        state.update(&create_build(
-            "1",
-            "collector",
-            "project1",
-            "ci/cd",
-            "develop",
-            BuildStatus::Success,
-        ));
-        state.update(&create_build(
-            "1",
-            "collector",
-            "project2",
-            "ci/cd",
-            "develop",
-            BuildStatus::Running,
-        ));
-        state.update(&create_build(
-            "1",
-            "collector",
-            "project3",
-            "ci/cd",
-            "develop",
-            BuildStatus::Failed,
-        ));
-        state.update(&create_build(
-            "1",
-            "collector",
-            "project4",
-            "ci/cd",
-            "develop",
-            BuildStatus::Success,
-        ));
+        state.update(
+            &BuildBuilder::dummy()
+                .project_id("project1")
+                .status(BuildStatus::Success)
+                .unwrap(),
+        );
+        state.update(
+            &BuildBuilder::dummy()
+                .project_id("project2")
+                .status(BuildStatus::Running)
+                .unwrap(),
+        );
+        state.update(
+            &BuildBuilder::dummy()
+                .project_id("project3")
+                .status(BuildStatus::Failed)
+                .unwrap(),
+        );
+        state.update(
+            &BuildBuilder::dummy()
+                .project_id("project4")
+                .status(BuildStatus::Success)
+                .unwrap(),
+        );
         assert!(state.current_status() == BuildStatus::Running);
     }
 
     #[test]
     fn should_return_correct_state_for_specific_collectors() {
         let state = BuildRepository::new();
-        state.update(&create_build(
-            "1",
-            "collector1",
-            "project1",
-            "ci/cd",
-            "develop",
-            BuildStatus::Success,
-        ));
-        state.update(&create_build(
-            "1",
-            "collector1",
-            "project2",
-            "ci/cd",
-            "develop",
-            BuildStatus::Running,
-        ));
-        state.update(&create_build(
-            "1",
-            "collector2",
-            "project3",
-            "ci/cd",
-            "develop",
-            BuildStatus::Failed,
-        ));
-        state.update(&create_build(
-            "1",
-            "collector1",
-            "project4",
-            "ci/cd",
-            "develop",
-            BuildStatus::Success,
-        ));
+        state.update(
+            &BuildBuilder::dummy()
+                .collector("collector1")
+                .project_id("project1")
+                .status(BuildStatus::Success)
+                .unwrap(),
+        );
+        state.update(
+            &BuildBuilder::dummy()
+                .collector("collector1")
+                .project_id("project2")
+                .status(BuildStatus::Running)
+                .unwrap(),
+        );
+        state.update(
+            &BuildBuilder::dummy()
+                .collector("collector2")
+                .project_id("project3")
+                .status(BuildStatus::Failed)
+                .unwrap(),
+        );
+        state.update(
+            &BuildBuilder::dummy()
+                .collector("collector1")
+                .project_id("project4")
+                .status(BuildStatus::Success)
+                .unwrap(),
+        );
 
         let mut collectors = HashSet::<String>::new();
         collectors.insert("collector2".to_string());

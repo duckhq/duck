@@ -3,7 +3,7 @@ use std::sync::Arc;
 use log::{error, trace, warn};
 use waithandle::{EventWaitHandle, WaitHandle};
 
-use crate::builds::{Build, BuildProvider, BuildStatus};
+use crate::builds::{Build, BuildBuilder, BuildProvider, BuildStatus};
 use crate::config::TeamCityConfiguration;
 use crate::providers::collectors::{Collector, CollectorInfo};
 use crate::utils::{date, DuckResult};
@@ -76,35 +76,41 @@ impl Collector for TeamCityCollector {
             trace!("Getting builds for {}...", build_type);
             let result = self.client.get_builds(found)?;
             for branch in result.branches {
-                for build in branch.builds.builds {
-                    callback(Build::new(
-                        build.id.to_string(),
-                        BuildProvider::TeamCity,
-                        self.info.id.clone(),
-                        found.project_id.clone(),
-                        found.project_name.clone(),
-                        found.id.clone(),
-                        found.name.clone(),
-                        build.number.clone(),
-                        build.get_build_status(),
-                        if branch.name == "<default>" {
-                            "default".to_string()
-                        } else {
-                            branch.name.clone()
-                        },
-                        build.url.clone(),
-                        date::to_iso8601(&build.started_at, date::TEAMCITY_FORMAT)?,
-                        match build.finished_at {
-                            Option::None => None,
-                            Option::Some(value) => {
-                                Option::Some(date::to_iso8601(&value[..], date::TEAMCITY_FORMAT)?)
-                            }
-                        },
-                    ));
-                }
+                let branch_name = if branch.name == "<default>" {
+                    "default"
+                } else {
+                    &branch.name
+                };
+
+                match branch.builds.builds.first() {
+                    None => trace!("No builds found for branch '{}'", branch_name),
+                    Some(build) => {
+                        callback(
+                            BuildBuilder::new()
+                                .build_id(build.id.to_string())
+                                .provider(BuildProvider::TeamCity)
+                                .collector(&self.info.id)
+                                .project_id(&found.project_id)
+                                .project_name(&found.project_name)
+                                .definition_id(&found.id)
+                                .definition_name(&found.name)
+                                .build_number(&build.number)
+                                .status(build.get_build_status())
+                                .url(&build.url)
+                                .started_at(date::to_iso8601(
+                                    &build.started_at,
+                                    date::TEAMCITY_FORMAT,
+                                )?)
+                                .finished_at(build.get_finished_at()?)
+                                .branch(branch_name)
+                                .build()
+                                .unwrap(),
+                        );
+                    }
+                };
             }
 
-            // Wait for a litle time between calls.
+            // Wait for a little time between calls.
             if handle.wait(std::time::Duration::from_millis(300)).unwrap() {
                 return Ok(());
             }
