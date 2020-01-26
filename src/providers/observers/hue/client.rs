@@ -1,14 +1,11 @@
-use log::error;
-use reqwest::header::{ACCEPT, CONTENT_TYPE};
-use reqwest::{Client, ClientBuilder};
 use url::Url;
 
 use crate::builds::BuildStatus;
 use crate::config::HueConfiguration;
+use crate::utils::http::{HttpClient, HttpRequestBuilder, HttpResponse};
 use crate::utils::{colors::Rgb, DuckResult};
 
 pub struct HueClient {
-    client: Client,
     brightness: u8,
     url: Url,
     username: String,
@@ -18,7 +15,6 @@ pub struct HueClient {
 impl HueClient {
     pub fn new(config: &HueConfiguration) -> Self {
         HueClient {
-            client: ClientBuilder::new().build().unwrap(),
             brightness: match config.brightness {
                 Option::Some(b) => b,
                 Option::None => 255,
@@ -29,24 +25,27 @@ impl HueClient {
         }
     }
 
-    pub fn turn_off(&self) -> DuckResult<()> {
-        self.set_light_state(format!("{{\"on\": {on} }}", on = false))?;
+    pub fn turn_off(&self, client: &impl HttpClient) -> DuckResult<()> {
+        self.set_light_state(client, format!("{{\"on\": {on} }}", on = false))?;
         Ok(())
     }
 
-    pub fn set_state(&self, status: BuildStatus) -> DuckResult<()> {
-        if let Some((x, y)) = HueClient::get_cie_coordinates(&status) {
-            self.set_light_state(format!(
-                "{{\"alert\":\"{alert}\",\"xy\":[{x},{y}],\"on\":{on},\"bri\": {brightness} }}",
-                alert = match status {
-                    BuildStatus::Failed => "select",
-                    _ => "none",
-                },
-                x = x,
-                y = y,
-                brightness = self.brightness,
-                on = true
-            ))?;
+    pub fn set_state(&self, client: &impl HttpClient, status: BuildStatus) -> DuckResult<()> {
+        if let Some((x, y)) = Self::get_cie_coordinates(&status) {
+            self.set_light_state(
+                client,
+                format!(
+                    "{{\"alert\":\"{alert}\",\"xy\":[{x},{y}],\"on\":{on},\"bri\":{brightness}}}",
+                    alert = match status {
+                        BuildStatus::Failed => "select",
+                        _ => "none",
+                    },
+                    x = x,
+                    y = y,
+                    brightness = self.brightness,
+                    on = true
+                ),
+            )?;
         }
         Ok(())
     }
@@ -60,7 +59,7 @@ impl HueClient {
         };
     }
 
-    fn set_light_state(&self, body: String) -> DuckResult<()> {
+    fn set_light_state(&self, client: &impl HttpClient, body: String) -> DuckResult<()> {
         for light in &self.lights {
             let url = format!(
                 "{url}api/{username}/lights/{id}/state",
@@ -69,16 +68,18 @@ impl HueClient {
                 id = light
             );
 
-            let response = self
-                .client
-                .put(&url)
-                .header(CONTENT_TYPE, "application/json")
-                .header(ACCEPT, "application/json")
-                .body(body.clone())
-                .send()?;
+            let mut builder = HttpRequestBuilder::put(url);
+            builder.add_header("Content-Type", "application/json");
+            builder.add_header("Accept", "application/json");
+            builder.set_body(body.clone());
 
+            let response = client.send(&builder)?;
             if !response.status().is_success() {
-                error!("Could not set state ({})!", response.status());
+                return Err(format_err!(
+                    "Could not update state for light '{id}' ({status})",
+                    id = light,
+                    status = response.status()
+                ));
             }
         }
 

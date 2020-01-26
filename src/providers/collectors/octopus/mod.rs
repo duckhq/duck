@@ -1,7 +1,7 @@
 use log::warn;
 use url::Url;
 
-use crate::builds::BuildStatus;
+use crate::builds::{BuildBuilder, BuildStatus};
 use crate::config::{OctopusDeployConfiguration, OctopusDeployProject};
 use crate::providers::collectors::*;
 use crate::utils::date;
@@ -87,33 +87,39 @@ impl Collector for OctopusDeployCollector {
                     }
                 };
 
-                // Generate a new build.
-                callback(Build::new(
-                    deployment.id.clone(),
-                    BuildProvider::OctopusDeploy,
-                    self.info().id.clone(),
-                    found_project.id.clone(),
-                    found_project.name.clone(),
-                    found_environment.id.clone(),
-                    found_environment.name.clone(),
-                    deployment.release_version.clone(),
-                    deployment.get_status(),
-                    deployment.release_id.clone(),
-                    format!(
-                        "{}/app#/projects/{}/releases/{}/deployments/{}",
-                        self.server_url, found_project.slug, deployment.release_id, deployment.id
-                    ),
-                    date::to_iso8601(
-                        &deployment.get_start_time()[..],
-                        date::OCTOPUS_DEPLOY_FORMAT,
-                    )?,
-                    match &deployment.finish_time {
-                        Option::None => None,
-                        Option::Some(value) => {
-                            Option::Some(date::to_iso8601(&value[..], date::OCTOPUS_DEPLOY_FORMAT)?)
-                        }
-                    },
-                ));
+                callback(
+                    BuildBuilder::new()
+                        .build_id(&deployment.id)
+                        .provider(BuildProvider::OctopusDeploy)
+                        .collector(&self.info.id)
+                        .project_id(&found_project.id)
+                        .project_name(&found_project.name)
+                        .definition_id(&found_environment.id)
+                        .definition_name(&found_environment.name)
+                        .build_number(&deployment.release_version)
+                        .status(deployment.get_status())
+                        .url(format!(
+                            "{}/app#/projects/{}/releases/{}/deployments/{}",
+                            self.server_url,
+                            found_project.slug,
+                            deployment.release_id,
+                            deployment.id
+                        ))
+                        .started_at(date::to_iso8601(
+                            &deployment.get_start_time()[..],
+                            date::OCTOPUS_DEPLOY_FORMAT,
+                        )?)
+                        .finished_at(match &deployment.finish_time {
+                            Option::None => None,
+                            Option::Some(value) => Option::Some(date::to_iso8601(
+                                &value[..],
+                                date::OCTOPUS_DEPLOY_FORMAT,
+                            )?),
+                        })
+                        .branch(&deployment.release_id)
+                        .build()
+                        .unwrap(),
+                );
             }
         }
 

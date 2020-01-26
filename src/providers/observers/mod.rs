@@ -2,6 +2,7 @@ use std::collections::HashSet;
 
 use crate::builds::{Build, BuildStatus};
 use crate::config::{Configuration, ObserverConfiguration, Validate};
+use crate::utils::http::ReqwestClient;
 use crate::utils::DuckResult;
 
 use self::hue::HueObserver;
@@ -59,7 +60,7 @@ impl<'a> DuckProvider<'a> for HueProvider {
             for item in observers.iter() {
                 if let ObserverConfiguration::Hue(c) = item {
                     c.validate()?;
-                    result.push(Box::new(HueObserver::new(&c)));
+                    result.push(Box::new(HueObserver::<ReqwestClient>::new(&c)));
                 }
             }
         }
@@ -75,7 +76,7 @@ impl<'a> DuckProvider<'a> for MattermostProvider {
             for item in observers.iter() {
                 if let ObserverConfiguration::Mattermost(c) = item {
                     c.validate()?;
-                    result.push(Box::new(MattermostObserver::new(&c)));
+                    result.push(Box::new(MattermostObserver::<ReqwestClient>::new(&c)));
                 }
             }
         }
@@ -91,7 +92,7 @@ impl<'a> DuckProvider<'a> for SlackProvider {
             for item in observers.iter() {
                 if let ObserverConfiguration::Slack(c) = item {
                     c.validate()?;
-                    result.push(Box::new(SlackObserver::new(&c)));
+                    result.push(Box::new(SlackObserver::<ReqwestClient>::new(&c)));
                 }
             }
         }

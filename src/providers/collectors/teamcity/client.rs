@@ -4,6 +4,7 @@ use reqwest::{Client, ClientBuilder, RequestBuilder};
 use url::Url;
 
 use crate::config::{TeamCityAuth, TeamCityConfiguration};
+use crate::utils::date;
 use crate::utils::DuckResult;
 
 pub struct TeamCityClient {
@@ -145,4 +146,16 @@ pub struct TeamCityBuildModel {
     pub started_at: String,
     #[serde(alias = "finishDate")]
     pub finished_at: Option<String>,
+}
+
+impl TeamCityBuildModel {
+    pub fn get_finished_at(&self) -> DuckResult<Option<String>> {
+        let finished_at = match &self.finished_at {
+            Option::None => None,
+            Option::Some(value) => {
+                Option::Some(date::to_iso8601(&value[..], date::TEAMCITY_FORMAT)?)
+            }
+        };
+        Ok(finished_at)
+    }
 }

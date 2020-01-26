@@ -1,13 +1,8 @@
-use reqwest::header::{ACCEPT, CONTENT_TYPE};
-use reqwest::{Client, ClientBuilder};
-
-use log::error;
-
 use crate::config::{SlackConfiguration, SlackCredentials};
+use crate::utils::http::{HttpClient, HttpRequestBuilder, HttpResponse};
 use crate::utils::DuckResult;
 
 pub struct SlackClient {
-    client: Client,
     credentials: SlackCredentials,
 }
 
@@ -22,29 +17,29 @@ impl SlackCredentials {
 impl SlackClient {
     pub fn new(config: &SlackConfiguration) -> Self {
         SlackClient {
-            client: ClientBuilder::new().build().unwrap(),
             credentials: config.credentials.clone(),
         }
     }
 
-    pub fn send(&self, message: &str, icon: &str) -> DuckResult<()> {
-        let response = self
-            .client
-            .put(self.credentials.get_url())
-            .header(CONTENT_TYPE, "application/json")
-            .header(ACCEPT, "application/json")
-            .body(
-                json!({
-                    "username": "Duck",
-                    "icon_emoji": icon,
-                    "text": message
-                })
-                .to_string(),
-            )
-            .send()?;
+    pub fn send(&self, client: &impl HttpClient, message: &str, icon: &str) -> DuckResult<()> {
+        let mut builder = HttpRequestBuilder::put(self.credentials.get_url().to_string());
+        builder.add_header("Content-Type", "application/json");
+        builder.add_header("Accept", "application/json");
+        builder.set_body(
+            json!({
+                "username": "Duck",
+                "icon_emoji": icon,
+                "text": message
+            })
+            .to_string(),
+        );
 
+        let response = client.send(&builder)?;
         if !response.status().is_success() {
-            error!("Could not send Slack message ({})!", response.status());
+            return Err(format_err!(
+                "Could not send Slack message ({})",
+                response.status()
+            ));
         }
 
         Ok(())

@@ -1,12 +1,9 @@
-use reqwest::header::{ACCEPT, CONTENT_TYPE};
-use reqwest::{Client, ClientBuilder};
-
 use crate::config::{MattermostConfiguration, MattermostCredentials};
+use crate::utils::http::{HttpClient, HttpRequestBuilder, HttpResponse};
 use crate::utils::DuckResult;
 
 pub struct MattermostClient {
     channel: Option<String>,
-    client: Client,
     credentials: MattermostCredentials,
 }
 
@@ -22,20 +19,17 @@ impl MattermostClient {
     pub fn new(config: &MattermostConfiguration) -> Self {
         MattermostClient {
             channel: config.channel.clone(),
-            client: ClientBuilder::new().build().unwrap(),
             credentials: config.credentials.clone(),
         }
     }
 
-    pub fn send(&self, message: &str) -> DuckResult<()> {
-        let request = self
-            .client
-            .post(self.credentials.get_url())
-            .header(CONTENT_TYPE, "application/json")
-            .header(ACCEPT, "application/json")
-            .body(self.get_payload(message).to_string());
+    pub fn send(&self, client: &impl HttpClient, message: &str) -> DuckResult<()> {
+        let mut builder = HttpRequestBuilder::post(self.credentials.get_url().to_string());
+        builder.add_header("Content-Type", "application/json");
+        builder.add_header("Accept", "application/json");
+        builder.set_body(self.get_payload(message).to_string());
 
-        let response = request.send()?;
+        let response = client.send(&builder)?;
         if !response.status().is_success() {
             return Err(format_err!(
                 "Could not send Mattermost message. ({})",
