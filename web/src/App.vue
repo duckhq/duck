@@ -83,7 +83,7 @@ export default {
           this.serverInfo = response.data;
         })
         .catch(() => {
-          console.log("Could not get server information.")
+          this.serverInfo = null;
         });
     }
   },
