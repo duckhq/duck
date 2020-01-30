@@ -3,8 +3,11 @@ use std::path::PathBuf;
 use schemars::JsonSchema;
 use serde::Deserialize;
 
+use crate::utils::text::Expander;
+use crate::utils::text::VariableProvider;
 use crate::utils::DuckResult;
 
+mod expansions;
 mod validation;
 
 #[derive(Serialize, Deserialize, JsonSchema, Clone)]
@@ -29,15 +32,21 @@ pub trait Validate {
 }
 
 impl Configuration {
-    #[allow(dead_code)]
-    pub fn from_json<T: Into<String>>(json: T) -> DuckResult<Self> {
-        let config: Configuration = serde_json::from_str(&json.into()[..])?;
+    pub fn from_file(variables: &impl VariableProvider, path: PathBuf) -> DuckResult<Self> {
+        let expander = &Expander::new(variables);
+        let json = expander.expand(std::fs::read_to_string(path)?)?;
+        let config: Configuration = serde_json::from_str(&json[..])?;
         config.validate()?;
         Ok(config)
     }
 
-    pub fn from_file(path: PathBuf) -> DuckResult<Self> {
-        let json = std::fs::read_to_string(path)?;
+    #[allow(dead_code)]
+    pub fn from_json<T: Into<String>>(
+        variables: &impl VariableProvider,
+        json: T,
+    ) -> DuckResult<Self> {
+        let expander = &Expander::new(variables);
+        let json = expander.expand(json)?;
         let config: Configuration = serde_json::from_str(&json[..])?;
         config.validate()?;
         Ok(config)

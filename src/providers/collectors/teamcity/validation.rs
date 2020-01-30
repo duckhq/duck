@@ -37,11 +37,13 @@ impl Validate for TeamCityAuth {
 mod tests {
     use crate::config::Configuration;
     use crate::providers::DuckProviderCollection;
+    use crate::utils::text::TestVariableProvider;
 
     #[test]
     #[should_panic(expected = "The id \\'\\' is invalid.")]
     fn should_return_error_if_id_is_empty() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ 
@@ -67,6 +69,7 @@ mod tests {
     #[should_panic(expected = "TeamCity server URL is invalid: relative URL without a base")]
     fn should_return_error_if_teamcity_server_is_empty() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ 
@@ -92,6 +95,7 @@ mod tests {
     #[should_panic(expected = "TeamCity username cannot be empty.")]
     fn should_return_error_if_teamcity_username_is_empty() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ 
@@ -122,6 +126,7 @@ mod tests {
     #[should_panic(expected = "TeamCity password cannot be empty.")]
     fn should_return_error_if_teamcity_password_is_empty() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ 

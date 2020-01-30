@@ -43,13 +43,15 @@ impl Validate for AzureDevOpsCredentials {
 
 #[cfg(test)]
 mod tests {
-    use crate::config::Configuration;
+    use crate::config::*;
     use crate::providers::DuckProviderCollection;
+    use crate::utils::text::TestVariableProvider;
 
     #[test]
     #[should_panic(expected = "The id \\'\\' is invalid.")]
     fn should_return_error_if_azure_devops_id_is_empty() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ 
@@ -77,6 +79,7 @@ mod tests {
     #[should_panic(expected = "Azure DevOps organization is empty.")]
     fn should_return_error_if_azure_devops_organization_is_empty() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ 
@@ -104,6 +107,7 @@ mod tests {
     #[should_panic(expected = "Azure DevOps project is empty.")]
     fn should_return_error_if_azure_devops_project_is_empty() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ 
@@ -133,6 +137,7 @@ mod tests {
     )]
     fn should_return_error_if_azure_devops_definitions_are_empty() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ 
@@ -160,6 +165,7 @@ mod tests {
     #[should_panic(expected = "Azure DevOps configuration have not specified any branches.")]
     fn should_return_error_if_azure_devops_branches_are_empty() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ 
@@ -187,6 +193,7 @@ mod tests {
     #[should_panic(expected = "Azure DevOps PAT token is empty.")]
     fn should_return_error_if_azure_devops_token_is_empty() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ 

@@ -13,6 +13,7 @@ extern crate derive_builder;
 use std::path::PathBuf;
 
 use crate::config::Configuration;
+use crate::utils::text::EnvironmentVariableProvider;
 use crate::utils::DuckResult;
 
 mod api;
@@ -24,7 +25,7 @@ mod utils;
 
 pub fn run<T: Into<PathBuf>>(config_path: T, server_address: Option<String>) -> DuckResult<()> {
     // Load and validate the configuration file.
-    let config = Configuration::from_file(config_path.into())?;
+    let config = Configuration::from_file(&EnvironmentVariableProvider::new(), config_path.into())?;
 
     // Start the engine.
     let engine = engine::Engine::new(&config)?;
