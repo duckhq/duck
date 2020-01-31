@@ -59,13 +59,13 @@ Below is an example configuration that specifies multiple collectors and observe
 
 ```json
 {
-    "$schema": "https://raw.githubusercontent.com/spectresystems/duck/master/schemas/v0.4.json",
+    "$schema": "https://raw.githubusercontent.com/spectresystems/duck/master/schemas/v0.5.json",
     "interval": 30,
     "collectors": [
         {
             "teamcity": {
-                "id": "teamcity_local",
-                "serverUrl": "http://127.0.0.1:8111/",
+                "id": "teamcity_internal",
+                "serverUrl": "https://${TEAMCITY_HOST}:${TEAMCITY_PORT}/",
                 "credentials": "guest",
                 "builds": [
                     "My_Project_Definition",
@@ -75,7 +75,7 @@ Below is an example configuration that specifies multiple collectors and observe
         },
         {
             "teamcity": {
-                "id": "teamcity_other",
+                "id": "teamcity_local",
                 "enabled": false,
                 "serverUrl": "192.168.0.1:8111",
                 "credentials": {
@@ -110,7 +110,7 @@ Below is an example configuration that specifies multiple collectors and observe
                 "organization": "some-organization",
                 "project": "some-project",
                 "credentials": {
-                    "pat": "MY-PERSONAL-ACCESS-TOKEN"
+                    "pat": "${AZURE_PAT}"
                 },
                 "definitions": [ "1" ],
                 "branches": [
@@ -123,7 +123,7 @@ Below is an example configuration that specifies multiple collectors and observe
                 "id": "octopus_local",
                 "serverUrl": "https://localhost:9000",
                 "credentials": {
-                    "apiKey": "MY-API-KEY"
+                    "apiKey": "${OCTOPUS_API_KEY}"
                 },
                 "projects": [
                     {
