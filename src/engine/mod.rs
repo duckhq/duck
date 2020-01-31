@@ -219,7 +219,9 @@ fn run_observers(
                             .entry(&observer.info().id)
                             .or_insert(BuildStatus::Unknown);
                         let current_status = state.builds.current_status_for_collectors(collectors);
-                        if *previous_status != current_status {
+                        if *previous_status != current_status
+                            && *previous_status != BuildStatus::Unknown
+                        {
                             // Status changed so send this to the observer.
                             propagate_to_observer(
                                 observer,
