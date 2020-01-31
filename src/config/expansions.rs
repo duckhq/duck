@@ -1,7 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use super::utilities::*;
-    use crate::config::Configuration;
+    use crate::config::*;
     use crate::utils::text::*;
 
     static CONFIGURATION: &str = r#"
@@ -89,6 +88,23 @@ mod tests {
     }
     "#;
 
+    macro_rules! find_config {
+        ($t:expr, $q:path) => {
+            $t.iter()
+                .find_map(|i| match i {
+                    $q(c) => Some(c),
+                    _ => None,
+                })
+                .expect("Could not find configuration.");
+        };
+    }
+
+    macro_rules! read_config {
+        ($t:expr) => {
+            Configuration::from_json(&create_variables(), $t).unwrap();
+        };
+    }
+
     fn create_variables() -> TestVariableProvider {
         let mut variables = TestVariableProvider::new();
         variables.add("TEAMCITY_ID", "teamcity");
@@ -125,10 +141,10 @@ mod tests {
     #[test]
     fn should_expand_teamcity_configuration() {
         // Given, When
-        let config = Configuration::from_json(&create_variables(), CONFIGURATION).unwrap();
+        let config = read_config!(CONFIGURATION);
 
         // Then
-        let teamcity = config.collectors.get_teamcity_config();
+        let teamcity = find_config!(config.collectors, CollectorConfiguration::TeamCity);
         let (username, password) = teamcity.get_basic_auth();
 
         assert_eq!("teamcity", teamcity.id);
@@ -142,10 +158,10 @@ mod tests {
     #[test]
     fn should_expand_azure_configuration() {
         // Given, When
-        let config = Configuration::from_json(&create_variables(), CONFIGURATION).unwrap();
+        let config = read_config!(CONFIGURATION);
 
         // Then
-        let azure = config.collectors.get_azure_config();
+        let azure = find_config!(config.collectors, CollectorConfiguration::Azure);
         let pat = azure.get_pat();
 
         assert_eq!("azure", azure.id);
@@ -161,10 +177,10 @@ mod tests {
     #[test]
     fn should_expand_octopus_configuration() {
         // Given, When
-        let config = Configuration::from_json(&create_variables(), CONFIGURATION).unwrap();
+        let config = read_config!(CONFIGURATION);
 
         // Then
-        let octopus = config.collectors.get_octopus_config();
+        let octopus = find_config!(config.collectors, CollectorConfiguration::OctopusDeploy);
         let api_key = octopus.get_api_key();
 
         assert_eq!("octopus", octopus.id);
@@ -178,11 +194,11 @@ mod tests {
     #[test]
     fn should_expand_hue_configuration() {
         // Given, When
-        let config = Configuration::from_json(&create_variables(), CONFIGURATION).unwrap();
+        let config = read_config!(CONFIGURATION);
 
         // Then
         let observers = config.observers.as_ref().unwrap();
-        let hue = observers.get_hue_config();
+        let hue = find_config!(observers, ObserverConfiguration::Hue);
 
         assert_eq!("hue", hue.id);
         assert_eq!("https://192.168.1.155", hue.hub_url);
@@ -195,25 +211,24 @@ mod tests {
     #[test]
     fn should_expand_slack_configuration() {
         // Given, When
-        let config = Configuration::from_json(&create_variables(), CONFIGURATION).unwrap();
+        let config = read_config!(CONFIGURATION);
 
         // Then
         let observers = config.observers.as_ref().unwrap();
-        let slack = observers.get_slack_config();
-        let webhook_url = slack.get_webhook_url();
+        let slack = find_config!(observers, ObserverConfiguration::Slack);
 
         assert_eq!("slack", slack.id);
-        assert_eq!("https://example.com/Slack", webhook_url);
+        assert_eq!("https://example.com/Slack", slack.get_webhook_url());
     }
 
     #[test]
     fn should_expand_mattermost_configuration() {
         // Given, When
-        let config = Configuration::from_json(&create_variables(), CONFIGURATION).unwrap();
+        let config = read_config!(CONFIGURATION);
 
         // Then
         let observers = config.observers.as_ref().unwrap();
-        let mattermost = observers.get_mattermost_config();
+        let mattermost = find_config!(observers, ObserverConfiguration::Mattermost);
         let webhook_url = mattermost.get_webhook_url();
 
         assert_eq!("mattermost", mattermost.id);
@@ -225,78 +240,6 @@ mod tests {
 #[cfg(test)]
 mod utilities {
     use crate::config::*;
-
-    pub trait GetCollectorConfiguration {
-        fn get_teamcity_config(&self) -> &TeamCityConfiguration;
-        fn get_azure_config(&self) -> &AzureDevOpsConfiguration;
-        fn get_octopus_config(&self) -> &OctopusDeployConfiguration;
-    }
-
-    impl GetCollectorConfiguration for Vec<CollectorConfiguration> {
-        fn get_teamcity_config(&self) -> &TeamCityConfiguration {
-            for item in self.iter() {
-                match item {
-                    CollectorConfiguration::TeamCity(c) => return &c,
-                    _ => {}
-                }
-            }
-            panic!("Could not find a TeamCity configuration");
-        }
-        fn get_azure_config(&self) -> &AzureDevOpsConfiguration {
-            for item in self.iter() {
-                match item {
-                    CollectorConfiguration::Azure(c) => return &c,
-                    _ => {}
-                }
-            }
-            panic!("Could not find a Azure DevOps configuration");
-        }
-        fn get_octopus_config(&self) -> &OctopusDeployConfiguration {
-            for item in self.iter() {
-                match item {
-                    CollectorConfiguration::OctopusDeploy(c) => return &c,
-                    _ => {}
-                }
-            }
-            panic!("Could not find a Octopus Deploy configuration");
-        }
-    }
-
-    pub trait GetObserverConfiguration {
-        fn get_hue_config(&self) -> &HueConfiguration;
-        fn get_slack_config(&self) -> &SlackConfiguration;
-        fn get_mattermost_config(&self) -> &MattermostConfiguration;
-    }
-
-    impl GetObserverConfiguration for Vec<ObserverConfiguration> {
-        fn get_hue_config(&self) -> &HueConfiguration {
-            for item in self.iter() {
-                match item {
-                    ObserverConfiguration::Hue(c) => return &c,
-                    _ => {}
-                }
-            }
-            panic!("Could not find a Hue configuration");
-        }
-        fn get_slack_config(&self) -> &SlackConfiguration {
-            for item in self.iter() {
-                match item {
-                    ObserverConfiguration::Slack(c) => return &c,
-                    _ => {}
-                }
-            }
-            panic!("Could not find a Slack configuration");
-        }
-        fn get_mattermost_config(&self) -> &MattermostConfiguration {
-            for item in self.iter() {
-                match item {
-                    ObserverConfiguration::Mattermost(c) => return &c,
-                    _ => {}
-                }
-            }
-            panic!("Could not find a Mattermost configuration");
-        }
-    }
 
     impl TeamCityConfiguration {
         pub fn get_basic_auth(&self) -> (&str, &str) {
