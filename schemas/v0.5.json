@@ -1,4 +1,4 @@
-{
+﻿{
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Configuration",
   "type": "object",
@@ -51,7 +51,7 @@
       ],
       "properties": {
         "branches": {
-          "title": "The branches to include [supports expansion]",
+          "title": "The branches to include",
           "type": "array",
           "items": {
             "type": "string"
@@ -66,7 +66,7 @@
           ]
         },
         "definitions": {
-          "title": "The build definitions to include [supports expansion]",
+          "title": "The build definitions to include",
           "type": "array",
           "items": {
             "type": "string"
@@ -82,11 +82,11 @@
           "type": "string"
         },
         "organization": {
-          "title": "The Azure DevOps organization [supports expansion]",
+          "title": "The Azure DevOps organization",
           "type": "string"
         },
         "project": {
-          "title": "The Azure DevOps project [supports expansion]",
+          "title": "The Azure DevOps project",
           "type": "string"
         }
       }
@@ -99,7 +99,7 @@
           ]
         },
         {
-          "title": "Personal access token [supports expansion]",
+          "title": "Personal access token",
           "description": "Authenticate using a personal access token (PAT)",
           "type": "object",
           "required": [
@@ -341,14 +341,14 @@
           "type": "string"
         },
         "projects": {
-          "title": "The Octopus Deploy projects to include [supports expansion]",
+          "title": "The Octopus Deploy projects to include",
           "type": "array",
           "items": {
             "$ref": "#/definitions/OctopusDeployProject"
           }
         },
         "serverUrl": {
-          "title": "The Octopus Deploy server URL [supports expansion]",
+          "title": "The Octopus Deploy server URL",
           "type": "string"
         }
       }
@@ -356,7 +356,7 @@
     "OctopusDeployCredentials": {
       "anyOf": [
         {
-          "title": "API Key [supports expansion]",
+          "title": "API Key",
           "description": "Authenticate using an API key",
           "type": "object",
           "required": [
@@ -378,14 +378,14 @@
       ],
       "properties": {
         "environments": {
-          "title": "The Octopus Deploy environment IDs within the project [supports expansion]",
+          "title": "The Octopus Deploy environment IDs within the project",
           "type": "array",
           "items": {
             "type": "string"
           }
         },
         "projectId": {
-          "title": "The Octopus Deploy project ID [supports expansion]",
+          "title": "The Octopus Deploy project ID",
           "type": "string"
         }
       }
@@ -462,7 +462,7 @@
           ]
         },
         {
-          "title": "Basic authentication [supports expansion]",
+          "title": "Basic authentication",
           "description": "Authenticate using basic authentication",
           "type": "object",
           "required": [
@@ -498,14 +498,14 @@
       ],
       "properties": {
         "builds": {
-          "title": "The TeamCity builds definitions to include [supports expansion]",
+          "title": "The TeamCity builds definitions to include",
           "type": "array",
           "items": {
             "type": "string"
           }
         },
         "credentials": {
-          "title": "The TeamCity credentials.",
+          "title": "The TeamCity credentials",
           "allOf": [
             {
               "$ref": "#/definitions/TeamCityAuth"
@@ -522,7 +522,7 @@
           "type": "string"
         },
         "serverUrl": {
-          "title": "The TeamCity server URL [supports expansion]",
+          "title": "The TeamCity server URL",
           "type": "string"
         }
       }
