@@ -70,11 +70,13 @@ impl Validate for OctopusDeployProject {
 mod tests {
     use crate::config::Configuration;
     use crate::providers::DuckProviderCollection;
+    use crate::utils::text::TestVariableProvider;
 
     #[test]
     #[should_panic(expected = "The id \\'\\' is invalid.")]
     fn should_return_error_if_octopus_deploy_id_is_empty() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ 
@@ -111,6 +113,7 @@ mod tests {
     #[should_panic(expected = "Octopus Deploy server URL is invalid: relative URL without a base")]
     fn should_return_error_if_server_url_is_empty_or_invalid() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ 
@@ -147,6 +150,7 @@ mod tests {
     #[should_panic(expected = "Octopus Deploy API key is empty.")]
     fn should_return_error_if_api_key_is_empty() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ 
@@ -185,6 +189,7 @@ mod tests {
     )]
     fn should_return_error_if_there_are_no_projects() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ 
@@ -212,6 +217,7 @@ mod tests {
     #[should_panic(expected = "Octopus Deploy project name is empty.")]
     fn should_return_error_if_project_name_is_empty() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ 
@@ -248,6 +254,7 @@ mod tests {
     #[should_panic(expected = "An Octopus Deploy environment in project \\'foo\\' is empty.")]
     fn should_return_error_if_environment_name_is_empty() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ 
@@ -284,6 +291,7 @@ mod tests {
     #[should_panic(expected = "The Octopus Deploy project \\'foo\\' contains no environments.")]
     fn should_return_error_if_there_are_no_environments_in_projects() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ 

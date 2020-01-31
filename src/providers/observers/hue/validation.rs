@@ -22,11 +22,13 @@ impl Validate for HueConfiguration {
 mod tests {
     use crate::config::Configuration;
     use crate::providers::DuckProviderCollection;
+    use crate::utils::text::TestVariableProvider;
 
     #[test]
     #[should_panic(expected = "The id \\'\\' is invalid.")]
     fn should_return_error_if_hue_id_is_empty() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ ],
@@ -53,6 +55,7 @@ mod tests {
     #[should_panic(expected = "Hue hub URL is invalid: relative URL without a base")]
     fn should_return_error_if_hue_hub_url_is_empty() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ ],
@@ -79,6 +82,7 @@ mod tests {
     #[should_panic(expected = "Hue username is empty.")]
     fn should_return_error_if_hue_username_is_empty() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ ],

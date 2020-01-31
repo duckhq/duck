@@ -107,11 +107,13 @@ fn validate_collector_references(configuration: &Configuration) -> DuckResult<()
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::utils::text::TestVariableProvider;
 
     #[test]
     #[should_panic(expected = "Found duplicate id \\'foo\\' in configuration.")]
     fn should_return_error_if_two_collectors_have_the_same_id() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ 
@@ -143,6 +145,7 @@ mod tests {
     #[should_panic(expected = "Found duplicate id \\'foo\\' in configuration.")]
     fn should_return_error_if_a_collector_and_an_observer_have_the_same_id() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ 
@@ -178,6 +181,7 @@ mod tests {
     )]
     fn should_return_error_if_an_observer_is_dependent_on_non_existing_collector() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ 

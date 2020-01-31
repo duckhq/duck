@@ -35,11 +35,13 @@ impl Validate for MattermostCredentials {
 mod tests {
     use crate::config::Configuration;
     use crate::providers::DuckProviderCollection;
+    use crate::utils::text::TestVariableProvider;
 
     #[test]
     #[should_panic(expected = "The id \\'\\' is invalid.")]
     fn should_return_error_if_mattermost_id_is_empty() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ ],
@@ -68,6 +70,7 @@ mod tests {
     #[should_panic(expected = "Mattermost channel is empty.")]
     fn should_return_error_if_mattermost_channel_is_empty() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ ],
@@ -97,6 +100,7 @@ mod tests {
     #[should_panic(expected = "Mattermost webhook URL is invalid: relative URL without a base")]
     fn should_return_error_if_mattermost_webhook_url_is_invalid() {
         let config = Configuration::from_json(
+            &TestVariableProvider::new(),
             r#"
             { 
                 "collectors": [ ],
