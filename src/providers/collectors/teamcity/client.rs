@@ -149,11 +149,11 @@ pub struct TeamCityBuildModel {
 }
 
 impl TeamCityBuildModel {
-    pub fn get_finished_at(&self) -> DuckResult<Option<String>> {
+    pub fn get_finished_at(&self) -> DuckResult<Option<i64>> {
         let finished_at = match &self.finished_at {
             Option::None => None,
             Option::Some(value) => {
-                Option::Some(date::to_iso8601(&value[..], date::TEAMCITY_FORMAT)?)
+                Option::Some(date::to_timestamp(&value[..], date::TEAMCITY_FORMAT)?)
             }
         };
         Ok(finished_at)

@@ -72,6 +72,11 @@
                 src="../assets/octopus.svg"
                 class="build-provider-avatar"
               />
+              <img
+                v-if="build.provider == 'GitHub'"
+                src="../assets/github.svg"
+                class="build-provider-avatar"
+              />
             </a>
           </td>
         </tr>

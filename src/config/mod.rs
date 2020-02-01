@@ -77,6 +77,7 @@ impl Configuration {
                 CollectorConfiguration::TeamCity(c) => c.id.clone(),
                 CollectorConfiguration::Azure(c) => c.id.clone(),
                 CollectorConfiguration::OctopusDeploy(c) => c.id.clone(),
+                CollectorConfiguration::GitHub(c) => c.id.clone(),
             })
             .collect();
         // Get all observer id:s
@@ -114,6 +115,10 @@ pub enum CollectorConfiguration {
     /// Gets builds from Azure DevOps
     #[serde(rename = "azure")]
     Azure(AzureDevOpsConfiguration),
+    /// # GitHub collector
+    /// Gets builds from GitHub Actions
+    #[serde(rename = "github")]
+    GitHub(GitHubConfiguration),
     /// # Octopus Deploy collector
     /// Gets deployments from Octopus Deploy
     #[serde(rename = "octopus")]
@@ -145,7 +150,11 @@ pub enum TeamCityAuth {
     /// # Basic authentication
     /// Authenticate using basic authentication
     #[serde(rename = "basic")]
-    BasicAuth { username: String, password: String },
+    BasicAuth { 
+        /// # The username to use
+        username: String, 
+        /// # The password to use
+        password: String },
 }
 
 #[derive(Serialize, Deserialize, JsonSchema, Clone)]
@@ -177,6 +186,35 @@ pub enum AzureDevOpsCredentials {
     /// Authenticate using a personal access token (PAT)
     #[serde(rename = "pat")]
     PersonalAccessToken(String),
+}
+
+#[derive(Serialize, Deserialize, JsonSchema, Clone)]
+pub struct GitHubConfiguration {
+    /// # The GitHub collector ID
+    pub id: String,
+    /// # Determines whether or not this collector is enabled
+    #[serde(default)]
+    pub enabled: Option<bool>,
+    /// # The GitHub owner
+    pub owner: String,
+    /// # The GitHub repository
+    pub repository: String,
+    /// # The GitHub credentials
+    pub credentials: GitHubCredentials,
+    /// # The GitHub Actions workflow
+    pub workflow: String,
+}
+
+#[derive(Serialize, Deserialize, JsonSchema, Clone)]
+pub enum GitHubCredentials {
+    /// # Basic authentication
+    /// Authenticate using basic authentication
+    #[serde(rename = "basic")]
+    Basic { 
+        /// # The username to use
+        username: String, 
+        /// # The password to use
+        password: String },
 }
 
 #[derive(Serialize, Deserialize, JsonSchema, Clone)]

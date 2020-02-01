@@ -97,7 +97,7 @@ impl Collector for TeamCityCollector {
                                 .build_number(&build.number)
                                 .status(build.get_build_status())
                                 .url(&build.url)
-                                .started_at(date::to_iso8601(
+                                .started_at(date::to_timestamp(
                                     &build.started_at,
                                     date::TEAMCITY_FORMAT,
                                 )?)

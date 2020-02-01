@@ -19,8 +19,8 @@ pub struct Build {
     pub status: BuildStatus,
     pub branch: String,
     pub url: String,
-    pub started_at: String,
-    pub finished_at: Option<String>,
+    pub started_at: i64,
+    pub finished_at: Option<i64>,
 }
 
 impl BuildBuilder {
@@ -42,8 +42,8 @@ impl BuildBuilder {
             .status(BuildStatus::Success)
             .branch("branch")
             .url("https://dummy")
-            .started_at("2020-01-12T09:05:21+00:00")
-            .finished_at(Some("2020-01-12T11:12:55+00:00".to_owned()))
+            .started_at(1578819921)
+            .finished_at(Some(1578820921))
     }
 
     pub fn build(&self) -> Result<Build, String> {
@@ -126,6 +126,7 @@ impl BuildBuilder {
 pub enum BuildProvider {
     TeamCity,
     AzureDevOps,
+    GitHub,
     OctopusDeploy,
 }
 

@@ -94,7 +94,7 @@ mod tests {
     use super::*;
     use crate::builds::{BuildBuilder, BuildStatus};
     use crate::config::SlackCredentials;
-    use crate::utils::http::{HttpMethod, MockHttpClient, MockHttpClientExpectationBuilder};
+    use crate::utils::http::{HttpMethod, MockHttpClient, MockHttpResponseBuilder};
     use reqwest::StatusCode;
     use test_case::test_case;
 
@@ -112,11 +112,10 @@ mod tests {
         });
 
         let client = slack.get_client();
-        client.add_expectation(MockHttpClientExpectationBuilder::new(
-            HttpMethod::Put,
-            "https://example.com/webhook",
-            StatusCode::OK,
-        ));
+        client.add_response(
+            MockHttpResponseBuilder::new(HttpMethod::Put, "https://example.com/webhook")
+                .returns_status(StatusCode::OK),
+        );
 
         // When
         slack
@@ -147,11 +146,10 @@ mod tests {
         });
 
         let client = slack.get_client();
-        client.add_expectation(MockHttpClientExpectationBuilder::new(
-            HttpMethod::Put,
-            "https://example.com/webhook",
-            StatusCode::OK,
-        ));
+        client.add_response(
+            MockHttpResponseBuilder::new(HttpMethod::Put, "https://example.com/webhook")
+                .returns_status(StatusCode::OK),
+        );
 
         // When
         slack
@@ -182,11 +180,10 @@ mod tests {
         });
 
         let client = slack.get_client();
-        client.add_expectation(MockHttpClientExpectationBuilder::new(
-            HttpMethod::Put,
-            "https://example.com/webhook",
-            StatusCode::BAD_GATEWAY,
-        ));
+        client.add_response(
+            MockHttpResponseBuilder::new(HttpMethod::Put, "https://example.com/webhook")
+                .returns_status(StatusCode::BAD_GATEWAY),
+        );
 
         // When
         slack
