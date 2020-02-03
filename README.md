@@ -40,6 +40,7 @@ other systems such as build servers.
 
 * [TeamCity](https://www.jetbrains.com/teamcity/)
 * [Azure DevOps](https://azure.microsoft.com/en-us/services/devops)
+* [GitHub Actions](https://github.com/features/actions)
 * [Octopus Deploy](https://octopus.com/)
 
 ### Observers
@@ -59,7 +60,7 @@ Below is an example configuration that specifies multiple collectors and observe
 
 ```json
 {
-    "$schema": "https://raw.githubusercontent.com/spectresystems/duck/master/schemas/v0.5.json",
+    "$schema": "https://raw.githubusercontent.com/spectresystems/duck/master/schemas/v0.6.json",
     "interval": 30,
     "collectors": [
         {
@@ -71,6 +72,20 @@ Below is an example configuration that specifies multiple collectors and observe
                     "My_Project_Definition",
                     "My_Other_Build_Definition"
                 ]
+            }
+        },
+        {
+            "github": {
+                "id": "github_pullrequests",
+                "owner": "spectresystems",
+                "repository": "duck",
+                "workflow": "pull_request.yml",
+                "credentials": {
+                    "basic": {
+                        "username": "patriksvensson",
+                        "password": "hunter1!"
+                    }
+                }
             }
         },
         {
