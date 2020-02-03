@@ -19,8 +19,8 @@ pub struct BuildViewModel {
     pub build_id: String,
     #[serde(rename(serialize = "buildNumber"))]
     pub build_number: String,
-    pub started: String,
-    pub finished: Option<String>,
+    pub started: i64,
+    pub finished: Option<i64>,
     pub url: String,
     pub status: BuildStatusViewModel,
 }
@@ -46,8 +46,8 @@ impl From<&Build> for BuildViewModel {
             build_id: item.build_id.clone(),
             build_number: item.build_number.clone(),
             url: item.url.clone(),
-            started: item.started_at.clone(),
-            finished: item.finished_at.clone(),
+            started: item.started_at,
+            finished: item.finished_at,
             status: BuildStatusViewModel::from(&item.status),
         }
     }

@@ -4,15 +4,18 @@ use waithandle::EventWaitHandle;
 
 use crate::builds::{Build, BuildProvider};
 use crate::config::{CollectorConfiguration, Configuration, Validate};
+use crate::utils::http::ReqwestClient;
 use crate::utils::DuckResult;
 
 use self::azure::AzureDevOpsCollector;
+use self::github::GitHubCollector;
 use self::octopus::OctopusDeployCollector;
 use self::teamcity::TeamCityCollector;
 
 use super::DuckProvider;
 
 mod azure;
+mod github;
 mod octopus;
 mod teamcity;
 
@@ -31,6 +34,20 @@ pub struct CollectorInfo {
     pub provider: BuildProvider,
 }
 
+pub struct TeamCityProvider {}
+impl<'a> DuckProvider<'a> for TeamCityProvider {
+    fn get_collectors(&self, config: &Configuration) -> DuckResult<Vec<Box<dyn Collector>>> {
+        let mut result = Vec::<Box<dyn Collector>>::new();
+        for item in config.collectors.iter() {
+            if let CollectorConfiguration::TeamCity(c) = item {
+                c.validate()?;
+                result.push(Box::new(TeamCityCollector::new(&c)));
+            }
+        }
+        return Ok(result);
+    }
+}
+
 pub struct AzureDevOpsProvider {}
 impl<'a> DuckProvider<'a> for AzureDevOpsProvider {
     fn get_collectors(&self, config: &Configuration) -> DuckResult<Vec<Box<dyn Collector>>> {
@@ -45,14 +62,14 @@ impl<'a> DuckProvider<'a> for AzureDevOpsProvider {
     }
 }
 
-pub struct TeamCityProvider {}
-impl<'a> DuckProvider<'a> for TeamCityProvider {
+pub struct GitHubProvider {}
+impl<'a> DuckProvider<'a> for GitHubProvider {
     fn get_collectors(&self, config: &Configuration) -> DuckResult<Vec<Box<dyn Collector>>> {
         let mut result = Vec::<Box<dyn Collector>>::new();
         for item in config.collectors.iter() {
-            if let CollectorConfiguration::TeamCity(c) = item {
+            if let CollectorConfiguration::GitHub(c) = item {
                 c.validate()?;
-                result.push(Box::new(TeamCityCollector::new(&c)));
+                result.push(Box::new(GitHubCollector::<ReqwestClient>::new(&c)));
             }
         }
         return Ok(result);

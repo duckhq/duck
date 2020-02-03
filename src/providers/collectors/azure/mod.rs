@@ -12,7 +12,6 @@ use self::client::*;
 mod client;
 mod validation;
 
-#[allow(dead_code)]
 pub struct AzureDevOpsCollector {
     client: AzureDevOpsClient,
     branches: Vec<String>,
@@ -67,13 +66,13 @@ impl Collector for AzureDevOpsCollector {
                         .build_number(&build.build_number)
                         .status(build.get_build_status())
                         .url(&build.links.web.href)
-                        .started_at(date::to_iso8601(
+                        .started_at(date::to_timestamp(
                             &build.start_time,
                             date::AZURE_DEVOPS_FORMAT,
                         )?)
                         .finished_at(match &build.finish_time {
                             Option::None => None,
-                            Option::Some(value) => Option::Some(date::to_iso8601(
+                            Option::Some(value) => Option::Some(date::to_timestamp(
                                 &value[..],
                                 date::AZURE_DEVOPS_FORMAT,
                             )?),

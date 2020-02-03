@@ -82,7 +82,7 @@ mod tests {
     use super::*;
     use crate::builds::{BuildBuilder, BuildStatus};
     use crate::config::MattermostCredentials;
-    use crate::utils::http::{HttpMethod, MockHttpClient, MockHttpClientExpectationBuilder};
+    use crate::utils::http::{HttpMethod, MockHttpClient, MockHttpResponseBuilder};
     use reqwest::StatusCode;
     use test_case::test_case;
 
@@ -100,11 +100,10 @@ mod tests {
         });
 
         let client = mattermost.get_client();
-        client.add_expectation(MockHttpClientExpectationBuilder::new(
-            HttpMethod::Put,
-            "https://example.com/webhook",
-            StatusCode::OK,
-        ));
+        client.add_response(
+            MockHttpResponseBuilder::new(HttpMethod::Put, "https://example.com/webhook")
+                .returns_status(StatusCode::OK),
+        );
 
         // When
         mattermost
@@ -135,11 +134,10 @@ mod tests {
         });
 
         let client = mattermost.get_client();
-        client.add_expectation(MockHttpClientExpectationBuilder::new(
-            HttpMethod::Put,
-            "https://example.com/webhook",
-            StatusCode::OK,
-        ));
+        client.add_response(
+            MockHttpResponseBuilder::new(HttpMethod::Put, "https://example.com/webhook")
+                .returns_status(StatusCode::OK),
+        );
 
         // When
         mattermost
@@ -169,11 +167,10 @@ mod tests {
         });
 
         let client = mattermost.get_client();
-        client.add_expectation(MockHttpClientExpectationBuilder::new(
-            HttpMethod::Put,
-            "https://example.com/webhook",
-            StatusCode::OK,
-        ));
+        client.add_response(
+            MockHttpResponseBuilder::new(HttpMethod::Put, "https://example.com/webhook")
+                .returns_status(StatusCode::OK),
+        );
 
         // When
         mattermost

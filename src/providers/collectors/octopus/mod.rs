@@ -105,13 +105,13 @@ impl Collector for OctopusDeployCollector {
                             deployment.release_id,
                             deployment.id
                         ))
-                        .started_at(date::to_iso8601(
+                        .started_at(date::to_timestamp(
                             &deployment.get_start_time()[..],
                             date::OCTOPUS_DEPLOY_FORMAT,
                         )?)
                         .finished_at(match &deployment.finish_time {
                             Option::None => None,
-                            Option::Some(value) => Option::Some(date::to_iso8601(
+                            Option::Some(value) => Option::Some(date::to_timestamp(
                                 &value[..],
                                 date::OCTOPUS_DEPLOY_FORMAT,
                             )?),

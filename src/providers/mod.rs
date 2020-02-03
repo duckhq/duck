@@ -24,8 +24,9 @@ pub struct DuckProviderCollection<'a> {
 impl<'a> DuckProviderCollection<'a> {
     pub fn new() -> Self {
         let mut providers = Vec::<&'a dyn DuckProvider>::new();
-        providers.push(&AzureDevOpsProvider {});
         providers.push(&TeamCityProvider {});
+        providers.push(&AzureDevOpsProvider {});
+        providers.push(&GitHubProvider {});
         providers.push(&OctopusDeployProvider {});
         providers.push(&HueProvider {});
         providers.push(&SlackProvider {});

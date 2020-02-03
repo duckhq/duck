@@ -74,7 +74,7 @@ impl<T: HttpClient + Default> Observer for HueObserver<T> {
 mod tests {
     use super::*;
     use crate::builds::BuildStatus;
-    use crate::utils::http::{HttpMethod, MockHttpClient, MockHttpClientExpectationBuilder};
+    use crate::utils::http::{HttpMethod, MockHttpClient, MockHttpResponseBuilder};
     use reqwest::StatusCode;
     use test_case::test_case;
 
@@ -92,11 +92,13 @@ mod tests {
         });
 
         let client = hue.get_client();
-        client.add_expectation(MockHttpClientExpectationBuilder::new(
-            HttpMethod::Put,
-            "https://example.com/api/patrik/lights/foo/state",
-            StatusCode::OK,
-        ));
+        client.add_response(
+            MockHttpResponseBuilder::new(
+                HttpMethod::Put,
+                "https://example.com/api/patrik/lights/foo/state",
+            )
+            .returns_status(StatusCode::OK),
+        );
 
         // When
         hue.observe(Observation::DuckStatusChanged(BuildStatus::Success))
@@ -128,11 +130,13 @@ mod tests {
         });
 
         let client = hue.get_client();
-        client.add_expectation(MockHttpClientExpectationBuilder::new(
-            HttpMethod::Put,
-            "https://example.com/api/patrik/lights/foo/state",
-            StatusCode::OK,
-        ));
+        client.add_response(
+            MockHttpResponseBuilder::new(
+                HttpMethod::Put,
+                "https://example.com/api/patrik/lights/foo/state",
+            )
+            .returns_status(StatusCode::OK),
+        );
 
         // When
         hue.observe(Observation::DuckStatusChanged(status)).unwrap();
@@ -159,11 +163,13 @@ mod tests {
         });
 
         let client = hue.get_client();
-        client.add_expectation(MockHttpClientExpectationBuilder::new(
-            HttpMethod::Put,
-            "https://example.com/api/patrik/lights/foo/state",
-            StatusCode::BAD_GATEWAY,
-        ));
+        client.add_response(
+            MockHttpResponseBuilder::new(
+                HttpMethod::Put,
+                "https://example.com/api/patrik/lights/foo/state",
+            )
+            .returns_status(StatusCode::BAD_GATEWAY),
+        );
 
         // When, Then
         hue.observe(Observation::DuckStatusChanged(BuildStatus::Success))

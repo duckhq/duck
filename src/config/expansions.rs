@@ -32,6 +32,20 @@ mod tests {
                 }
             },
             {
+                "github": {
+                    "id": "${GITHUB_ID}",
+                    "owner": "${GITHUB_OWNER}",
+                    "repository": "${GITHUB_REPOSITORY}",
+                    "workflow": "${GITHUB_WORKFLOW}",
+                    "credentials": {
+                        "basic": {
+                            "username": "${GITHUB_USERNAME}",
+                            "password": "${GITHUB_PASSWORD}"
+                        }
+                    }
+                }
+            },
+            {
                 "octopus": {
                     "id": "${OCTOPUS_ID}",
                     "serverUrl": "https://${OCTOPUS_HOST}:${OCTOPUS_PORT}",
@@ -119,6 +133,12 @@ mod tests {
         variables.add("AZURE_PAT", "SECRET-PAT-TOKEN");
         variables.add("AZURE_BRANCH", "MyBranch");
         variables.add("AZURE_DEF", "MyDefinition");
+        variables.add("GITHUB_ID", "github");
+        variables.add("GITHUB_OWNER", "spectresystems");
+        variables.add("GITHUB_REPOSITORY", "duck");
+        variables.add("GITHUB_WORKFLOW", "workflow.yml");
+        variables.add("GITHUB_USERNAME", "patrik");
+        variables.add("GITHUB_PASSWORD", "hunter1!");
         variables.add("OCTOPUS_ID", "octopus");
         variables.add("OCTOPUS_HOST", "localhost");
         variables.add("OCTOPUS_PORT", "9000");
@@ -162,7 +182,6 @@ mod tests {
 
         // Then
         let azure = find_config!(config.collectors, CollectorConfiguration::Azure);
-        let pat = azure.get_pat();
 
         assert_eq!("azure", azure.id);
         assert_eq!("MyOrganization", azure.organization);
@@ -171,7 +190,25 @@ mod tests {
         assert_eq!("MyDefinition_2", azure.definitions[1]);
         assert_eq!("MyBranch_1", azure.branches[0]);
         assert_eq!("MyBranch_2", azure.branches[1]);
-        assert_eq!("SECRET-PAT-TOKEN", pat);
+        assert_eq!("SECRET-PAT-TOKEN", azure.get_pat());
+    }
+
+    #[test]
+    fn should_expand_github_configuration() {
+        // Given, When
+        let config = read_config!(CONFIGURATION);
+
+        // Then
+        let github = find_config!(config.collectors, CollectorConfiguration::GitHub);
+        let (username, password) = github.get_credentials();
+
+        assert_eq!("github", github.id);
+        assert_eq!("spectresystems", github.owner);
+        assert_eq!("duck", github.repository);
+        assert_eq!("workflow.yml", github.workflow);
+        assert_eq!("workflow.yml", github.workflow);
+        assert_eq!("patrik", username);
+        assert_eq!("hunter1!", password);
     }
 
     #[test]
@@ -181,11 +218,10 @@ mod tests {
 
         // Then
         let octopus = find_config!(config.collectors, CollectorConfiguration::OctopusDeploy);
-        let api_key = octopus.get_api_key();
 
         assert_eq!("octopus", octopus.id);
         assert_eq!("https://localhost:9000", octopus.server_url);
-        assert_eq!("SECRET-API-KEY", api_key);
+        assert_eq!("SECRET-API-KEY", octopus.get_api_key());
         assert_eq!("Projects-1", octopus.projects[0].project_id);
         assert_eq!("Environments-1", octopus.projects[0].environments[0]);
         assert_eq!("Environments-2", octopus.projects[0].environments[1]);
@@ -229,11 +265,13 @@ mod tests {
         // Then
         let observers = config.observers.as_ref().unwrap();
         let mattermost = find_config!(observers, ObserverConfiguration::Mattermost);
-        let webhook_url = mattermost.get_webhook_url();
 
         assert_eq!("mattermost", mattermost.id);
         assert_eq!("some-channel", &mattermost.channel.as_ref().unwrap()[..]);
-        assert_eq!("https://example.com/mattermost", webhook_url);
+        assert_eq!(
+            "https://example.com/mattermost",
+            mattermost.get_webhook_url()
+        );
     }
 }
 
@@ -257,6 +295,14 @@ mod utilities {
                     panic!("Azure DevOps configuration have anonymous credentials")
                 }
                 AzureDevOpsCredentials::PersonalAccessToken(pat) => pat,
+            }
+        }
+    }
+
+    impl GitHubConfiguration {
+        pub fn get_credentials(&self) -> (&str, &str) {
+            match &self.credentials {
+                GitHubCredentials::Basic { username, password } =>  (username, password)
             }
         }
     }

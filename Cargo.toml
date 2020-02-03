@@ -3,6 +3,7 @@ name = "duck"
 version = "0.1.0"
 authors = ["Patrik Svensson <patrik@patriksvensson.se>"]
 edition = "2018"
+license = "MIT"
 
 [features]
 docker = []
@@ -28,6 +29,7 @@ chrono = "0.4.10"
 regex = "1.3.3"
 schemars = "0.7.0-alpha-1"
 derive_builder = "0.9.0"
+base64 = "0.11.0"
 
 [dev-dependencies]
 test-case = "0.3.3"

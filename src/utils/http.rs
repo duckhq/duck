@@ -1,7 +1,7 @@
 use std::collections::HashMap;
-#[cfg(test)]
-use std::sync::Mutex;
+use std::fmt;
 
+use base64::encode;
 use reqwest::{Client, Response, StatusCode};
 
 use crate::utils::DuckResult;
@@ -13,13 +13,16 @@ pub trait HttpClient: Send + Sync {
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum HttpMethod {
+    Get,
     Post,
     Put,
 }
 
 pub trait HttpResponse {
     fn status(&self) -> StatusCode;
-    fn get_json<T: serde::de::DeserializeOwned>(&mut self) -> DuckResult<T>;
+    fn headers(&self) -> &reqwest::header::HeaderMap;
+    fn body(&mut self) -> DuckResult<String>;
+    fn deserialize_json<T: serde::de::DeserializeOwned>(&mut self) -> DuckResult<T>;
 }
 
 #[derive(Clone)]
@@ -40,6 +43,10 @@ impl HttpRequestBuilder {
         }
     }
 
+    pub fn get<T: Into<String>>(url: T) -> Self {
+        HttpRequestBuilder::new(HttpMethod::Get, url.into())
+    }
+
     pub fn post(url: String) -> Self {
         HttpRequestBuilder::new(HttpMethod::Post, url)
     }
@@ -54,6 +61,20 @@ impl HttpRequestBuilder {
 
     pub fn add_header<T: Into<String>>(&mut self, name: T, value: T) {
         self.headers.insert(name.into(), value.into());
+    }
+
+    // Borrowed from https://github.com/seanmonstar/reqwest/blob/master/src/blocking/request.rs#L234
+    pub fn basic_auth<U, P>(&mut self, username: U, password: Option<P>)
+    where
+        U: fmt::Display,
+        P: fmt::Display,
+    {
+        let auth = match password {
+            Some(password) => format!("{}:{}", username, password),
+            None => format!("{}:", username),
+        };
+        let header_value = format!("Basic {}", encode(&auth));
+        self.add_header("Authorization", &*header_value);
     }
 }
 
@@ -79,8 +100,17 @@ impl HttpResponse for Response {
     fn status(&self) -> StatusCode {
         self.status()
     }
-    fn get_json<T: serde::de::DeserializeOwned>(&mut self) -> DuckResult<T> {
+
+    fn headers(&self) -> &reqwest::header::HeaderMap {
+        self.headers()
+    }
+
+    fn deserialize_json<T: serde::de::DeserializeOwned>(&mut self) -> DuckResult<T> {
         let result: T = self.json()?;
+        Ok(result)
+    }
+    fn body(&mut self) -> DuckResult<String> {
+        let result = self.text()?;
         Ok(result)
     }
 }
@@ -90,6 +120,7 @@ impl HttpClient for ReqwestClient {
 
     fn send(&self, request: &HttpRequestBuilder) -> DuckResult<Response> {
         let mut builder = match &request.method {
+            HttpMethod::Get => self.client.get(&request.url[..]),
             HttpMethod::Post => self.client.post(&request.url[..]),
             HttpMethod::Put => self.client.put(&request.url[..]),
         };
@@ -104,17 +135,14 @@ impl HttpClient for ReqwestClient {
             builder = builder.body(body.clone());
         };
 
-        // let foo = builder.send()?;
-        // foo.json()
-
         Ok(builder.send()?)
     }
 }
 
 #[cfg(test)]
 pub struct MockHttpClient {
-    pub expectations: Mutex<HashMap<String, MockHttpClientExpectation>>,
-    pub request: Mutex<Vec<HttpRequestBuilder>>,
+    pub responses: std::sync::Mutex<HashMap<String, MockHttpResponse>>,
+    pub request: std::sync::Mutex<Vec<HttpRequestBuilder>>,
 }
 
 #[cfg(test)]
@@ -128,15 +156,15 @@ impl Default for MockHttpClient {
 impl MockHttpClient {
     pub fn new() -> Self {
         MockHttpClient {
-            expectations: Mutex::new(HashMap::new()),
-            request: Mutex::new(Vec::new()),
+            responses: std::sync::Mutex::new(HashMap::new()),
+            request: std::sync::Mutex::new(Vec::new()),
         }
     }
 
-    pub fn add_expectation(&self, builder: MockHttpClientExpectationBuilder) {
-        let mut expectations = self.expectations.lock().unwrap();
-        let expectation = builder.build().unwrap();
-        expectations.insert(expectation.url.clone(), expectation);
+    pub fn add_response(&self, builder: MockHttpResponseBuilder) {
+        let mut responses = self.responses.lock().unwrap();
+        let response = builder.build().unwrap();
+        responses.insert(response.url.clone(), response);
     }
 
     pub fn get_sent_requests(&self) -> Vec<HttpRequestBuilder> {
@@ -146,8 +174,13 @@ impl MockHttpClient {
 }
 
 #[cfg(test)]
+#[derive(Clone)]
 pub struct MockHttpResponse {
+    url: String,
+    method: HttpMethod,
     status: StatusCode,
+    body: Option<String>,
+    headers: reqwest::header::HeaderMap,
 }
 
 #[cfg(test)]
@@ -156,8 +189,23 @@ impl HttpResponse for MockHttpResponse {
         self.status
     }
 
-    fn get_json<T: serde::de::DeserializeOwned>(&mut self) -> DuckResult<T> {
-        unimplemented!()
+    fn deserialize_json<T: serde::de::DeserializeOwned>(&mut self) -> DuckResult<T> {
+        if let Some(json) = &self.body {
+            let result: T = serde_json::from_str(&json[..])?;
+            return Ok(result);
+        }
+        return Err(format_err!("Response have no body!"));
+    }
+
+    fn headers(&self) -> &reqwest::header::HeaderMap {
+        &self.headers
+    }
+
+    fn body(&mut self) -> DuckResult<String> {
+        if let Some(text) = &self.body {
+            return Ok(text.clone());
+        }
+        return Err(format_err!("Response have no body!"));
     }
 }
 
@@ -168,51 +216,55 @@ impl HttpClient for MockHttpClient {
         let mut foo = self.request.lock().unwrap();
         foo.push(request.clone());
 
-        let expectations = self.expectations.lock().unwrap();
-        let expecation = expectations.get(&request.url);
-        if expecation.is_none() {
+        let responses = self.responses.lock().unwrap();
+        let response = responses.get(&request.url);
+        if response.is_none() {
             return Err(format_err!("could not find expecation"));
         }
 
-        let expecation = expecation.unwrap();
-        Ok(MockHttpResponse {
-            status: expecation.status,
-        })
+        Ok(response.unwrap().clone())
     }
 }
 
 #[cfg(test)]
-pub struct MockHttpClientExpectation {
-    pub url: String,
-    pub method: HttpMethod,
-    pub status: StatusCode,
-}
-
-#[cfg(test)]
-pub struct MockHttpClientExpectationBuilder {
+pub struct MockHttpResponseBuilder {
     pub url: String,
     pub method: HttpMethod,
     pub status: Option<StatusCode>,
+    pub body: Option<String>,
 }
 
 #[cfg(test)]
-impl MockHttpClientExpectationBuilder {
-    pub fn new<T: Into<String>>(method: HttpMethod, url: T, status: StatusCode) -> Self {
+impl MockHttpResponseBuilder {
+    pub fn new<T: Into<String>>(method: HttpMethod, url: T) -> Self {
         Self {
             url: url.into(),
             method,
-            status: Some(status),
+            status: Some(StatusCode::OK),
+            body: None,
         }
     }
 
-    pub fn build(self) -> DuckResult<MockHttpClientExpectation> {
+    pub fn returns_status(mut self, status: StatusCode) -> Self {
+        self.status = Some(status);
+        self
+    }
+
+    pub fn returns_body<T: Into<String>>(mut self, json: T) -> Self {
+        self.body = Some(json.into());
+        self
+    }
+
+    pub fn build(self) -> DuckResult<MockHttpResponse> {
         if self.status.is_none() {
             return Err(format_err!("Status is not setup for expectation."));
         }
-        Ok(MockHttpClientExpectation {
+        Ok(MockHttpResponse {
             url: self.url,
             method: self.method,
             status: self.status.unwrap(),
+            body: self.body,
+            headers: reqwest::header::HeaderMap::new(),
         })
     }
 }
