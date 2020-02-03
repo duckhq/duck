@@ -127,6 +127,8 @@ impl GitHubWorkflowRun {
                 None => Err(format_err!("Build is completed without conclusion.")),
                 Some(conclusion) => match &conclusion[..] {
                     "success" => Ok(BuildStatus::Success),
+                    "cancelled" => Ok(BuildStatus::Canceled),
+                    "failure" => Ok(BuildStatus::Failed),
                     _ => Ok(BuildStatus::Failed),
                 },
             },
