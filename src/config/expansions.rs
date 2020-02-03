@@ -302,7 +302,7 @@ mod utilities {
     impl GitHubConfiguration {
         pub fn get_credentials(&self) -> (&str, &str) {
             match &self.credentials {
-                GitHubCredentials::Basic { username, password } =>  (username, password)
+                GitHubCredentials::Basic { username, password } => (username, password),
             }
         }
     }

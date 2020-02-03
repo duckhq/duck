@@ -150,11 +150,12 @@ pub enum TeamCityAuth {
     /// # Basic authentication
     /// Authenticate using basic authentication
     #[serde(rename = "basic")]
-    BasicAuth { 
+    BasicAuth {
         /// # The username to use
-        username: String, 
+        username: String,
         /// # The password to use
-        password: String },
+        password: String,
+    },
 }
 
 #[derive(Serialize, Deserialize, JsonSchema, Clone)]
@@ -210,11 +211,12 @@ pub enum GitHubCredentials {
     /// # Basic authentication
     /// Authenticate using basic authentication
     #[serde(rename = "basic")]
-    Basic { 
+    Basic {
         /// # The username to use
-        username: String, 
+        username: String,
         /// # The password to use
-        password: String },
+        password: String,
+    },
 }
 
 #[derive(Serialize, Deserialize, JsonSchema, Clone)]
