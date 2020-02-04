@@ -132,7 +132,7 @@ impl GitHubWorkflowRun {
                     _ => Ok(BuildStatus::Failed),
                 },
             },
-            "queued" => Ok(BuildStatus::Running),
+            "queued" => Ok(BuildStatus::Queued),
             "in_progress" => Ok(BuildStatus::Running),
             status => Err(format_err!("Unknown build status '{}'", status)),
         }

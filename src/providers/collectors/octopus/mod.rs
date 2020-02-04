@@ -157,7 +157,8 @@ impl OctopusDeployment {
     pub fn get_status(&self) -> BuildStatus {
         match &self.status[..] {
             "Success" => BuildStatus::Success,
-            "Executing" | "Queued" | "Cancelling" | "Failed" | "" => BuildStatus::Running,
+            "Queued" => BuildStatus::Queued,
+            "Executing" | "Cancelling" | "Failed" | "" => BuildStatus::Running,
             "Canceled" => BuildStatus::Canceled,
             _ => BuildStatus::Failed,
         }
