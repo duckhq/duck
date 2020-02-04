@@ -98,8 +98,10 @@ impl AzureBuild {
         if self.result.is_none() {
             return BuildStatus::Running;
         } else {
-            if self.status == "inProgress" || self.status == "notStarted" {
-                return BuildStatus::Running;
+            match &self.status[..] {
+                "notStarted" => return BuildStatus::Queued,
+                "inProgress" => return BuildStatus::Running,
+                _ => { },
             }
             match self.result.as_ref().unwrap().as_ref() {
                 "succeeded" => BuildStatus::Success,

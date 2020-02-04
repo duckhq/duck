@@ -137,4 +137,5 @@ pub enum BuildStatus {
     Failed,
     Running,
     Canceled,
+    Queued,
 }

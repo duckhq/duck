@@ -110,6 +110,8 @@ export default {
         return "danger";
       } else if (build.status == "Canceled") {
         return "secondary";
+      } else if (build.status == "Queued") {
+        return "secondary";
       }
       return "info";
     }
