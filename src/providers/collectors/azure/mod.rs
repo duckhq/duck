@@ -101,7 +101,7 @@ impl AzureBuild {
             match &self.status[..] {
                 "notStarted" => return BuildStatus::Queued,
                 "inProgress" => return BuildStatus::Running,
-                _ => { },
+                _ => {}
             }
             match self.result.as_ref().unwrap().as_ref() {
                 "succeeded" => BuildStatus::Success,

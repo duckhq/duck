@@ -10,7 +10,8 @@ use crate::providers::observers::*;
 use crate::providers::*;
 use crate::utils::DuckResult;
 
-use self::state::{BuildUpdateResult, EngineState};
+use self::state::builds::BuildUpdateResult;
+use self::state::EngineState;
 
 use log::{debug, error, info};
 use waithandle::{EventWaitHandle, WaitHandle};

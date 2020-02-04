@@ -1,5 +1,5 @@
 use regex::Regex;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use log::warn;
 
@@ -12,11 +12,29 @@ impl Validate for Configuration {
             warn!("No collectors have been specified.");
         }
 
+        validate_views(&self)?;
         validate_ids(&self)?;
         validate_collector_references(&self)?;
 
         Ok(())
     }
+}
+
+fn validate_views(configuration: &Configuration) -> DuckResult<()> {
+    if let Some(views) = &configuration.views {
+        let mut known_ids = HashSet::<String>::new();
+        for view in views.iter() {
+            if known_ids.contains(&view.id) {
+                return Err(format_err!(
+                    "Found duplicate view id '{}' in configuration.",
+                    view.id
+                ));
+            }
+            known_ids.insert(view.id.clone());
+        }
+    };
+
+    Ok(())
 }
 
 fn validate_ids(configuration: &Configuration) -> DuckResult<()> {
@@ -117,6 +135,33 @@ fn validate_collector_references(configuration: &Configuration) -> DuckResult<()
 mod tests {
     use super::*;
     use crate::utils::text::TestVariableProvider;
+
+    #[test]
+    #[should_panic(expected = "Found duplicate view id \\'foo\\' in configuration.")]
+    fn should_return_error_if_views_have_the_same_id() {
+        let config = Configuration::from_json(
+            &TestVariableProvider::new(),
+            r#"
+            { 
+                "collectors": [ ],
+                "views": [
+                    {
+                        "id": "foo",
+                        "name": "Foo",
+                        "collectors": [ ]
+                    },
+                    {
+                        "id": "foo",
+                        "name": "Bar",
+                        "collectors": [ ]
+                    }
+                ]
+            }
+        "#,
+        )
+        .unwrap();
+        config.validate().unwrap();
+    }
 
     #[test]
     #[should_panic(expected = "Found duplicate id \\'foo\\' in configuration.")]

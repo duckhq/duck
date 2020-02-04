@@ -42,7 +42,8 @@ pub fn start_and_block(
             .register_data(state.clone())
             .wrap(Cors::new())
             .service(endpoints::server_info)
-            .service(endpoints::get_builds);
+            .service(endpoints::get_builds)
+            .service(endpoints::get_builds_for_view);
 
         if cfg!(feature = "docker") {
             // Serve static files from the ui directory.

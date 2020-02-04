@@ -3,22 +3,8 @@ use std::collections::HashSet;
 use std::sync::Mutex;
 
 use crate::builds::{Build, BuildStatus};
-use crate::config::Configuration;
+use crate::engine::state::views::ViewRepository;
 use crate::providers::collectors::CollectorInfo;
-
-pub struct EngineState {
-    pub title: String,
-    pub builds: BuildRepository,
-}
-
-impl EngineState {
-    pub fn new(config: &Configuration) -> Self {
-        return EngineState {
-            title: config.get_title().to_string(),
-            builds: BuildRepository::new(),
-        };
-    }
-}
 
 pub struct BuildRepository {
     builds: Mutex<Vec<Build>>,
@@ -43,6 +29,22 @@ impl BuildRepository {
 
     pub fn all(&self) -> Vec<Build> {
         self.builds.lock().unwrap().clone()
+    }
+
+    pub fn for_view(&self, views: &ViewRepository, id: &str) -> Vec<Build> {
+        let builds = self.builds.lock().unwrap();
+
+        if let Some(collectors) = views.get_collectors(id) {
+            let mut result = Vec::<Build>::new();
+            for build in builds.iter() {
+                if collectors.contains(&build.collector) {
+                    result.push(build.clone());
+                }
+            }
+            return result;
+        }
+
+        return vec![];
     }
 
     #[allow(clippy::block_in_if_condition_stmt)] // Clippy does not like what fmt does...

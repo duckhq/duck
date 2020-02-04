@@ -1,23 +1,27 @@
 <template>
   <div id="app">
-    <vue-headful :title="title"/>
-    <section v-if="errored && !docker">
-      <p>The Duck server could not be reached at {{ this.address }}. Retrying...
-        <pulse-loader color="#DDDDDD" size="8px" style="text-align: left;" />
-      </p>
-    </section>
-    <section v-else-if="errored && docker">
-      <p>The Duck server could not be reached. Retrying...
-        <pulse-loader color="#DDDDDD" size="8px" style="text-align: left;" />
-      </p>
-    </section>
-    <section v-else-if="loading">
-      <p>Loading...</p>
-    </section>
-    <section v-else>
-      <builds :builds="allBuilds" />
-    </section>
-    <vue-progress-bar style="z-index:-1"></vue-progress-bar>
+    <div id="builds">
+      <vue-headful :title="title" />
+      <section v-if="errored && !docker">
+        <p>
+          The Duck server could not be reached at {{ this.address }}. Retrying...
+          <pulse-loader color="#DDDDDD" size="8px" style="text-align: left;" />
+        </p>
+      </section>
+      <section v-else-if="errored && docker">
+        <p>
+          The Duck server could not be reached. Retrying...
+          <pulse-loader color="#DDDDDD" size="8px" style="text-align: left;" />
+        </p>
+      </section>
+      <section v-else-if="loading">
+        <p>Loading...</p>
+      </section>
+      <section v-else>
+        <builds :builds="allBuilds" />
+      </section>
+      <vue-progress-bar style="z-index:-1"></vue-progress-bar>
+    </div>
   </div>
 </template>
 
@@ -29,13 +33,14 @@ import PulseLoader from "vue-spinner/src/PulseLoader.vue";
 export default {
   name: "App",
   components: {
-    "Builds": builds,
+    Builds: builds,
     PulseLoader
   },
   data() {
     return {
       address: process.env.VUE_APP_MY_DUCK_SERVER,
-      docker: process.env.VUE_APP_MY_DUCK_SERVER == '',
+      docker: process.env.VUE_APP_MY_DUCK_SERVER == "",
+      view: this.$route.query.view,
       serverInfo: null,
       builds: null,
       loading: true,
@@ -44,9 +49,16 @@ export default {
   },
   computed: {
     title() {
-      if(this.serverInfo == null) {
+      if (this.serverInfo == null) {
         return "Duck";
       } else {
+        if (this.view != undefined) {
+          for (var i=0; i < this.serverInfo.views.length; i++) {
+              if (this.serverInfo.views[i].slug === this.view) {
+                  return this.serverInfo.views[i].name;
+              }
+          }
+        }
         return this.serverInfo.title;
       }
     },
@@ -59,14 +71,20 @@ export default {
   methods: {
     loadData: function() {
       this.$Progress.start();
+
+      let address = this.address + "/builds";
+      if (this.view != undefined) {
+        address = address + "/view/" + this.view;
+      }
+
       axios
-        .get(this.address + '/builds')
+        .get(address)
         .then(response => {
           this.builds = response.data;
           this.errored = false;
           this.$Progress.finish();
 
-          if(this.serverInfo == null) {
+          if (this.serverInfo == null) {
             this.updateServerInfo();
           }
         })
@@ -78,7 +96,7 @@ export default {
     },
     updateServerInfo: function() {
       axios
-        .get(this.address + '/server')
+        .get(this.address + "/server")
         .then(response => {
           this.serverInfo = response.data;
         })
@@ -100,7 +118,10 @@ export default {
 </script>
 
 <style scoped>
-#app {
+#title {
+  padding-bottom: 5px;
+}
+#builds {
   padding-top: 20px;
   padding-left: 20px;
   padding-right: 20px;

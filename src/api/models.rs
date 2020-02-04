@@ -1,10 +1,27 @@
 use serde::Serialize;
 
 use crate::builds::{Build, BuildStatus};
+use crate::config::ViewConfiguration;
 
 #[derive(Serialize, Clone)]
 pub struct ServerInfoModel<'a> {
     pub title: &'a str,
+    pub views: Vec<ViewInfoModel>,
+}
+
+#[derive(Serialize, Clone)]
+pub struct ViewInfoModel {
+    pub slug: String,
+    pub name: String,
+}
+
+impl<'a> From<&ViewConfiguration> for ViewInfoModel {
+    fn from(view: &ViewConfiguration) -> Self {
+        ViewInfoModel {
+            slug: view.id.clone(),
+            name: view.name.clone(),
+        }
+    }
 }
 
 #[derive(Serialize, Clone)]
