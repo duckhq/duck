@@ -1,5 +1,8 @@
 <template>
   <div id="app">
+
+    <Navigation :serverInfo="serverInfo" :view="view"/>
+
     <div id="builds">
       <vue-headful :title="title" />
       <section v-if="errored && !docker">
@@ -28,11 +31,13 @@
 <script>
 import axios from "axios";
 import builds from "./components/Builds.vue";
+import Navigation from "./components/Navigation.vue";
 import PulseLoader from "vue-spinner/src/PulseLoader.vue";
 
 export default {
   name: "App",
   components: {
+    Navigation,
     Builds: builds,
     PulseLoader
   },
@@ -119,11 +124,13 @@ export default {
 
 <style scoped>
 #title {
+  padding-top: 5px;
   padding-bottom: 5px;
+  padding-left: 8px;
 }
 #builds {
   padding-top: 20px;
-  padding-left: 20px;
+  padding-left: 8px;
   padding-right: 20px;
 }
 </style>
