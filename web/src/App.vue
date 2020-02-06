@@ -72,7 +72,7 @@ export default {
     loadData: function() {
       this.$Progress.start();
 
-      let address = this.address + "/builds";
+      let address = this.address + "/api/builds";
       if (this.view != undefined) {
         address = address + "/view/" + this.view;
       }
@@ -96,7 +96,7 @@ export default {
     },
     updateServerInfo: function() {
       axios
-        .get(this.address + "/server")
+        .get(this.address + "/api/server")
         .then(response => {
           this.serverInfo = response.data;
         })

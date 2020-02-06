@@ -7,7 +7,7 @@ use crate::engine::state::EngineState;
 
 use super::models::{BuildViewModel, ServerInfoModel, ViewInfoModel};
 
-#[get("/server")]
+#[get("/api/server")]
 pub fn server_info(state: web::Data<Arc<EngineState>>) -> impl Responder {
     let info = ServerInfoModel {
         title: &state.title[..],
@@ -24,7 +24,7 @@ pub fn server_info(state: web::Data<Arc<EngineState>>) -> impl Responder {
         .body(json)
 }
 
-#[get("/builds")]
+#[get("/api/builds")]
 pub fn get_builds(state: web::Data<Arc<EngineState>>) -> impl Responder {
     // Convert to view models
     let builds: Vec<BuildViewModel> = state
@@ -41,7 +41,7 @@ pub fn get_builds(state: web::Data<Arc<EngineState>>) -> impl Responder {
         .body(json)
 }
 
-#[get("/builds/view/{id}")]
+#[get("/api/builds/view/{id}")]
 pub fn get_builds_for_view(
     id: web::Path<String>,
     state: web::Data<Arc<EngineState>>,
