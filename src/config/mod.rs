@@ -16,6 +16,8 @@ pub struct Configuration {
     /// The update interval in seconds
     #[serde(default)]
     pub interval: Option<Interval>,
+    /// # Views
+    pub views: Option<Vec<ViewConfiguration>>,
     /// # Duck frontend title
     /// The title that is displayed in the UI
     #[serde(default)]
@@ -95,6 +97,19 @@ impl Configuration {
         }
         result
     }
+}
+
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
+pub struct ViewConfiguration {
+    /// # View ID
+    /// The ID of the view
+    pub id: String,
+    /// # View name
+    /// the name of the view
+    pub name: String,
+    /// # Included collectors
+    /// The collectors included in this view
+    pub collectors: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
