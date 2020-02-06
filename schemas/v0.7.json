@@ -42,7 +42,7 @@
       "title": "Views",
       "type": "array",
       "items": {
-        "$ref": "#/definitions/View"
+        "$ref": "#/definitions/ViewConfiguration"
       }
     }
   },
@@ -622,7 +622,7 @@
         }
       }
     },
-    "View": {
+    "ViewConfiguration": {
       "type": "object",
       "required": [
         "collectors",
