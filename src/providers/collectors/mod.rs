@@ -9,13 +9,15 @@ use crate::utils::DuckResult;
 
 use self::azure::AzureDevOpsCollector;
 use self::github::GitHubCollector;
-use self::octopus::OctopusDeployCollector;
 use self::teamcity::TeamCityCollector;
+use self::octopus::OctopusDeployCollector;
+use self::jenkins::JenkinsCollector;
 
 use super::DuckProvider;
 
 mod azure;
 mod github;
+mod jenkins;
 mod octopus;
 mod teamcity;
 
@@ -70,6 +72,20 @@ impl<'a> DuckProvider<'a> for GitHubProvider {
             if let CollectorConfiguration::GitHub(c) = item {
                 c.validate()?;
                 result.push(Box::new(GitHubCollector::<ReqwestClient>::new(&c)));
+            }
+        }
+        return Ok(result);
+    }
+}
+
+pub struct JenkinsProvider {}
+impl<'a> DuckProvider<'a> for JenkinsProvider {
+    fn get_collectors(&self, config: &Configuration) -> DuckResult<Vec<Box<dyn Collector>>> {
+        let mut result = Vec::<Box<dyn Collector>>::new();
+        for item in config.collectors.iter() {
+            if let CollectorConfiguration::Jenkins(c) = item {
+                c.validate()?;
+                result.push(Box::new(JenkinsCollector::new(&c)));
             }
         }
         return Ok(result);

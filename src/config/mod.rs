@@ -80,6 +80,7 @@ impl Configuration {
                 CollectorConfiguration::Azure(c) => c.id.clone(),
                 CollectorConfiguration::OctopusDeploy(c) => c.id.clone(),
                 CollectorConfiguration::GitHub(c) => c.id.clone(),
+                CollectorConfiguration::Jenkins(c) => c.id.clone(),
             })
             .collect();
         // Get all observer id:s
@@ -138,6 +139,10 @@ pub enum CollectorConfiguration {
     /// Gets deployments from Octopus Deploy
     #[serde(rename = "octopus")]
     OctopusDeploy(OctopusDeployConfiguration),
+    /// # Jenkins collector
+    /// Gets pipeline status from Jenkins
+    #[serde(rename = "jenkins")]
+    Jenkins(JenkinsConfiguration),
 }
 
 #[derive(Serialize, Deserialize, JsonSchema, Clone)]
@@ -223,6 +228,35 @@ pub struct GitHubConfiguration {
 
 #[derive(Serialize, Deserialize, JsonSchema, Clone)]
 pub enum GitHubCredentials {
+    /// # Basic authentication
+    /// Authenticate using basic authentication
+    #[serde(rename = "basic")]
+    Basic {
+        /// # The username to use
+        username: String,
+        /// # The password to use
+        password: String,
+    },
+}
+
+#[derive(Serialize, Deserialize, JsonSchema, Clone)]
+pub struct JenkinsConfiguration {
+    /// # The Jenkins collector ID
+    pub id: String,
+    /// # Determines whether or not this collector is enabled
+    #[serde(default)]
+    pub enabled: Option<bool>,
+    /// # The Jenkins Server URL
+    #[serde(rename = "serverUrl")]
+    pub server_url: String,
+    /// # The Jenkins jobs to include
+    pub jobs: Vec<String>,
+    /// # The Jenkins User Credentials
+    pub credentials: JenkinsCredentials,
+}
+
+#[derive(Serialize, Deserialize, JsonSchema, Clone)]
+pub enum JenkinsCredentials {
     /// # Basic authentication
     /// Authenticate using basic authentication
     #[serde(rename = "basic")]

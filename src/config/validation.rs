@@ -95,6 +95,15 @@ fn validate_collector_references(configuration: &Configuration) -> DuckResult<()
                     },
                 );
             }
+            CollectorConfiguration::Jenkins(c) => {
+                collectors.insert(
+                    c.id.clone(),
+                    match c.enabled {
+                        None => true,
+                        Some(enabled) => enabled,
+                    },
+                );
+            }
         }
     }
 
