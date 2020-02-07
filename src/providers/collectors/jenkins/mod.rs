@@ -21,11 +21,10 @@ pub struct JenkinsCollector {
 
 impl JenkinsCollector {
     pub fn new(config: &JenkinsConfiguration) -> Self {
-        let mut builder = JenkinsBuilder::new(&config.server_url);
         let JenkinsCredentials::Basic { username, password } = &config.credentials;
-        builder = builder.with_user(&username, Some(&password));
-
-        let jenkins = builder.build().expect("Failed to create a jenkins client");
+        let jenkins = JenkinsBuilder::new(&config.server_url)
+            .with_user(&username, Some(&password))
+            .build().expect("Failed to create a jenkins client");
 
         return Self {
             client: jenkins,
