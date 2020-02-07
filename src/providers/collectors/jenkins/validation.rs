@@ -4,7 +4,7 @@ use crate::utils::DuckResult;
 impl Validate for JenkinsConfiguration {
     fn validate(&self) -> DuckResult<()> {
         if self.server_url.is_empty() {
-            return Err(format_err!("Server URL is empty."));
+            return Err(format_err!("Jenkins server URL is empty."));
         }
 
         match &self.credentials {
@@ -45,7 +45,8 @@ mod tests {
                                     "username": "patrik",
                                     "password": "hunter1!"
                                 }
-                            }
+                            },
+                            "jobs": ["ci"]
                         }
                     }
                 ] 
@@ -57,9 +58,10 @@ mod tests {
         let collection = DuckProviderCollection::new();
         collection.get_collectors(&config).unwrap();
     }
+
     #[test]
-    #[should_panic(expected = "Jenkins server url is empty.")]
-    fn should_return_error_if_jenkins_repository_is_empty() {
+    #[should_panic(expected = "Jenkins server URL is empty.")]
+    fn should_return_error_if_jenkins_server_url_is_empty() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
             r#"
@@ -74,7 +76,8 @@ mod tests {
                                     "username": "patrik",
                                     "password": "hunter1!"
                                 }
-                            }
+                            },
+                            "jobs": ["ci"]
                         }
                     }
                 ] 
@@ -99,13 +102,13 @@ mod tests {
                         "jenkins": {
                             "id": "duck_pipelines",
                             "serverUrl": "http://jenkins:8080",
-                            "credentials": 
-                            {
+                            "credentials": {
                                 "basic": {
                                     "username": "",
                                     "password": "hunter1!"
                                 }
-                            }
+                            },
+                            "jobs": ["ci"]
                         }
                     }
                 ] 
@@ -130,13 +133,13 @@ mod tests {
                         "jenkins": {
                             "id": "duck_pipelines",
                             "serverUrl": "http://jenkins:8080",
-                            "credentials": 
-                            {
+                            "credentials": {
                                 "basic": {
                                     "username": "patriksvensson",
                                     "password": ""
                                 }
-                            }
+                            },
+                            "jobs": ["ci"]
                         }
                     }
                 ] 

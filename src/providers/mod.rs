@@ -27,6 +27,7 @@ impl<'a> DuckProviderCollection<'a> {
         providers.push(&TeamCityProvider {});
         providers.push(&AzureDevOpsProvider {});
         providers.push(&GitHubProvider {});
+        providers.push(&JenkinsProvider {});
         providers.push(&OctopusDeployProvider {});
         providers.push(&HueProvider {});
         providers.push(&SlackProvider {});
