@@ -60,8 +60,27 @@ Below is an example configuration that specifies multiple collectors and observe
 
 ```json
 {
-    "$schema": "https://raw.githubusercontent.com/spectresystems/duck/master/schemas/v0.6.json",
+    "$schema": "https://raw.githubusercontent.com/spectresystems/duck/master/schemas/v0.7.json",
     "interval": 30,
+    "views": [
+        {
+            "id": "devs",
+            "name": "Developers", 
+            "collectors": [ 
+                "github_pullrequests", 
+                "teamcity_internal",
+                "teamcity_local",
+                "octopus_local"
+            ]
+        },
+        {
+            "id": "ops",
+            "name": "Operations",
+            "collectors": [ 
+                "octopus_local" 
+            ]
+        }
+    ],
     "collectors": [
         {
             "teamcity": {
