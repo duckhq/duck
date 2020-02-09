@@ -17,6 +17,7 @@
     "core-js": "^3.4.4",
     "vue": "^2.6.10",
     "vue-headful": "^2.1.0",
+    "vue-modal-dialogs": "^3.0.0",
     "vue-moment": "^4.1.0",
     "vue-progressbar": "^0.7.5",
     "vue-router": "^3.1.5",
