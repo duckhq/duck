@@ -6,6 +6,7 @@ use crate::config::ViewConfiguration;
 #[derive(Serialize, Clone)]
 pub struct ServerInfoModel<'a> {
     pub title: &'a str,
+    pub version: &'static str,
     pub views: Vec<ViewInfoModel>,
 }
 
