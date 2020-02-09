@@ -21,9 +21,13 @@ impl Validate for Configuration {
 }
 
 fn validate_views(configuration: &Configuration) -> DuckResult<()> {
+    let valid_id_pattern = Regex::new(r"^[a-zA-Z0-9_]+$")?;
     if let Some(views) = &configuration.views {
         let mut known_ids = HashSet::<String>::new();
         for view in views.iter() {
+            if !valid_id_pattern.is_match(&view.id) {
+                return Err(format_err!("The view id '{}' is invalid.", view.id));
+            }
             if known_ids.contains(&view.id) {
                 return Err(format_err!(
                     "Found duplicate view id '{}' in configuration.",
@@ -153,6 +157,28 @@ mod tests {
                     {
                         "id": "foo",
                         "name": "Bar",
+                        "collectors": [ ]
+                    }
+                ]
+            }
+        "#,
+        )
+        .unwrap();
+        config.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "The view id \\'foo bar\\' is invalid.")]
+    fn should_return_error_if_a_view_have_an_invalid_id() {
+        let config = Configuration::from_json(
+            &TestVariableProvider::new(),
+            r#"
+            { 
+                "collectors": [ ],
+                "views": [
+                    {
+                        "id": "foo bar",
+                        "name": "Foo",
                         "collectors": [ ]
                     }
                 ]
