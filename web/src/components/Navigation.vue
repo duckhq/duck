@@ -12,6 +12,10 @@
           <a :class="{ 'active' : isActive(view) }" :href="get_view_url(view)">{{ view.name }}</a>
         </li>
       </ul>
+      <div class="version">
+          Duck v{{ this.serverInfo.version }} | 
+          <a href="https://github.com/spectresystems/duck" target="_blank">GitHub</a>
+      </div>
     </Sidebar>
   </div>
 </template>
@@ -66,9 +70,9 @@ export default {
   padding-right: 48px;
   padding-top: 8px;
 }
-
 ul.sidebar-panel-nav {
   list-style-type: none;
+  padding-left: 2rem;
 }
 
 ul.sidebar-panel-nav > li > a {
@@ -86,5 +90,19 @@ ul.sidebar-panel-nav > li > a.active {
 
 ul.sidebar-panel-nav > li > a:hover {
   color: #fff;
+}
+.version {
+    position: fixed;
+    bottom: 0;
+    padding-left: 2rem;
+    padding-bottom: 1rem;
+    color:#aaa
+}
+.version > a {
+  text-decoration: none;
+  color: #aaa;
+}
+.version > a:hover {
+  font-weight: bold;
 }
 </style>

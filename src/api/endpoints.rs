@@ -4,6 +4,7 @@ use actix_web::{get, web};
 use actix_web::{HttpResponse, Responder};
 
 use crate::engine::state::EngineState;
+use crate::utils::VERSION;
 
 use super::models::{BuildViewModel, ServerInfoModel, ViewInfoModel};
 
@@ -11,6 +12,7 @@ use super::models::{BuildViewModel, ServerInfoModel, ViewInfoModel};
 pub fn server_info(state: web::Data<Arc<EngineState>>) -> impl Responder {
     let info = ServerInfoModel {
         title: &state.title[..],
+        version: VERSION,
         views: state
             .views
             .get_views()

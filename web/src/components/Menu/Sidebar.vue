@@ -55,7 +55,7 @@ export default {
   top: 0;
   height: 100vh;
   z-index: 999;
-  padding: 3rem 20px 2rem 20px;
+  padding: 1rem 20px 1rem 0px;
   width: 300px;
 }
 </style>
