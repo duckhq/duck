@@ -660,7 +660,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "duck"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "actix-cors 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "actix-files 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)",

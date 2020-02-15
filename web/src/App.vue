@@ -1,136 +1,138 @@
 <template>
   <div id="app">
+    <!-- Page title -->
+    <vue-headful :title="title" />
 
-    <Navigation :serverInfo="serverInfo" :view="view"/>
+    <!-- Content -->
+    <transition name="main" mode="out-in">
+      <!-- Error -->
+      <Error v-if="hasError" />
 
-    <div id="builds">
-      <vue-headful :title="title" />
-      <section v-if="errored && !docker">
-        <p>
-          The Duck server could not be reached at {{ this.address }}. Retrying...
-          <pulse-loader color="#DDDDDD" size="8px" style="text-align: left;" />
-        </p>
-      </section>
-      <section v-else-if="errored && docker">
-        <p>
-          The Duck server could not be reached. Retrying...
-          <pulse-loader color="#DDDDDD" size="8px" style="text-align: left;" />
-        </p>
-      </section>
-      <section v-else-if="loading">
-        <p>Loading...</p>
-      </section>
-      <section v-else>
-        <builds :builds="allBuilds" />
-      </section>
-      <vue-progress-bar style="z-index:-1"></vue-progress-bar>
-    </div>
+      <!-- Builds -->
+      <BuildList v-else :builds="allBuilds" class="builds" />
+    </transition>
+
+    <!-- Settings dialog -->
+    <Settings
+      v-if="showViewDialog"
+      :currentView="currentView"
+      :views="allViews"
+      @close="showViewDialog = false"
+    />
+
+    <!-- Floating action button -->
+    <button class="circular blue ui icon button fab" @click="showViewDialog = true">
+      <i class="icon cog"></i>
+    </button>
+
+    <!-- Progress -->
+    <vue-progress-bar style="z-index:-1"></vue-progress-bar>
   </div>
 </template>
 
 <script>
-import axios from "axios";
-import builds from "./components/Builds.vue";
-import Navigation from "./components/Navigation.vue";
-import PulseLoader from "vue-spinner/src/PulseLoader.vue";
+import BuildList from "./components/BuildList.vue";
+import Error from "./Error.vue";
+import Settings from "./components/Settings.vue";
+import { data, store } from "@/js/store.js";
 
 export default {
   name: "App",
   components: {
-    Navigation,
-    Builds: builds,
-    PulseLoader
+    BuildList,
+    Error,
+    Settings
   },
   data() {
     return {
-      address: process.env.VUE_APP_MY_DUCK_SERVER,
-      docker: process.env.VUE_APP_MY_DUCK_SERVER == "",
-      view: this.$route.query.view,
-      serverInfo: null,
-      builds: null,
-      loading: true,
-      errored: false
+      showViewDialog: false
     };
   },
   computed: {
-    title() {
-      if (this.serverInfo == null) {
-        return "Duck";
-      } else {
-        if (this.view != undefined) {
-          for (var i=0; i < this.serverInfo.views.length; i++) {
-              if (this.serverInfo.views[i].slug === this.view) {
-                  return this.serverInfo.views[i].name;
-              }
-          }
-        }
-        return this.serverInfo.title;
-      }
+    hasError() {
+      return data.error;
+    },
+    currentView() {
+      return data.view;
     },
     allBuilds() {
-      return this.builds
+      if (data.builds == null) {
+        return null;
+      }
+      return data.builds
         .slice()
-        .sort((a, b) => (a.started < b.started ? 1 : -1));
+        .sort((a, b) => (a.started < b.started ? 1 : -1))
+        .sort((a, b) =>
+          a.status != "Failed" || b.status == "Failed" ? 1 : -1
+        );
+    },
+    allViews() {
+      if (data.info == null) {
+        return null;
+      }
+      return data.info.views;
+    },
+    title() {
+      if (data == null || data.info == null) {
+        return "Duck";
+      } else {
+        if (data.view != null) {
+          for (var i = 0; i < data.info.views.length; i++) {
+            if (data.info.views[i].slug === data.view) {
+              return data.info.views[i].name;
+            }
+          }
+        }
+        return data.info.title;
+      }
     }
   },
-  methods: {
-    loadData: function() {
-      this.$Progress.start();
-
-      let address = this.address + "/api/builds";
-      if (this.view != undefined) {
-        address = address + "/view/" + this.view;
-      }
-
-      axios
-        .get(address)
-        .then(response => {
-          this.builds = response.data;
-          this.errored = false;
-          this.$Progress.finish();
-
-          if (this.serverInfo == null) {
-            this.updateServerInfo();
-          }
-        })
-        .catch(() => {
-          this.errored = true;
-          this.$Progress.fail();
-        })
-        .finally(() => (this.loading = false));
-    },
-    updateServerInfo: function() {
-      axios
-        .get(this.address + "/api/server")
-        .then(response => {
-          this.serverInfo = response.data;
-        })
-        .catch(() => {
-          this.serverInfo = null;
-        });
-    }
+  mounting() {
+    store.update(this.$Progress);
   },
   mounted() {
-    this.loadData();
     setInterval(
       function() {
-        this.loadData();
+        // Load data for the current view.
+        store.update(this.$Progress, this.$route.query.view);
       }.bind(this),
-      3000
+      5000
     );
   }
 };
 </script>
 
 <style scoped>
-#title {
-  padding-top: 5px;
-  padding-bottom: 5px;
-  padding-left: 8px;
+#app {
+  padding: 1rem 1rem;
+  height: 100vh;
 }
-#builds {
-  padding-top: 20px;
-  padding-left: 8px;
-  padding-right: 20px;
+
+#app .main-enter-active,
+#app .main-leave-active {
+  transition: opacity 0.6s ease;
+}
+
+#app .main-enter,
+#app .main-leave-to {
+  opacity: 0;
+}
+
+.builds {
+  padding-bottom: 1rem;
+}
+
+.fab {
+  position: fixed;
+  width: 50px;
+  height: 50px;
+  bottom: 20px;
+  right: 20px;
+  opacity: 0.25;
+  box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.4) !important;
+}
+.fab:hover {
+  opacity: 1;
+  transition: 0.4s;
 }
 </style>
