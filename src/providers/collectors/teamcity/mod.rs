@@ -89,6 +89,7 @@ impl Collector for TeamCityCollector {
                             BuildBuilder::new()
                                 .build_id(build.id.to_string())
                                 .provider(BuildProvider::TeamCity)
+                                .origin(self.client.url.as_str())
                                 .collector(&self.info.id)
                                 .project_id(&found.project_id)
                                 .project_name(&found.project_name)

@@ -8,6 +8,7 @@ pub struct Build {
     pub id: u64,
     #[builder(setter(skip))]
     pub partition: u64,
+    pub origin: String,
     pub build_id: String,
     pub provider: BuildProvider,
     pub collector: String,
@@ -33,6 +34,7 @@ impl BuildBuilder {
         BuildBuilder::new()
             .build_id("foo")
             .provider(BuildProvider::TeamCity)
+            .origin("origin")
             .collector("collector")
             .project_id("project_id")
             .project_name("project_name")
@@ -49,6 +51,7 @@ impl BuildBuilder {
     pub fn build(&self) -> Result<Build, String> {
         let build_id = Clone::clone(self.build_id.as_ref().ok_or("Build ID is missing")?);
         let provider = Clone::clone(self.provider.as_ref().ok_or("Build provider is missing")?);
+        let origin = Clone::clone(self.origin.as_ref().ok_or("Origin is missing")?);
         let collector = Clone::clone(self.collector.as_ref().ok_or("Collector is missing")?);
         let project_id = Clone::clone(self.project_id.as_ref().ok_or("Project ID is missing")?);
         let project_name = Clone::clone(
@@ -80,7 +83,7 @@ impl BuildBuilder {
         // Generate a hash that represents the build.
         let mut hasher = DefaultHasher::new();
         provider.hash(&mut hasher);
-        collector.hash(&mut hasher);
+        origin.hash(&mut hasher);
         project_id.hash(&mut hasher);
         definition_id.hash(&mut hasher);
         branch.hash(&mut hasher);
@@ -91,7 +94,7 @@ impl BuildBuilder {
         // definition (partition) of the build, not the build itself.
         let mut hasher = DefaultHasher::new();
         provider.hash(&mut hasher);
-        collector.hash(&mut hasher);
+        origin.hash(&mut hasher);
         project_id.hash(&mut hasher);
         definition_id.hash(&mut hasher);
         branch.hash(&mut hasher);
@@ -102,6 +105,7 @@ impl BuildBuilder {
             partition,
             build_id,
             provider,
+            origin,
             collector,
             project_id,
             project_name,

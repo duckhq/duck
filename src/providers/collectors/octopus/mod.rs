@@ -91,6 +91,7 @@ impl Collector for OctopusDeployCollector {
                     BuildBuilder::new()
                         .build_id(&deployment.id)
                         .provider(BuildProvider::OctopusDeploy)
+                        .origin(self.server_url.as_str())
                         .collector(&self.info.id)
                         .project_id(&found_project.id)
                         .project_name(&found_project.name)
