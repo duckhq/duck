@@ -60,6 +60,10 @@ impl<T: HttpClient + Default> Collector for GitHubCollector<T> {
                 BuildBuilder::new()
                     .build_id(run.id.to_string())
                     .provider(BuildProvider::GitHub)
+                    .origin(format!(
+                        "{}/{}/{}",
+                        &self.client.owner, &self.client.repository, &self.client.workflow
+                    ))
                     .collector(&self.info.id)
                     .project_id(format!(
                         "{}_{}",

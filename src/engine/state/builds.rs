@@ -80,14 +80,13 @@ impl BuildRepository {
             }
         }
 
-        // Remove the build from the list
+        // Remove the build from the list and add it again.
         builds.retain(|b| {
             !(b.collector == build.collector
                 && b.project_id == build.project_id
                 && b.definition_id == build.definition_id
                 && b.build_id == build.build_id)
         });
-
         builds.push(build.clone());
 
         return result;
