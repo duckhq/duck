@@ -2,8 +2,9 @@
 for i in "$@"; do
   case "$1" in
     -d | --docker ) DOCKER=true ;;
-    -d | --schema ) SCHEMA=true ;;
+    -s | --schema ) SCHEMA=true ;;
     -v | --version) VERSION="$2"; shift ;;
+    -u | --update) UPDATE=true ;;
     * ) break ;;
   esac
   shift
@@ -13,6 +14,17 @@ done
 if [ $SCHEMA ]; then
   if [ ! -z $VERSION ]; then
     cargo run -- schema > "./schemas/v$VERSION.json"
+  else
+    echo "You must specify a version using the --version option."
+    exit -1;
+  fi
+fi
+
+# Update versions?
+if [ $UPDATE ]; then
+  if [ ! -z $VERSION ]; then
+    sed -i -e "/version/ s/[[:digit:]].[[:digit:]].[[:digit:]]/$VERSION/" Cargo.toml
+    sed -i -e "/version/ s/[[:digit:]].[[:digit:]].[[:digit:]]/$VERSION/" web/package.json
   else
     echo "You must specify a version using the --version option."
     exit -1;

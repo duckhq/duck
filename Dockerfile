@@ -8,11 +8,13 @@ RUN cargo build --release --target x86_64-unknown-linux-musl --features docker
 
 # Build frontend
 FROM node:lts-alpine as frontend-builder
+ARG VERSION=0.1.0
 WORKDIR /app
 ENV VUE_APP_MY_DUCK_SERVER=
 COPY ./web/package*.json ./
 RUN npm install
 COPY ./web .
+RUN sed -i -e "/version/ s/[[:digit:]].[[:digit:]].[[:digit:]]/$VERSION/" package.json
 RUN npm run build
 
 # Copy to Alpine container
