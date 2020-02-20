@@ -3,7 +3,7 @@ name = "duck"
 version = "0.8.0"
 authors = ["Patrik Svensson <patrik@patriksvensson.se>"]
 edition = "2018"
-license = "MIT"
+license = "MIT OR Apache-2.0"
 
 [features]
 docker = []
@@ -17,11 +17,11 @@ failure = "0.1.6"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 url = "2.1.0"
-reqwest = "0.9.22"
+reqwest = { version = "0.9.22", default-features = false, features = [ "rustls-tls" ] }
 waithandle = "0.1.0"
-actix-web = "1.0.8"
+actix-web = "1.0.9"
 actix-files = "0.1.7"
-structopt = "0.3"
+structopt = "0.3.9"
 log = "0.4"
 env_logger = "0.7.1"
 actix-cors = "0.1.0"

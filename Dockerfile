@@ -3,7 +3,7 @@ FROM ekidd/rust-musl-builder:stable AS server-builder
 ARG VERSION=0.1.0
 ADD . ./
 RUN sudo chown -R rust:rust .
-RUN sed -i -e "/version/ s/[[:digit:]].[[:digit:]].[[:digit:]]/$VERSION/" Cargo.toml
+RUN sed -i -e "/^version/ s/[[:digit:]].[[:digit:]].[[:digit:]]/$VERSION/" Cargo.toml
 RUN cargo build --release --target x86_64-unknown-linux-musl --features docker
 
 # Build frontend
