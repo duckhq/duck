@@ -1,0 +1,91 @@
+#############################################################################################
+# This file is based on https://github.com/EmbarkStudios/cargo-fetcher/blob/master/deny.toml
+#############################################################################################
+
+targets = [
+    { triple = "x86_64-unknown-linux-gnu" },
+    { triple = "x86_64-unknown-linux-musl" },
+    { triple = "x86_64-apple-darwin" },
+    { triple = "x86_64-pc-windows-msvc" },
+]
+
+[advisories]
+vulnerability = "deny"
+unmaintained = "deny"
+notice = "deny"
+
+[bans]
+multiple-versions = "deny"
+deny = [
+    # we never want a dependency on openssl due to all of the cross platform
+    # issues it has, particularly on windows
+    { name = "openssl" },
+    { name = "openssl-sys" },
+]
+skip = [
+    # reqwest (<=2.0)
+    { name = "idna", version = "=0.1.5" },
+    { name = "percent-encoding", version = "=1.0.1" },
+    { name = "serde_urlencoded", version = "=0.5.5" },
+    { name = "url", version = "=1.7.2" },
+    { name = "crossbeam-utils", version = "=0.6.6" },
+
+    # actix-* (<=2.0)
+    { name = "winapi", version = "=0.2.8" },
+    { name = "unicode-xid", version = "=0.1.0" },
+    { name = "version_check", version = "=0.1.5" },
+    { name = "base64", version = "=0.10.1" },
+    { name = "syn", version = "=0.15.44" },
+    { name = "smallvec", version = "=0.6.13" },
+    { name = "rand_core", version = "=0.3.1" },
+    { name = "rand_core", version = "=0.4.2" },
+    { name = "rand_chacha", version = "=0.1.1" },
+    { name = "rand", version = "=0.6.5" },
+    { name = "quote", version = "=0.6.13" },
+    { name = "proc-macro2", version = "=0.4.30" },
+    { name = "derive_more", version = "=0.14.1" },
+
+    # structop (clap is the culprit)
+    { name = "strsim", version = "=0.8.0" },
+]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-git = []
+
+[licenses]
+unlicensed = "deny"
+allow-osi-fsf-free = "neither"
+copyleft = "deny"
+confidence-threshold = 0.92
+allow = [
+    "Apache-2.0",
+    "BSD-3-Clause",
+    "ISC",
+    "MIT",
+    "MPL-2.0",
+    "OpenSSL",
+    "Zlib",
+]
+
+[[licenses.clarify]]
+name = "ring"
+# SPDX considers OpenSSL to encompass both the OpenSSL and SSLeay licenses
+# https://spdx.org/licenses/OpenSSL.html
+# ISC - Both BoringSSL and ring use this for their new files
+# MIT - "Files in third_party/ have their own licenses, as described therein. The MIT
+# license, for third_party/fiat, which, unlike other third_party directories, is
+# compiled into non-test libraries, is included below."
+# OpenSSL - Obviously
+expression = "ISC AND MIT AND OpenSSL"
+license-files = [
+    { path = "LICENSE", hash = 0xbd0eed23 },
+]
+
+[[licenses.clarify]]
+name = "webpki"
+expression = "ISC"
+license-files = [
+    { path = "LICENSE", hash = 0x001c7e6c },
+]
