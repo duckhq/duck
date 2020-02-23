@@ -13,6 +13,10 @@ targets = [
 vulnerability = "deny"
 unmaintained = "deny"
 notice = "deny"
+ignore = [
+    # Reqwest is dependent on Spin which is unmaintained.
+    "RUSTSEC-2019-0031",
+]
 
 [bans]
 multiple-versions = "deny"
