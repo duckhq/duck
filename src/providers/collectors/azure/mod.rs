@@ -58,7 +58,10 @@ impl Collector for AzureDevOpsCollector {
                     BuildBuilder::new()
                         .build_id(build.id.to_string())
                         .provider(BuildProvider::AzureDevOps)
-                        .origin(format!("{}/{}", &self.client.organization, &self.client.project))
+                        .origin(format!(
+                            "{}/{}",
+                            &self.client.organization, &self.client.project
+                        ))
                         .collector(&self.info.id)
                         .project_id(&build.project.id)
                         .project_name(&build.project.name)

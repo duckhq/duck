@@ -10,12 +10,13 @@ use crate::providers::observers::*;
 use crate::providers::*;
 use crate::utils::DuckResult;
 
-use self::state::builds::BuildUpdateResult;
 use self::state::EngineState;
 
 use log::{debug, error, info};
 use waithandle::{EventWaitHandle, WaitHandle};
 
+mod collecting;
+mod observing;
 pub mod state;
 
 pub struct Engine<'a> {
@@ -72,7 +73,7 @@ impl<'a> Engine<'a> {
         debug!("Starting observer thread...");
         let observer_thread = std::thread::spawn({
             let state = self.state.clone();
-            move || -> DuckResult<()> { run_observers(state, observers, receiver) }
+            move || -> DuckResult<()> { run_observer_thread(state, observers, receiver) }
         });
 
         debug!("Starting collector thread...");
@@ -80,7 +81,9 @@ impl<'a> Engine<'a> {
             let handle = handle.clone();
             let config = self.config.clone();
             let state = self.state.clone();
-            move || -> DuckResult<()> { run_collectors(handle, state, config, collectors, sender) }
+            move || -> DuckResult<()> {
+                run_collector_thread(handle, state, config, collectors, sender)
+            }
         });
 
         info!("Engine started.");
@@ -92,7 +95,7 @@ impl<'a> Engine<'a> {
     }
 }
 
-fn run_collectors(
+fn run_collector_thread(
     handle: Arc<EventWaitHandle>,
     state: Arc<EngineState>,
     config: Configuration,
@@ -105,47 +108,18 @@ fn run_collectors(
         info!("Added collector '{}'.", collector.info().id);
     }
 
+    let context = collecting::Context {
+        handle: handle.clone(),
+        state: state.clone(),
+        sender: sender.clone(),
+    };
+
     while !handle.check().unwrap() {
         for collector in collectors.iter() {
             if handle.check().unwrap() {
                 break;
             }
-
-            let mut build_hashes = std::collections::HashSet::<u64>::new();
-            if let Err(e) = collector.collect(handle.clone(), &mut |build: Build| {
-                build_hashes.insert(build.id);
-                match state.builds.update(&build) {
-                    BuildUpdateResult::Added | BuildUpdateResult::BuildUpdated => {
-                        // The build was updated
-                        match sender.send(EngineEvent::BuildUpdated(Box::new(build))) {
-                            Result::Ok(_) => (),
-                            Result::Err(e) => error!("Failed to send build update event. {}", e),
-                        }
-                    }
-                    BuildUpdateResult::BuildStatusChanged => {
-                        // The build's status was changed (success->failed or failed->success)
-                        match sender.send(EngineEvent::BuildStatusChanged(Box::new(build))) {
-                            Result::Ok(_) => (),
-                            Result::Err(e) => {
-                                error!("Failed to send canonical build update event. {}", e)
-                            }
-                        }
-                    }
-                    _ => {}
-                };
-            }) {
-                // Log the error but continue as normal since
-                // we don't want to retain the builds that we could
-                // not collect information about
-                error!(
-                    "An error occured while collecting builds from '{}': {}",
-                    collector.info().id,
-                    e
-                );
-            };
-
-            // Retain builds that were updated
-            state.builds.retain_builds(&collector.info(), build_hashes);
+            collecting::process(&context, collector);
         }
 
         // Wait for a little while
@@ -166,15 +140,11 @@ fn run_collectors(
     Ok(())
 }
 
-fn run_observers(
+fn run_observer_thread(
     state: Arc<EngineState>,
     observers: Vec<Box<dyn Observer>>,
     receiver: Receiver<EngineEvent>,
 ) -> DuckResult<()> {
-    let mut stopped = false;
-    let mut observer_status = HashMap::<&str, BuildStatus>::new();
-    let mut overall_status = BuildStatus::Unknown;
-
     for observer in observers.iter() {
         info!("Added observer '{}'.", observer.info().id);
         if let Some(collectors) = &observer.info().collectors {
@@ -188,7 +158,14 @@ fn run_observers(
         };
     }
 
-    while !stopped {
+    let mut context = observing::Context {
+        observers: &observers,
+        state: state.clone(),
+        observer_status: HashMap::<&str, BuildStatus>::new(),
+        status: BuildStatus::Unknown,
+    };
+
+    loop {
         let result = receiver.recv();
         if result.is_err() {
             match result {
@@ -201,96 +178,10 @@ fn run_observers(
         }
 
         let command = result.unwrap();
-        match command {
-            EngineEvent::BuildUpdated(build) => {
-                // Did the build status change?
-                let status = state.builds.current_status();
-                let overall_status_changed = if overall_status != status {
-                    overall_status = status;
-                    true
-                } else {
-                    false
-                };
-
-                // Did the overall build status change for any observers?
-                for observer in &observers {
-                    // Only interested in specific collectors?
-                    if let Some(collectors) = &observer.info().collectors {
-                        let previous_status = observer_status
-                            .entry(&observer.info().id)
-                            .or_insert(BuildStatus::Unknown);
-                        let current_status = state.builds.current_status_for_collectors(collectors);
-                        if *previous_status != current_status
-                            && *previous_status != BuildStatus::Unknown
-                        {
-                            // Status changed so send this to the observer.
-                            propagate_to_observer(
-                                observer,
-                                Observation::DuckStatusChanged(current_status.clone()),
-                            );
-                            *previous_status = current_status;
-                        }
-                    } else {
-                        // Not interested in specific collectors.
-                        // So did the overall build status change?
-                        if overall_status_changed {
-                            // Notify the observer.
-                            propagate_to_observer(
-                                observer,
-                                Observation::DuckStatusChanged(overall_status.clone()),
-                            );
-                        }
-                    }
-                }
-
-                // Send the BuildUpdated event to observers.
-                propagate_to_observers(&observers, &mut || Observation::BuildUpdated(&build));
-            }
-            EngineEvent::BuildStatusChanged(build) => {
-                // Send the BuildUpdated event to observers.
-                propagate_to_observers(&observers, &mut || Observation::BuildUpdated(&build));
-                // Send the BuildStatusChanged event to observers.
-                propagate_to_observers(&observers, &mut || Observation::BuildStatusChanged(&build));
-            }
-            EngineEvent::ShuttingDown => {
-                // Send the ShuttingDown event to observers.
-                propagate_to_observers(&observers, &mut || Observation::ShuttingDown);
-                stopped = true;
-            }
+        if observing::process(&mut context, command) {
+            break;
         }
     }
 
     Ok(())
-}
-
-fn propagate_to_observers<'a>(
-    observers: &[Box<dyn Observer>],
-    observation: &mut dyn Fn() -> Observation<'a>,
-) {
-    // Iterate through all observers.
-    for observer in observers.iter() {
-        let observation = observation();
-
-        // Is the origin of the observation a collector?
-        if let ObservationOrigin::Collector(collector) = observation.get_origin() {
-            if let Some(collectors) = &observer.info().collectors {
-                if !collectors.contains(collector) {
-                    // The observer is not interested in the origin.
-                    return;
-                }
-            }
-        }
-
-        propagate_to_observer(observer, observation);
-    }
-}
-
-#[allow(clippy::borrowed_box)]
-fn propagate_to_observer(observer: &Box<dyn Observer>, observation: Observation) {
-    match observer.observe(observation) {
-        Result::Ok(_) => (),
-        Result::Err(e) => {
-            error!("An error occured when sending observation. {}", e);
-        }
-    };
 }
