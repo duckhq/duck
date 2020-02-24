@@ -12,6 +12,8 @@ extern crate derive_builder;
 
 use std::path::PathBuf;
 
+use log::info;
+
 use crate::config::Configuration;
 use crate::utils::text::EnvironmentVariableProvider;
 use crate::utils::DuckResult;
@@ -24,6 +26,9 @@ mod providers;
 mod utils;
 
 pub fn run<T: Into<PathBuf>>(config_path: T, server_address: Option<String>) -> DuckResult<()> {
+    // Write some info to the console.
+    info!("Version {}", utils::VERSION);
+
     // Load and validate the configuration file.
     let config = Configuration::from_file(&EnvironmentVariableProvider::new(), config_path.into())?;
 
