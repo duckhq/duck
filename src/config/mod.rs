@@ -42,6 +42,16 @@ impl Configuration {
         Ok(config)
     }
 
+    #[cfg(test)]
+    pub fn empty(variables: &impl VariableProvider,) -> DuckResult<Self> {
+        return Configuration::from_json(
+            variables,
+            r#"{
+            "collectors": []
+        }"#,
+        );
+    }
+
     #[allow(dead_code)]
     pub fn from_json<T: Into<String>>(
         variables: &impl VariableProvider,

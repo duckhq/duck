@@ -49,6 +49,23 @@ pub enum EngineEvent {
     ShuttingDown,
 }
 
+#[cfg(test)]
+impl EngineEvent {
+    fn is_build_updated(&self) -> bool {
+        match self {
+            EngineEvent::BuildUpdated(_) => true,
+            _ => false,
+        }
+    }
+
+    fn is_build_status_changed(&self) -> bool {
+        match self {
+            EngineEvent::BuildStatusChanged(_) => true,
+            _ => false,
+        }
+    }
+}
+
 impl<'a> Engine<'a> {
     pub fn new(config: &'a Configuration) -> DuckResult<Self> {
         Ok(Engine {
