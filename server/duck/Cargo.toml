@@ -5,6 +5,7 @@ authors = ["Patrik Svensson <patrik@patriksvensson.se>"]
 edition = "2018"
 
 [dependencies]
+actix-rt = "1"
 async-std = { version = "1", features = ["attributes"] }
 env_logger = "0.7"
 log = "0.4.8"

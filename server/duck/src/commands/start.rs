@@ -4,7 +4,7 @@ use structopt::StructOpt;
 use crate::config::FileConfiguration;
 use duck_server::DuckResult;
 
-pub const DEFAULT_CONFIG: &'static str = "config.json";
+pub const DEFAULT_CONFIG: &str = "config.json";
 
 #[derive(StructOpt, Debug)]
 pub(crate) struct Arguments {
@@ -28,8 +28,8 @@ impl Default for Arguments {
 }
 
 /// Executes the run command.
-pub(crate) fn execute(args: &Arguments) -> DuckResult<()> {
-    duck_server::run(FileConfiguration::create(&args.config))
+pub(crate) async fn execute(args: &Arguments) -> DuckResult<()> {
+    duck_server::run(FileConfiguration::create(&args.config)).await
 }
 
 #[cfg(test)]

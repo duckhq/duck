@@ -36,7 +36,7 @@ enum Command {
     Start(commands::start::Arguments),
 }
 
-#[async_std::main]
+#[actix_rt::main]
 async fn main() {
     let args = Args::from_args();
     initialize_logging(args.level);
@@ -49,7 +49,7 @@ async fn main() {
 
     // Execute the command
     let result = match command {
-        Command::Start(args) => commands::start::execute(&args),
+        Command::Start(args) => commands::start::execute(&args).await,
     };
 
     // Return the correct exit code.

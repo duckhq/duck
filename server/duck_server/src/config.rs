@@ -13,7 +13,7 @@ pub struct Configuration {
     pub title: String,
     /// # Update interval
     /// The update interval in seconds
-    #[serde(default = "default_interval")]    
+    #[serde(default = "default_interval")]
     pub interval: u16,
 }
 
