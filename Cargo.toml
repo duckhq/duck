@@ -1,42 +1,11 @@
-[package]
-name = "duck"
-version = "0.8.0"
-authors = ["Patrik Svensson <patrik@patriksvensson.se>"]
-edition = "2018"
-license = "MIT OR Apache-2.0"
+[workspace]
+members = [ "server/*" ]
 
-[features]
-docker = []
-
-[[bin]]
-name = "duck"
-path = "src/main.rs"
-
-[dependencies]
-failure = "0.1.6"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-url = "2.1.0"
-reqwest = { version = "0.9.22", default-features = false, features = [ "rustls-tls" ] }
-waithandle = "0.1.0"
-actix-web = "1.0.9"
-actix-files = "0.1.7"
-structopt = "0.3.9"
-log = "0.4"
-env_logger = "0.7.1"
-actix-cors = "0.1.0"
-chrono = "0.4.10"
-regex = "1.3.3"
-schemars = "0.7.0-alpha-1"
-derive_builder = "0.9.0"
-base64 = "0.11.0"
-
-[dev-dependencies]
-test-case = "0.3.3"
+[profile.dev]
+# disabling debug info speeds up builds a bunch,
+# and we don't rely on it for debugging that much.
+debug = 0
 
 [profile.release]
-panic = 'abort'
-lto = true
-codegen-units = 1
-incremental = false
-opt-level = "z"
+incremental = true
+debug = 0 # set this to 1 or 2 to get more useful backtraces in debugger
