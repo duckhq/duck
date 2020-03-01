@@ -2,7 +2,6 @@ extern crate log;
 
 use env_logger::Env;
 use structopt::StructOpt;
-use commands::run;
 
 mod commands;
 mod config;
@@ -13,7 +12,7 @@ struct Args {
     level: Option<LogLevel>,
     /// Available subcommands
     #[structopt(subcommand)]
-    command: Command,
+    command: Option<Command>,
 }
 
 #[derive(Debug)]
@@ -33,21 +32,29 @@ fn parse_level(src: &str) -> LogLevel {
 
 #[derive(StructOpt)]
 enum Command {
-    Run(run::Arguments)
+    /// Starts the Duck server
+    Start(commands::start::Arguments)
 }
 
 #[async_std::main]
 async fn main() {
     let args = Args::from_args();
-
     initialize_logging(args.level);
 
-    let result = match args.command {
-        Command::Run(args) => {
-            commands::run::execute(&args)
+    // Get the command (default to 'run')
+    let command = match args.command {
+        None => Command::Start(commands::start::Arguments::default()),
+        Some(command) => command,
+    };
+
+    // Execute the command
+    let result = match command {
+        Command::Start(args) => {
+            commands::start::execute(&args)
         }
     };
 
+    // Return the correct exit code.
     match result {
         Ok(_) => std::process::exit(0),
         Err(e) => {
