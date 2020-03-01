@@ -602,6 +602,7 @@ dependencies = [
  "duck_server",
  "env_logger",
  "log",
+ "serde_json",
  "structopt",
 ]
 
@@ -613,6 +614,7 @@ dependencies = [
  "async-std",
  "failure",
  "log",
+ "serde",
 ]
 
 [[package]]

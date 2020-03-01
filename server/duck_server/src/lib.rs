@@ -1,3 +1,5 @@
+#[macro_use]
+extern crate serde;
 extern crate log;
 
 pub mod config;

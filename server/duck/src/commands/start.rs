@@ -29,12 +29,11 @@ impl Default for Arguments {
 
 /// Executes the run command.
 pub(crate) fn execute(args: &Arguments) -> DuckResult<()> {
-    duck_server::run(FileConfiguration { })
+    duck_server::run(FileConfiguration::create(&args.config))
 }
 
-
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
 
     #[test]
