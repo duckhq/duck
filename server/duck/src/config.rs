@@ -36,6 +36,7 @@ impl FileReader for FileConfigurationReader {
     fn read(&self, path: &PathBuf) -> DuckResult<String> {
         Ok(fs::read_to_string(path)?)
     }
+
     fn modified(&self, path: &PathBuf) -> DuckResult<u64> {
         Ok(fs::metadata(path)?
             .modified()?
@@ -90,6 +91,7 @@ mod tests {
         fn read(&self, _path: &PathBuf) -> DuckResult<String> {
             Ok(self.json.clone())
         }
+        
         fn modified(&self, _path: &PathBuf) -> DuckResult<u64> {
             Ok(self.modified.get())
         }
