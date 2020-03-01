@@ -52,7 +52,7 @@ async fn main() {
         Command::Start(args) => commands::start::execute(&args).await,
     };
 
-    // Return the correct exit code.
+    // Return the correct exit code
     match result {
         Ok(_) => std::process::exit(0),
         Err(e) => {

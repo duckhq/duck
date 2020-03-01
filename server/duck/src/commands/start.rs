@@ -1,13 +1,13 @@
 use std::path::PathBuf;
 use structopt::StructOpt;
 
-use crate::config::FileConfiguration;
+use crate::config::JsonConfigurationLoader;
 use duck_server::DuckResult;
 
 pub const DEFAULT_CONFIG: &str = "config.json";
 
 #[derive(StructOpt, Debug)]
-pub(crate) struct Arguments {
+pub struct Arguments {
     /// The configuration file
     #[structopt(
         short,
@@ -27,9 +27,9 @@ impl Default for Arguments {
     }
 }
 
-/// Executes the run command.
-pub(crate) async fn execute(args: &Arguments) -> DuckResult<()> {
-    duck_server::run(FileConfiguration::create(&args.config)).await
+/// Executes the run command
+pub async fn execute(args: &Arguments) -> DuckResult<()> {
+    duck_server::run(JsonConfigurationLoader::create(&args.config)).await
 }
 
 #[cfg(test)]

@@ -3,27 +3,25 @@ use std::fs;
 use std::path::PathBuf;
 use std::time::SystemTime;
 
-use duck_server::config::{Configuration, ConfigurationHandle};
+use duck_server::config::{Configuration, ConfigurationLoader};
 use duck_server::DuckResult;
 
-pub struct FileConfiguration<'a> {
+///////////////////////////////////////////////////////////
+// Configuration loader
+
+pub struct JsonConfigurationLoader<'a> {
     path: &'a PathBuf,
     reader: &'a dyn FileReader,
     modified: Cell<u64>,
 }
 
-trait FileReader {
-    fn read(&self, path: &PathBuf) -> DuckResult<String>;
-    fn modified(&self, path: &PathBuf) -> DuckResult<u64>;
-}
-
-impl<'a> FileConfiguration<'a> {
+impl<'a> JsonConfigurationLoader<'a> {
     pub fn create(path: &'a PathBuf) -> Self {
-        FileConfiguration::new(path, &FileConfigurationReader {})
+        JsonConfigurationLoader::new(path, &DefaultFileReader {})
     }
 
     fn new(path: &'a PathBuf, reader: &'a dyn FileReader) -> Self {
-        FileConfiguration {
+        JsonConfigurationLoader {
             path,
             reader,
             modified: Cell::new(0),
@@ -31,9 +29,39 @@ impl<'a> FileConfiguration<'a> {
     }
 }
 
-struct FileConfigurationReader {}
-impl FileReader for FileConfigurationReader {
-    fn read(&self, path: &PathBuf) -> DuckResult<String> {
+impl<'a> ConfigurationLoader for JsonConfigurationLoader<'a> {
+    fn has_changed(&self) -> DuckResult<bool> {
+        let modified = self.reader.modified(self.path)?;
+        if self.modified.get() != modified {
+            return Ok(true);
+        }
+        Ok(false)
+    }
+
+    fn load(&self) -> DuckResult<Configuration> {
+        // Read the configuration and deserialize it
+        let json = self.reader.read_to_string(self.path)?;
+        let config: Configuration = serde_json::from_str(&json[..])?;
+        // Update the modified time to the current one.
+        let modified = self.reader.modified(self.path)?;
+        self.modified.set(modified);
+        Ok(config)
+    }
+}
+
+///////////////////////////////////////////////////////////
+// File reader
+
+trait FileReader {
+    /// Returns the content of the file as a string
+    fn read_to_string(&self, path: &PathBuf) -> DuckResult<String>;
+    /// Gets the modified time as Epoch time
+    fn modified(&self, path: &PathBuf) -> DuckResult<u64>;
+}
+
+struct DefaultFileReader {}
+impl FileReader for DefaultFileReader {
+    fn read_to_string(&self, path: &PathBuf) -> DuckResult<String> {
         Ok(fs::read_to_string(path)?)
     }
 
@@ -45,25 +73,8 @@ impl FileReader for FileConfigurationReader {
     }
 }
 
-impl<'a> ConfigurationHandle for FileConfiguration<'a> {
-    fn has_changed(&self) -> DuckResult<bool> {
-        let modified = self.reader.modified(self.path)?;
-        if self.modified.get() != modified {
-            return Ok(true);
-        }
-        Ok(false)
-    }
-
-    fn load(&self) -> DuckResult<Configuration> {
-        // Read the configuration and deserialize it
-        let json = self.reader.read(self.path)?;
-        let config: Configuration = serde_json::from_str(&json[..])?;
-        // Update the modified time to the current one.
-        let modified = self.reader.modified(self.path)?;
-        self.modified.set(modified);
-        Ok(config)
-    }
-}
+///////////////////////////////////////////////////////////
+// Tests
 
 #[cfg(test)]
 mod tests {
@@ -88,10 +99,10 @@ mod tests {
     }
 
     impl FileReader for FakeFileReader {
-        fn read(&self, _path: &PathBuf) -> DuckResult<String> {
+        fn read_to_string(&self, _path: &PathBuf) -> DuckResult<String> {
             Ok(self.json.clone())
         }
-        
+
         fn modified(&self, _path: &PathBuf) -> DuckResult<u64> {
             Ok(self.modified.get())
         }
@@ -102,7 +113,7 @@ mod tests {
         // Given
         let path = PathBuf::from("config.json");
         let reader = FakeFileReader::new(include_str!("test_data/config.json"), 1583092970);
-        let config = FileConfiguration::new(&path, &reader);
+        let config = JsonConfigurationLoader::new(&path, &reader);
 
         // When
         let config = config.load().unwrap();
@@ -117,7 +128,7 @@ mod tests {
         // Given
         let path = PathBuf::from("config.json");
         let reader = FakeFileReader::new(include_str!("test_data/config.json"), 1583092970);
-        let handle = FileConfiguration::new(&path, &reader);
+        let handle = JsonConfigurationLoader::new(&path, &reader);
 
         // When
         handle.load().unwrap();
@@ -132,7 +143,7 @@ mod tests {
         // Given
         let path = PathBuf::from("config.json");
         let reader = FakeFileReader::new(include_str!("test_data/config.json"), 1583092970);
-        let handle = FileConfiguration::new(&path, &reader);
+        let handle = JsonConfigurationLoader::new(&path, &reader);
 
         // When
         handle.load().unwrap();

@@ -7,11 +7,11 @@ mod web;
 
 use failure::Error;
 
-use config::ConfigurationHandle;
+use config::ConfigurationLoader;
 
 pub type DuckResult<T> = Result<T, Error>;
 
-pub async fn run(_config: impl ConfigurationHandle) -> DuckResult<()> {
+pub async fn run(_config: impl ConfigurationLoader) -> DuckResult<()> {
     log::info!("Running Duck!");
 
     // Start web server

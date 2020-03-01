@@ -11,7 +11,7 @@ pub async fn start() -> std::io::Result<()> {
 // View models
 
 #[derive(Serialize, Clone)]
-pub struct ServerInfoViewModel<'a> {
+struct ServerInfoViewModel<'a> {
     pub title: &'a str,
 }
 

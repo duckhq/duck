@@ -1,10 +1,12 @@
 use crate::DuckResult;
 
-pub trait ConfigurationHandle {
+/// Represents a way of loading a configuration
+pub trait ConfigurationLoader {
     fn has_changed(&self) -> DuckResult<bool>;
     fn load(&self) -> DuckResult<Configuration>;
 }
 
+/// Represents a Duck configuration.
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Configuration {
     /// # Duck frontend title
