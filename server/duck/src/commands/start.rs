@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 use structopt::StructOpt;
 
-use duck_server::DuckResult;
 use crate::config::FileConfiguration;
+use duck_server::DuckResult;
 
 pub const DEFAULT_CONFIG: &'static str = "config.json";
 
@@ -22,7 +22,7 @@ pub(crate) struct Arguments {
 impl Default for Arguments {
     fn default() -> Self {
         Arguments {
-            config: PathBuf::from(DEFAULT_CONFIG)
+            config: PathBuf::from(DEFAULT_CONFIG),
         }
     }
 }

@@ -33,7 +33,7 @@ fn parse_level(src: &str) -> LogLevel {
 #[derive(StructOpt)]
 enum Command {
     /// Starts the Duck server
-    Start(commands::start::Arguments)
+    Start(commands::start::Arguments),
 }
 
 #[async_std::main]
@@ -49,9 +49,7 @@ async fn main() {
 
     // Execute the command
     let result = match command {
-        Command::Start(args) => {
-            commands::start::execute(&args)
-        }
+        Command::Start(args) => commands::start::execute(&args),
     };
 
     // Return the correct exit code.
@@ -60,7 +58,7 @@ async fn main() {
         Err(e) => {
             eprintln!("An error occured: {}", e);
             std::process::exit(-1);
-        },
+        }
     }
 }
 

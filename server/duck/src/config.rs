@@ -1,7 +1,7 @@
+use std::cell::Cell;
 use std::fs;
 use std::path::PathBuf;
 use std::time::SystemTime;
-use std::cell::Cell;
 
 use duck_server::config::{Configuration, ConfigurationHandle};
 use duck_server::DuckResult;
@@ -37,7 +37,10 @@ impl FileReader for FileConfigurationReader {
         Ok(fs::read_to_string(path)?)
     }
     fn modified(&self, path: &PathBuf) -> DuckResult<u64> {
-        Ok(fs::metadata(path)?.modified()?.duration_since(SystemTime::UNIX_EPOCH)?.as_secs())
+        Ok(fs::metadata(path)?
+            .modified()?
+            .duration_since(SystemTime::UNIX_EPOCH)?
+            .as_secs())
     }
 }
 
@@ -70,10 +73,13 @@ mod tests {
         json: String,
         modified: Cell<u64>,
     }
-    
+
     impl FakeFileReader {
         fn new<T: Into<String>>(json: T, modified: u64) -> Self {
-            Self { json: json.into(), modified: Cell::new(modified) }
+            Self {
+                json: json.into(),
+                modified: Cell::new(modified),
+            }
         }
 
         pub fn inc_modified(&self) {
@@ -85,9 +91,9 @@ mod tests {
         fn read(&self, _path: &PathBuf) -> DuckResult<String> {
             Ok(self.json.clone())
         }
-        fn modified(&self, _path: &PathBuf) -> DuckResult<u64> { 
+        fn modified(&self, _path: &PathBuf) -> DuckResult<u64> {
             Ok(self.modified.get())
-        }        
+        }
     }
 
     #[test]
