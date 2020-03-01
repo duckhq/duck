@@ -107,8 +107,8 @@ mod tests {
         let config = config.load().unwrap();
 
         // Then
-        assert_eq!(15, config.interval.unwrap());
-        assert_eq!("Duck test server", config.title.unwrap());
+        assert_eq!(99, config.interval);
+        assert_eq!("Duck test server", config.title);
     }
 
     #[test]
