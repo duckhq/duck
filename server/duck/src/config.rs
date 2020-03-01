@@ -48,7 +48,6 @@ impl<'a> ConfigurationHandle for FileConfiguration<'a> {
     fn has_changed(&self) -> DuckResult<bool> {
         let modified = self.reader.modified(self.path)?;
         if self.modified.get() != modified {
-            self.modified.set(modified);
             return Ok(true);
         }
         Ok(false)
