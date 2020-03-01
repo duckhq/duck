@@ -8,3 +8,4 @@ edition = "2018"
 failure = "0.1.6"
 async-std = { version = "1", features = ["attributes"] }
 actix-web = "2"
+log = "0.4.8"

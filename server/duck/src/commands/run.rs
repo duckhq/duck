@@ -19,6 +19,6 @@ pub(crate) struct Arguments {
 
 /// Executes the run command.
 pub(crate) fn execute(args: &Arguments) -> DuckResult<()> {
-    println!("Running!\n{:#?}", args);
+    log::info!("{:?}", args);
     duck_server::run(FileConfiguration { })
 }
