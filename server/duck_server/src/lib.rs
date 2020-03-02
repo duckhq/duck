@@ -4,6 +4,7 @@ extern crate log;
 
 pub mod config;
 mod engine;
+mod utils;
 mod web;
 
 use failure::Error;
