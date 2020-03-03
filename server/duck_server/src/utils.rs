@@ -1,5 +1,5 @@
-use std::sync::mpsc::{channel, Sender, Receiver};
-use std::sync::{Arc, Mutex};
+use std::sync::mpsc::{channel, Receiver, Sender};
+use std::sync::Mutex;
 
 use crate::DuckResult;
 
@@ -8,16 +8,15 @@ use crate::DuckResult;
 /// to synchronize the threads in the engine and the option was
 /// to take a dependency on something like crosstream - which
 /// is a great thing - but a bit overkill for what I need atm.
-#[derive(Clone)]
 pub struct NaiveMessageBus<T: Send + Sync + Clone + 'static> {
-    pub channels: Arc<Mutex<Vec<Sender<T>>>>
+    pub channels: Mutex<Vec<Sender<T>>>,
 }
 
 impl<T: Send + Sync + Clone + 'static> NaiveMessageBus<T> {
     /// Creates a new message bus
     pub fn new() -> Self {
         NaiveMessageBus::<T> {
-            channels: Arc::new(Mutex::new(Vec::new()))
+            channels: Mutex::new(Vec::new()),
         }
     }
 
@@ -40,6 +39,3 @@ impl<T: Send + Sync + Clone + 'static> NaiveMessageBus<T> {
         Ok(())
     }
 }
-
-
-

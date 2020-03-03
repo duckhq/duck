@@ -1,7 +1,8 @@
 use crate::DuckResult;
 
 /// Represents a way of loading a configuration
-pub trait ConfigurationLoader {
+pub trait ConfigurationLoader: Sync + Send + Clone {
+    fn exist(&self) -> bool;
     fn has_changed(&self) -> DuckResult<bool>;
     fn load(&self) -> DuckResult<Configuration>;
 }

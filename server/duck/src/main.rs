@@ -49,7 +49,7 @@ async fn main() {
 
     // Execute the command
     let result = match command {
-        Command::Start(args) => commands::start::execute(&args).await,
+        Command::Start(args) => commands::start::execute(args).await,
     };
 
     // Return the correct exit code

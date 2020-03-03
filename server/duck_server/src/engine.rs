@@ -2,12 +2,15 @@ use std::sync::Arc;
 use std::thread::JoinHandle;
 use std::time::Duration;
 
-use log::info;
+use log::{debug, error, info, warn};
 use waithandle::{EventWaitHandle, WaitHandle};
 
-use crate::DuckResult;
-use crate::config::ConfigurationLoader;
+use crate::config::{Configuration, ConfigurationLoader};
 use crate::utils::NaiveMessageBus;
+use crate::DuckResult;
+
+///////////////////////////////////////////////////////////
+// Engine handle
 
 pub struct EngineHandle {
     wait_handle: Arc<EventWaitHandle>,
@@ -27,47 +30,48 @@ impl EngineHandle {
     }
 }
 
+///////////////////////////////////////////////////////////
+// Messages
+
 #[derive(Clone)]
-pub enum EngineThreadMessage {
+enum EngineThreadMessage {
     CollectorStarted,
     AggregatorStarted,
+    ConfigurationUpdated(Configuration),
 }
 
-pub struct Engine<'a> {
-    _config: Box<&'a dyn ConfigurationLoader>,
-}
+///////////////////////////////////////////////////////////
+// Engine
 
-impl<'a> Engine<'a> {
-    pub fn new(config: &'a impl ConfigurationLoader) -> DuckResult<Self> {
-        Ok(Engine {
-            _config: Box::new(config),
-        })
+pub struct Engine {}
+impl Engine {
+    pub fn new() -> DuckResult<Self> {
+        Ok(Engine {})
     }
 
-    pub fn run(&self) -> DuckResult<EngineHandle> {
-        info!("Starting engine...");
+    pub fn run(&self, loader: impl ConfigurationLoader + 'static) -> DuckResult<EngineHandle> {
         let handle = Arc::new(EventWaitHandle::new());
-        let bus = NaiveMessageBus::<EngineThreadMessage>::new();
+        let bus = Arc::new(NaiveMessageBus::<EngineThreadMessage>::new());
 
-        info!("Starting configuration watcher...");
+        debug!("Starting configuration watcher...");
         let watcher = std::thread::spawn({
             let handle = handle.clone();
-            let foo = bus.clone();
-            move || -> DuckResult<()> { watch_configuration(handle, foo) }
+            let bus = bus.clone();
+            move || -> DuckResult<()> { watch_configuration(handle, bus, loader) }
         });
 
-        info!("Starting collector thread...");
+        debug!("Starting collector thread...");
         let collector = std::thread::spawn({
             let handle = handle.clone();
-            let foo = bus.clone();
-            move || -> DuckResult<()> { run_collectors(handle, foo) }
+            let bus = bus.clone();
+            move || -> DuckResult<()> { run_collecting(handle, bus) }
         });
 
-        info!("Starting aggregator thread...");
+        debug!("Starting aggregator thread...");
         let aggregator = std::thread::spawn({
             let handle = handle.clone();
-            let foo = bus.clone();
-            move || -> DuckResult<()> { run_aggregation(handle, foo) }
+            let bus = bus.clone();
+            move || -> DuckResult<()> { run_aggregation(handle, bus) }
         });
 
         Ok(EngineHandle {
@@ -82,29 +86,84 @@ impl<'a> Engine<'a> {
 ///////////////////////////////////////////////////////////
 // Configuration watcher
 
-fn watch_configuration(handle: Arc<dyn WaitHandle>, bus: NaiveMessageBus<EngineThreadMessage>) -> DuckResult<()> {
+fn watch_configuration(
+    handle: Arc<dyn WaitHandle>,
+    bus: Arc<NaiveMessageBus<EngineThreadMessage>>,
+    loader: impl ConfigurationLoader,
+) -> DuckResult<()> {
     let message_receiver = bus.subscribe();
+    let mut configuration_exist = true;
+    let mut configuration_loaded = false;
+    let mut configuration_could_not_be_checked = false;
+    let mut configuration_has_error = false;
 
     // Wait for collector and observer to start.
     let mut collector_started = false;
     let mut observer_started = false;
     while !collector_started || !observer_started {
-        if let Ok(message) = message_receiver.try_recv() {
-            match message {
-                EngineThreadMessage::CollectorStarted => {
-                    info!("Collector was started!");
-                    collector_started = true;
-                },
-                EngineThreadMessage::AggregatorStarted => {
-                    info!("Aggregator was started!");
-                    observer_started = true;
+        match message_receiver.recv() {
+            Ok(message) => {
+                match message {
+                    EngineThreadMessage::CollectorStarted => {
+                        debug!("Collector thread has been started.");
+                        collector_started = true;
+                    }
+                    EngineThreadMessage::AggregatorStarted => {
+                        debug!("Aggregator thread has been started.");
+                        observer_started = true;
+                    }
+                    _ => {}
                 }
-            }
+            },
+            Err(err) => {
+                error!("An error occured while waiting for threads to start: {}", err);
+                break;
+            },
         }
     }
 
+    // TODO: Refactor this
     loop {
-        // TODO: Check if the configuration have been updated.
+        if loader.exist() {
+            configuration_exist = true;
+            match loader.has_changed() {
+                Ok(has_changed) => {
+                    if has_changed {
+                        configuration_could_not_be_checked = false;
+                        match loader.load() {
+                            Ok(config) => {
+                                // Notify subscribers about the new configuration file.
+                                if configuration_loaded {
+                                    info!("Configuration was updated.");
+                                } else {
+                                    info!("Configuration loaded.");
+                                    configuration_loaded = true;
+                                }
+                                bus.send(EngineThreadMessage::ConfigurationUpdated(config))?;
+                                configuration_has_error = false;
+                            }
+                            Err(err) => {
+                                if !configuration_has_error {
+                                    error!("Could not load configuration file: {}", err);
+                                }
+                                configuration_has_error = true
+                            }
+                        };
+                    }
+                }
+                Err(err) => {
+                    if !configuration_could_not_be_checked {
+                        error!("Could not check configuration file: {}", err)
+                    }
+                    configuration_could_not_be_checked = true;
+                }
+            };
+        } else {
+            if configuration_exist {
+                warn!("Configuration file could not be found.");
+                configuration_exist = false;
+            }
+        }
 
         // Wait for a little while.
         if handle.wait(Duration::from_secs(5))? {
@@ -117,14 +176,24 @@ fn watch_configuration(handle: Arc<dyn WaitHandle>, bus: NaiveMessageBus<EngineT
 ///////////////////////////////////////////////////////////
 // Collecting
 
-fn run_collectors(handle: Arc<dyn WaitHandle>, bus: NaiveMessageBus<EngineThreadMessage>) -> DuckResult<()> {
+fn run_collecting(
+    handle: Arc<dyn WaitHandle>,
+    bus: Arc<NaiveMessageBus<EngineThreadMessage>>,
+) -> DuckResult<()> {
     let message_receiver = bus.subscribe();
+    let mut configuration: Option<Configuration> = None;
     bus.send(EngineThreadMessage::CollectorStarted)?;
     loop {
         // Have the configuration been updated?
         if let Ok(message) = message_receiver.try_recv() {
             match message {
-                _ => { },
+                EngineThreadMessage::ConfigurationUpdated(config) => {
+                    if configuration.is_some() {
+                        // TODO: Reload
+                    }
+                    configuration = Some(config);
+                }
+                _ => {}
             }
         }
 
@@ -138,13 +207,23 @@ fn run_collectors(handle: Arc<dyn WaitHandle>, bus: NaiveMessageBus<EngineThread
 ///////////////////////////////////////////////////////////
 // Aggregation
 
-fn run_aggregation(handle: Arc<dyn WaitHandle>, bus: NaiveMessageBus<EngineThreadMessage>) -> DuckResult<()> {
+fn run_aggregation(
+    handle: Arc<dyn WaitHandle>,
+    bus: Arc<NaiveMessageBus<EngineThreadMessage>>,
+) -> DuckResult<()> {
     let message_receiver = bus.subscribe();
+    let mut configuration: Option<Configuration> = None;
     bus.send(EngineThreadMessage::AggregatorStarted)?;
     loop {
         if let Ok(message) = message_receiver.try_recv() {
             match message {
-                _ => { },
+                EngineThreadMessage::ConfigurationUpdated(config) => {
+                    if configuration.is_some() {
+                        // TODO: Reload
+                    }
+                    configuration = Some(config);
+                }
+                _ => {}
             }
         }
 

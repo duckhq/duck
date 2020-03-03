@@ -28,8 +28,8 @@ impl Default for Arguments {
 }
 
 /// Executes the run command
-pub async fn execute(args: &Arguments) -> DuckResult<()> {
-    duck_server::run(JsonConfigurationLoader::create(&args.config)).await
+pub async fn execute(args: Arguments) -> DuckResult<()> {
+    duck_server::run(JsonConfigurationLoader::create(args.config)).await
 }
 
 #[cfg(test)]
