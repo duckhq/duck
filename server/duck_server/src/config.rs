@@ -20,6 +20,13 @@ pub struct Configuration {
     pub interval: u16,
 }
 
+#[cfg(test)]
+impl Default for Configuration {
+    fn default() -> Self {
+        serde_json::from_str("{}").unwrap()
+    }
+}
+
 ///////////////////////////////////////////////////////////
 // Default values
 

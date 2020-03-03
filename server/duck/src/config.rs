@@ -31,10 +31,10 @@ impl<'a> JsonConfigurationLoader<'a> {
 }
 
 impl<'a> ConfigurationLoader for JsonConfigurationLoader<'a> {
-    fn exist(&self) -> bool { 
+    fn exist(&self) -> bool {
         self.path.exists()
     }
-    
+
     fn has_changed(&self) -> DuckResult<bool> {
         let modified = self.reader.modified(&self.path)?;
         if *self.modified.lock().unwrap() != modified {
