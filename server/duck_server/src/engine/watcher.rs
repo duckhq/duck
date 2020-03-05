@@ -81,14 +81,11 @@ pub fn has_changed(
                 }
             }
         };
-    } else {
-        if !context.has_error(WatchError::NotFound) {
-            warn!("Configuration file could not be found.");
-            context.set_state(State::Error(WatchError::NotFound));
-        }
+    } else if !context.has_error(WatchError::NotFound) {
+        warn!("Configuration file could not be found.");
+        context.set_state(State::Error(WatchError::NotFound));
     }
 
-    warn!("Bail");
     None
 }
 

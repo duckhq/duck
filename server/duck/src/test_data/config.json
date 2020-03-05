@@ -1,4 +1,5 @@
 {
     "interval": 99,
-    "title": "Duck test server"
+    "title": "Duck test server",
+    "collectors": [ ]
 }

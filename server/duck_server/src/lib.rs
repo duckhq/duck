@@ -8,6 +8,7 @@ extern crate log;
 
 pub mod config;
 mod engine;
+mod providers;
 mod utils;
 mod web;
 
@@ -19,13 +20,6 @@ use config::ConfigurationLoader;
 pub type DuckResult<T> = Result<T, Error>;
 
 pub async fn run(config: impl ConfigurationLoader + 'static) -> DuckResult<()> {
-    println!(r#"     ____             __  "#);
-    println!(r#"    / __ \__  _______/ /__"#);
-    println!(r#"   / / / / / / / ___/ //_/"#);
-    println!(r#"  / /_/ / /_/ / /__/  <   "#);
-    println!(r#" /_____/\____/\___/_/|_|  "#);
-    println!();
-
     // Start engine.
     info!("Starting engine...");
     let engine_handle = engine::run(config)?;

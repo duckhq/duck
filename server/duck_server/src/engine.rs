@@ -73,9 +73,7 @@ pub fn run(loader: impl ConfigurationLoader + 'static) -> DuckResult<EngineHandl
     // Aggregator thread
     debug!("Starting aggregator thread...");
     let aggregator = std::thread::spawn({
-        let barrier = barrier.clone();
         let stopping = stopping.clone();
-        let bus = bus.clone();
         move || -> DuckResult<()> { run_aggregator(barrier, stopping, bus) }
     });
 
@@ -126,9 +124,9 @@ fn run_accumulator(
     barrier.wait();
     debug!("Accumulator thread started.");
 
-    let context = accumulator::Context::new(stopping.clone(), receiver);
+    let mut context = accumulator::Context::new(stopping.clone(), receiver);
     loop {
-        accumulator::accumulate(&context);
+        accumulator::accumulate(&mut context);
         if stopping.wait(Duration::from_secs(1))? {
             break;
         }
@@ -166,15 +164,13 @@ fn run_aggregator(
 fn try_get_updated_configuration(
     receiver: &Receiver<EngineThreadMessage>,
 ) -> Option<Configuration> {
-    loop {
-        match receiver.try_recv() {
-            Ok(message) => match message {
-                EngineThreadMessage::ConfigurationUpdated(config) => {
-                    return Some(config);
-                }
-            },
-            Err(_) => break,
+    let mut result: Option<Configuration> = None;
+    while let Ok(message) = receiver.try_recv() {
+        match message {
+            EngineThreadMessage::ConfigurationUpdated(config) => {
+                result = Some(config);
+            }
         }
     }
-    None
+    result
 }

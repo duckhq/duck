@@ -18,6 +18,50 @@ pub struct Configuration {
     /// The update interval in seconds
     #[serde(default = "default_interval")]
     pub interval: u16,
+    /// # Collectors
+    #[serde(default)]
+    pub collectors: Vec<CollectorConfiguration>,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub enum CollectorConfiguration {
+    /// # TeamCity collector
+    /// Gets builds from TeamCity
+    #[serde(rename = "teamcity")]
+    TeamCity(TeamCityConfiguration),
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct TeamCityConfiguration {
+    /// # The TeamCity collector ID
+    pub id: String,
+    /// # Determines whether or not this collector is enabled
+    #[serde(default)]
+    pub enabled: Option<bool>,
+    /// # The TeamCity server URL
+    #[serde(rename = "serverUrl")]
+    pub server_url: String,
+    /// # The TeamCity credentials
+    pub credentials: TeamCityAuth,
+    /// # The TeamCity builds definitions to include
+    pub builds: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub enum TeamCityAuth {
+    /// # Guest
+    /// Authenticate as guest
+    #[serde(rename = "guest")]
+    Guest,
+    /// # Basic authentication
+    /// Authenticate using basic authentication
+    #[serde(rename = "basic")]
+    BasicAuth {
+        /// # The username to use
+        username: String,
+        /// # The password to use
+        password: String,
+    },
 }
 
 #[cfg(test)]

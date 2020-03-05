@@ -8,8 +8,12 @@ mod config;
 
 #[derive(StructOpt)]
 struct Args {
+    /// Log level
     #[structopt(short, long, parse(from_str = parse_level), env = "DUCK_LEVEL")]
     level: Option<LogLevel>,
+    /// Disables the startup banner
+    #[structopt(short, long)]
+    no_logo: bool,
     /// Available subcommands
     #[structopt(subcommand)]
     command: Option<Command>,
@@ -46,6 +50,15 @@ async fn main() {
         None => Command::Start(commands::start::Arguments::default()),
         Some(command) => command,
     };
+
+    if !args.no_logo {
+        println!(r#"     ____             __  "#);
+        println!(r#"    / __ \__  _______/ /__"#);
+        println!(r#"   / / / / / / / ___/ //_/"#);
+        println!(r#"  / /_/ / /_/ / /__/  <   "#);
+        println!(r#" /_____/\____/\___/_/|_|  "#);
+        println!();
+    }
 
     // Execute the command
     let result = match command {

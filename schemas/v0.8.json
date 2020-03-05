@@ -3,8 +3,7 @@
   "title": "Configuration",
   "type": "object",
   "required": [
-    "collectors",
-    "views"
+    "collectors"
   ],
   "properties": {
     "collectors": {
