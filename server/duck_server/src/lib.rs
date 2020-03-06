@@ -9,6 +9,7 @@ extern crate log;
 pub mod config;
 mod engine;
 mod providers;
+mod state;
 mod utils;
 mod web;
 
@@ -22,11 +23,12 @@ pub type DuckResult<T> = Result<T, Error>;
 pub async fn run(config: impl ConfigurationLoader + 'static) -> DuckResult<()> {
     // Start engine.
     info!("Starting engine...");
-    let engine_handle = engine::run(config)?;
+    let engine = engine::Engine::new();
+    let engine_handle = engine.start(config)?;
     info!("Engine started.");
 
     // Start web server
-    web::start().await?;
+    web::start(engine.state()).await?;
 
     // Stop the engine.
     engine_handle.stop()?;

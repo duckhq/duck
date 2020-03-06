@@ -8,6 +8,7 @@ use log::{debug, info, trace};
 use waithandle::{EventWaitHandle, WaitHandle};
 
 use crate::config::{Configuration, ConfigurationLoader};
+use crate::state::State;
 use crate::utils::NaiveMessageBus;
 use crate::DuckResult;
 
@@ -47,46 +48,64 @@ pub enum EngineThreadMessage {
 ///////////////////////////////////////////////////////////
 // Engine
 
-pub fn run(loader: impl ConfigurationLoader + 'static) -> DuckResult<EngineHandle> {
-    let stopping = Arc::new(EventWaitHandle::new());
-    let bus = Arc::new(NaiveMessageBus::<EngineThreadMessage>::new());
-    let barrier = Arc::new(Barrier::new(3));
+pub struct Engine {
+    state: Arc<State>,
+}
 
-    // Configuration watcher thread
-    debug!("Starting configuration watcher thread...");
-    let watcher = std::thread::spawn({
-        let barrier = barrier.clone();
-        let stopping = stopping.clone();
-        let bus = bus.clone();
-        move || -> DuckResult<()> { watch_configuration(barrier, stopping, bus, loader) }
-    });
+impl Engine {
+    pub fn new() -> Self {
+        Engine {
+            state: Arc::new(State::new())
+        }
+    }
 
-    // Accumulator thread
-    debug!("Starting accumulator thread...");
-    let accumulator = std::thread::spawn({
-        let barrier = barrier.clone();
-        let stopping = stopping.clone();
-        let bus = bus.clone();
-        move || -> DuckResult<()> { run_accumulator(barrier, stopping, bus) }
-    });
+    pub fn state(&self) -> Arc<State> {
+        self.state.clone()
+    }
 
-    // Aggregator thread
-    debug!("Starting aggregator thread...");
-    let aggregator = std::thread::spawn({
-        let stopping = stopping.clone();
-        move || -> DuckResult<()> { run_aggregator(barrier, stopping, bus) }
-    });
-
-    Ok(EngineHandle {
-        wait_handle: stopping,
-        accumulator,
-        aggregator,
-        watcher,
-    })
+    pub fn start(&self, loader: impl ConfigurationLoader + 'static) -> DuckResult<EngineHandle> {
+        let stopping = Arc::new(EventWaitHandle::new());
+        let bus = Arc::new(NaiveMessageBus::<EngineThreadMessage>::new());
+        let barrier = Arc::new(Barrier::new(3));
+    
+        // Configuration watcher thread
+        debug!("Starting configuration watcher thread...");
+        let watcher = std::thread::spawn({
+            let barrier = barrier.clone();
+            let state = self.state.clone();
+            let stopping = stopping.clone();
+            let bus = bus.clone();
+            move || -> DuckResult<()> { watch_configuration(barrier, state, stopping, bus, loader) }
+        });
+    
+        // Accumulator thread
+        debug!("Starting accumulator thread...");
+        let accumulator = std::thread::spawn({
+            let barrier = barrier.clone();
+            let stopping = stopping.clone();
+            let bus = bus.clone();
+            move || -> DuckResult<()> { run_accumulator(barrier, stopping, bus) }
+        });
+    
+        // Aggregator thread
+        debug!("Starting aggregator thread...");
+        let aggregator = std::thread::spawn({
+            let stopping = stopping.clone();
+            move || -> DuckResult<()> { run_aggregator(barrier, stopping, bus) }
+        });
+    
+        Ok(EngineHandle {
+            wait_handle: stopping,
+            accumulator,
+            aggregator,
+            watcher,
+        })
+    }
 }
 
 fn watch_configuration(
     barrier: Arc<Barrier>,
+    state: Arc<State>,
     stopping: Arc<dyn WaitHandle>,
     bus: Arc<NaiveMessageBus<EngineThreadMessage>>,
     loader: impl ConfigurationLoader,
@@ -99,6 +118,9 @@ fn watch_configuration(
     loop {
         // Check if the configuration have changed
         if let Some(config) = watcher::has_changed(&mut context, &loader) {
+            // Update shared state
+            state.title(&config.title);
+            // Tell other threads about the update
             trace!("Sending configuration updated message.");
             bus.send(EngineThreadMessage::ConfigurationUpdated(config))?;
         }
