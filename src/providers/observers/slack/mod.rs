@@ -5,14 +5,36 @@ use log::info;
 
 use crate::builds::BuildStatus;
 use crate::config::SlackConfiguration;
-use crate::providers::observers::{Observation, Observer, ObserverInfo};
-use crate::utils::http::HttpClient;
-use crate::utils::DuckResult;
+use crate::providers::observers::{Observation, Observer, ObserverInfo, ObserverLoader};
+use crate::utils::http::{HttpClient, ReqwestClient};
+use crate::DuckResult;
 
 use self::client::SlackClient;
 
 mod client;
 mod validation;
+
+impl ObserverLoader for SlackConfiguration {
+    fn load(&self) -> DuckResult<Box<dyn Observer>> {
+        Ok(Box::new(SlackObserver::<ReqwestClient> {
+            client: SlackClient::new(self),
+            http: Default::default(),
+            info: ObserverInfo {
+                id: self.id.clone(),
+                enabled: match self.enabled {
+                    None => true,
+                    Some(e) => e,
+                },
+                collectors: match &self.collectors {
+                    Option::None => Option::None,
+                    Option::Some(collectors) => {
+                        Some(HashSet::from_iter(collectors.iter().cloned()))
+                    }
+                },
+            },
+        }))
+    }
+}
 
 pub struct SlackObserver<T: HttpClient + Default> {
     client: SlackClient,
@@ -21,6 +43,7 @@ pub struct SlackObserver<T: HttpClient + Default> {
 }
 
 impl<T: HttpClient + Default> SlackObserver<T> {
+    #[cfg(test)]
     pub fn new(config: &SlackConfiguration) -> Self {
         SlackObserver {
             client: SlackClient::new(config),

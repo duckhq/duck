@@ -1,15 +1,14 @@
 use std::sync::Arc;
 
-use actix_web::{get, web};
-use actix_web::{HttpResponse, Responder};
+use actix_web::web;
+use actix_web::HttpResponse;
 
 use crate::engine::state::EngineState;
 use crate::utils::VERSION;
 
 use super::models::{BuildViewModel, ServerInfoModel, ViewInfoModel};
 
-#[get("/api/server")]
-pub fn server_info(state: web::Data<Arc<EngineState>>) -> impl Responder {
+pub async fn server_info(state: web::Data<Arc<EngineState>>) -> HttpResponse {
     let info = ServerInfoModel {
         title: &state.title[..],
         version: VERSION,
@@ -26,8 +25,7 @@ pub fn server_info(state: web::Data<Arc<EngineState>>) -> impl Responder {
         .body(json)
 }
 
-#[get("/api/builds")]
-pub fn get_builds(state: web::Data<Arc<EngineState>>) -> impl Responder {
+pub async fn get_builds(state: web::Data<Arc<EngineState>>) -> HttpResponse {
     // Convert to view models
     let builds: Vec<BuildViewModel> = state
         .builds
@@ -43,11 +41,10 @@ pub fn get_builds(state: web::Data<Arc<EngineState>>) -> impl Responder {
         .body(json)
 }
 
-#[get("/api/builds/view/{id}")]
-pub fn get_builds_for_view(
+pub async fn get_builds_for_view(
     id: web::Path<String>,
     state: web::Data<Arc<EngineState>>,
-) -> impl Responder {
+) -> HttpResponse {
     // Convert to view models
     let builds: Vec<BuildViewModel> = state
         .builds

@@ -4,14 +4,31 @@ use waithandle::EventWaitHandle;
 
 use crate::builds::{Build, BuildBuilder, BuildProvider};
 use crate::config::GitHubConfiguration;
-use crate::providers::collectors::{Collector, CollectorInfo};
-use crate::utils::http::HttpClient;
-use crate::utils::DuckResult;
+use crate::providers::collectors::{Collector, CollectorInfo, CollectorLoader};
+use crate::utils::http::{HttpClient, ReqwestClient};
+use crate::DuckResult;
 
 use self::client::GitHubClient;
 
 mod client;
 mod validation;
+
+impl CollectorLoader for GitHubConfiguration {
+    fn load(&self) -> DuckResult<Box<dyn Collector>> {
+        Ok(Box::new(GitHubCollector::<ReqwestClient> {
+            client: GitHubClient::new(self),
+            http: Default::default(),
+            info: CollectorInfo {
+                id: self.id.clone(),
+                enabled: match self.enabled {
+                    Option::None => true,
+                    Option::Some(e) => e,
+                },
+                provider: BuildProvider::AzureDevOps,
+            },
+        }))
+    }
+}
 
 pub struct GitHubCollector<T: HttpClient + Default> {
     client: GitHubClient,
@@ -20,6 +37,7 @@ pub struct GitHubCollector<T: HttpClient + Default> {
 }
 
 impl<T: HttpClient + Default> GitHubCollector<T> {
+    #[cfg(test)]
     pub fn new(config: &GitHubConfiguration) -> Self {
         return GitHubCollector {
             client: GitHubClient::new(config),

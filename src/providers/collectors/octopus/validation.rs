@@ -3,7 +3,7 @@ use url::Url;
 use crate::config::{
     OctopusDeployConfiguration, OctopusDeployCredentials, OctopusDeployProject, Validate,
 };
-use crate::utils::DuckResult;
+use crate::DuckResult;
 
 impl Validate for OctopusDeployConfiguration {
     fn validate(&self) -> DuckResult<()> {
@@ -69,7 +69,7 @@ impl Validate for OctopusDeployProject {
 #[cfg(test)]
 mod tests {
     use crate::config::Configuration;
-    use crate::providers::DuckProviderCollection;
+    use crate::providers;
     use crate::utils::text::TestVariableProvider;
 
     #[test]
@@ -105,8 +105,7 @@ mod tests {
         )
         .unwrap();
 
-        let collection = DuckProviderCollection::new();
-        collection.get_collectors(&config).unwrap();
+        providers::create_collectors(&config).unwrap();
     }
 
     #[test]
@@ -142,8 +141,7 @@ mod tests {
         )
         .unwrap();
 
-        let collection = DuckProviderCollection::new();
-        collection.get_collectors(&config).unwrap();
+        providers::create_collectors(&config).unwrap();
     }
 
     #[test]
@@ -179,8 +177,7 @@ mod tests {
         )
         .unwrap();
 
-        let collection = DuckProviderCollection::new();
-        collection.get_collectors(&config).unwrap();
+        providers::create_collectors(&config).unwrap();
     }
 
     #[test]
@@ -209,8 +206,7 @@ mod tests {
         )
         .unwrap();
 
-        let collection = DuckProviderCollection::new();
-        collection.get_collectors(&config).unwrap();
+        providers::create_collectors(&config).unwrap();
     }
 
     #[test]
@@ -246,8 +242,7 @@ mod tests {
         )
         .unwrap();
 
-        let collection = DuckProviderCollection::new();
-        collection.get_collectors(&config).unwrap();
+        providers::create_collectors(&config).unwrap();
     }
 
     #[test]
@@ -283,8 +278,7 @@ mod tests {
         )
         .unwrap();
 
-        let collection = DuckProviderCollection::new();
-        collection.get_collectors(&config).unwrap();
+        providers::create_collectors(&config).unwrap();
     }
 
     #[test]
@@ -316,7 +310,6 @@ mod tests {
         )
         .unwrap();
 
-        let collection = DuckProviderCollection::new();
-        collection.get_collectors(&config).unwrap();
+        providers::create_collectors(&config).unwrap();
     }
 }

@@ -4,7 +4,7 @@ use std::fmt;
 use base64::encode;
 use reqwest::{Client, Response, StatusCode};
 
-use crate::utils::DuckResult;
+use crate::DuckResult;
 
 pub trait HttpClient: Send + Sync {
     type Item: HttpResponse;

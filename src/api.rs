@@ -12,14 +12,12 @@ static DEFAULT_SERVER_ADDRESS: &str = "127.0.0.1:15825";
 static DOCKER_SERVER_ADDRESS: &str = "0.0.0.0:15825";
 
 use crate::engine::state::EngineState;
-use crate::utils::DuckResult;
+use crate::DuckResult;
 
-pub fn start_and_block(
+pub async fn start_and_block(
     context: Arc<EngineState>,
     server_address: Option<String>,
 ) -> DuckResult<()> {
-    let state = web::Data::new(context);
-
     // Get the address to bind to.
     let bind = match server_address {
         Some(ref address) => address,
@@ -39,11 +37,11 @@ pub fn start_and_block(
 
     HttpServer::new(move || {
         let app = App::new()
-            .register_data(state.clone())
-            .wrap(Cors::new())
-            .service(endpoints::server_info)
-            .service(endpoints::get_builds)
-            .service(endpoints::get_builds_for_view);
+            .wrap(Cors::new().finish())
+            .data(context.clone())
+            .service(web::resource("/api/server").to(endpoints::server_info))
+            .service(web::resource("/api/builds").to(endpoints::get_builds))
+            .service(web::resource("/api/builds/view/{id}").to(endpoints::get_builds_for_view));
 
         if cfg!(feature = "docker") {
             // Serve static files from the ui directory.
@@ -54,7 +52,8 @@ pub fn start_and_block(
     })
     .bind(bind)
     .unwrap()
-    .run()?;
+    .run()
+    .await?;
 
     Ok(())
 }

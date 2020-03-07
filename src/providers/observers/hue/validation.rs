@@ -1,7 +1,7 @@
 use url::Url;
 
 use crate::config::{HueConfiguration, Validate};
-use crate::utils::DuckResult;
+use crate::DuckResult;
 
 impl Validate for HueConfiguration {
     fn validate(&self) -> DuckResult<()> {
@@ -21,7 +21,7 @@ impl Validate for HueConfiguration {
 #[cfg(test)]
 mod tests {
     use crate::config::Configuration;
-    use crate::providers::DuckProviderCollection;
+    use crate::providers;
     use crate::utils::text::TestVariableProvider;
 
     #[test]
@@ -47,8 +47,7 @@ mod tests {
         )
         .unwrap();
 
-        let collection = DuckProviderCollection::new();
-        collection.get_observers(&config).unwrap();
+        providers::create_observers(&config).unwrap();
     }
 
     #[test]
@@ -74,8 +73,7 @@ mod tests {
         )
         .unwrap();
 
-        let collection = DuckProviderCollection::new();
-        collection.get_observers(&config).unwrap();
+        providers::create_observers(&config).unwrap();
     }
 
     #[test]
@@ -101,7 +99,6 @@ mod tests {
         )
         .unwrap();
 
-        let collection = DuckProviderCollection::new();
-        collection.get_observers(&config).unwrap();
+        providers::create_observers(&config).unwrap();
     }
 }

@@ -4,14 +4,36 @@ use std::iter::FromIterator;
 use log::info;
 
 use crate::config::HueConfiguration;
-use crate::providers::observers::{Observation, Observer, ObserverInfo};
-use crate::utils::http::HttpClient;
-use crate::utils::DuckResult;
+use crate::providers::observers::{Observation, Observer, ObserverInfo, ObserverLoader};
+use crate::utils::http::{HttpClient, ReqwestClient};
+use crate::DuckResult;
 
 use self::client::HueClient;
 
 mod client;
 mod validation;
+
+impl ObserverLoader for HueConfiguration {
+    fn load(&self) -> DuckResult<Box<dyn Observer>> {
+        Ok(Box::new(HueObserver::<ReqwestClient> {
+            client: HueClient::new(self),
+            http: Default::default(),
+            info: ObserverInfo {
+                id: self.id.clone(),
+                enabled: match self.enabled {
+                    None => true,
+                    Some(e) => e,
+                },
+                collectors: match &self.collectors {
+                    Option::None => Option::None,
+                    Option::Some(collectors) => {
+                        Some(HashSet::from_iter(collectors.iter().cloned()))
+                    }
+                },
+            },
+        }))
+    }
+}
 
 pub struct HueObserver<T: HttpClient + Default> {
     client: HueClient,
@@ -20,6 +42,7 @@ pub struct HueObserver<T: HttpClient + Default> {
 }
 
 impl<T: HttpClient + Default> HueObserver<T> {
+    #[cfg(test)]
     pub fn new(config: &HueConfiguration) -> Self {
         HueObserver {
             client: HueClient::new(config),

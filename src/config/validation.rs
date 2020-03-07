@@ -4,7 +4,7 @@ use std::collections::{HashMap, HashSet};
 use log::warn;
 
 use super::{CollectorConfiguration, Configuration, Validate};
-use crate::utils::DuckResult;
+use crate::DuckResult;
 
 impl Validate for Configuration {
     fn validate(&self) -> DuckResult<()> {
@@ -15,6 +15,18 @@ impl Validate for Configuration {
         validate_views(&self)?;
         validate_ids(&self)?;
         validate_collector_references(&self)?;
+
+        // Validate collectors
+        for collector in self.collectors.iter() {
+            collector.validate()?;
+        }
+
+        // Validate observers
+        if let Some(observers) = &self.observers {
+            for observer in observers.iter() {
+                observer.validate()?;
+            }
+        }
 
         Ok(())
     }

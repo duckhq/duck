@@ -4,7 +4,7 @@ use crate::builds::BuildStatus;
 use crate::config::{GitHubConfiguration, GitHubCredentials};
 use crate::utils::date;
 use crate::utils::http::*;
-use crate::utils::DuckResult;
+use crate::DuckResult;
 
 pub struct GitHubClient {
     pub owner: String,

@@ -1,5 +1,6 @@
-use crate::utils::DuckResult;
 use regex::*;
+
+use crate::DuckResult;
 
 static VARIABLE_REGEX: &str = r"\$\{(?P<VARIABLE>[A-Z_a-z0-1]+)\}";
 

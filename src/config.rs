@@ -5,7 +5,7 @@ use serde::Deserialize;
 
 use crate::utils::text::Expander;
 use crate::utils::text::VariableProvider;
-use crate::utils::DuckResult;
+use crate::DuckResult;
 
 mod expansions;
 mod validation;
@@ -40,6 +40,16 @@ impl Configuration {
         let config: Configuration = serde_json::from_str(&json[..])?;
         config.validate()?;
         Ok(config)
+    }
+
+    #[cfg(test)]
+    pub fn empty(variables: &impl VariableProvider) -> DuckResult<Self> {
+        return Configuration::from_json(
+            variables,
+            r#"{
+            "collectors": []
+        }"#,
+        );
     }
 
     #[allow(dead_code)]
@@ -138,6 +148,17 @@ pub enum CollectorConfiguration {
     /// Gets deployments from Octopus Deploy
     #[serde(rename = "octopus")]
     OctopusDeploy(OctopusDeployConfiguration),
+}
+
+impl Validate for CollectorConfiguration {
+    fn validate(&self) -> DuckResult<()> {
+        match self {
+            CollectorConfiguration::TeamCity(c) => c.validate(),
+            CollectorConfiguration::Azure(c) => c.validate(),
+            CollectorConfiguration::GitHub(c) => c.validate(),
+            CollectorConfiguration::OctopusDeploy(c) => c.validate(),
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, JsonSchema, Clone)]
@@ -278,6 +299,16 @@ pub enum ObserverConfiguration {
     /// # Mattermost observer
     #[serde(rename = "mattermost")]
     Mattermost(MattermostConfiguration),
+}
+
+impl Validate for ObserverConfiguration {
+    fn validate(&self) -> DuckResult<()> {
+        match self {
+            ObserverConfiguration::Hue(c) => c.validate(),
+            ObserverConfiguration::Slack(c) => c.validate(),
+            ObserverConfiguration::Mattermost(c) => c.validate(),
+        }
+    }
 }
 
 impl ObserverConfiguration {

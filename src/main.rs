@@ -1,34 +1,25 @@
 extern crate env_logger;
 extern crate log;
 
-use std::path::PathBuf;
-use std::process::exit;
-
+use duck::DuckResult;
 use env_logger::Env;
 use log::error;
 use structopt::StructOpt;
 
+mod commands;
+
 #[derive(StructOpt)]
-#[structopt(name = "duck")]
+#[structopt(name = "Duck")]
 struct Opt {
-    /// The configuration file to use
-    #[structopt(
-        short,
-        long,
-        parse(from_os_str),
-        default_value = "config.json",
-        env = "DUCK_CONFIG"
-    )]
-    config: PathBuf,
-    /// The server address to bind to
-    #[structopt(name = "bind", short, long, env = "DUCK_BIND")]
-    server_address: Option<String>,
     /// The log level to use (info, debug, trace)
     #[structopt(short, long, parse(from_str = parse_level), env = "DUCK_LEVEL")]
     level: Option<LogLevel>,
+    /// Disables the startup banner
+    #[structopt(short, long)]
+    no_logo: bool,
     /// Available subcommands
     #[structopt(subcommand)]
-    commands: Option<Command>,
+    command: Command,
 }
 
 #[derive(Debug)]
@@ -48,32 +39,49 @@ fn parse_level(src: &str) -> LogLevel {
 
 #[derive(StructOpt)]
 enum Command {
+    /// Starts the Duck server
+    Start(commands::start::Arguments),
     /// Generates the JSON schema
-    Schema,
+    Schema(commands::schema::Arguments),
 }
 
-fn main() {
-    let args = Opt::from_args();
-
-    // Was a sub command invoked?
-    if let Some(command) = &args.commands {
-        match command {
-            Command::Schema => {
-                println!("{}", duck::get_schema());
-            }
+impl Command {
+    pub fn show_logo(&self) -> bool {
+        match self {
+            Command::Start(_) => true,
+            Command::Schema(_) => false,
         }
-        exit(0);
-    };
+    }
+}
 
+#[actix_rt::main]
+async fn main() {
+    let args = Opt::from_args();
     initialize_logging(&args.level);
 
-    match duck::run(args.config, args.server_address) {
-        Result::Ok(_) => exit(0),
-        Result::Err(e) => {
-            error!("An error occured: {}", e);
-            exit(-1);
-        }
+    if args.command.show_logo() && !args.no_logo {
+        println!(r#"     ____             __  "#);
+        println!(r#"    / __ \__  _______/ /__"#);
+        println!(r#"   / / / / / / / ___/ //_/"#);
+        println!(r#"  / /_/ / /_/ / /__/  <   "#);
+        println!(r#" /_____/\____/\___/_/|_|  "#);
+        println!();
+    }
+
+    // Execute the command
+    let result = match args.command {
+        Command::Start(args) => commands::start::execute(args).await,
+        Command::Schema(args) => commands::schema::execute(args).await,
     };
+
+    // Return the correct exit code
+    match result {
+        Ok(_) => std::process::exit(0),
+        Err(e) => {
+            error!("An error occured: {}", e);
+            std::process::exit(-1);
+        }
+    }
 }
 
 fn initialize_logging(level: &Option<LogLevel>) {

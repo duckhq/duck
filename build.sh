@@ -13,7 +13,7 @@ done
 # Generate the JSON schema?
 if [ $SCHEMA ]; then
   if [ ! -z $VERSION ]; then
-    cargo run -- schema > "./schemas/v$VERSION.json"
+    cargo run -- schema --output "./schemas/v$VERSION.json"
   else
     echo "You must specify a version using the --version option."
     exit -1;
