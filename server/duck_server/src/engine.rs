@@ -1,4 +1,4 @@
-use std::sync::mpsc::Receiver;
+use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::Arc;
 use std::sync::Barrier;
 use std::thread::JoinHandle;
@@ -7,6 +7,7 @@ use std::time::Duration;
 use log::{debug, info, trace};
 use waithandle::{EventWaitHandle, WaitHandle};
 
+use crate::builds::Build;
 use crate::config::{Configuration, ConfigurationLoader};
 use crate::state::State;
 use crate::utils::NaiveMessageBus;
@@ -45,6 +46,10 @@ pub enum EngineThreadMessage {
     ConfigurationUpdated(Configuration),
 }
 
+pub enum AccumulatorMessage {
+    NewBuilds(Vec<Build>),
+}
+
 ///////////////////////////////////////////////////////////
 // Engine
 
@@ -55,7 +60,7 @@ pub struct Engine {
 impl Engine {
     pub fn new() -> Self {
         Engine {
-            state: Arc::new(State::new())
+            state: Arc::new(State::new()),
         }
     }
 
@@ -67,7 +72,7 @@ impl Engine {
         let stopping = Arc::new(EventWaitHandle::new());
         let bus = Arc::new(NaiveMessageBus::<EngineThreadMessage>::new());
         let barrier = Arc::new(Barrier::new(3));
-    
+
         // Configuration watcher thread
         debug!("Starting configuration watcher thread...");
         let watcher = std::thread::spawn({
@@ -77,23 +82,25 @@ impl Engine {
             let bus = bus.clone();
             move || -> DuckResult<()> { watch_configuration(barrier, state, stopping, bus, loader) }
         });
-    
+
+        let (sender, receiver) = channel::<AccumulatorMessage>();
+
         // Accumulator thread
         debug!("Starting accumulator thread...");
         let accumulator = std::thread::spawn({
             let barrier = barrier.clone();
             let stopping = stopping.clone();
             let bus = bus.clone();
-            move || -> DuckResult<()> { run_accumulator(barrier, stopping, bus) }
+            move || -> DuckResult<()> { run_accumulator(barrier, stopping, bus, sender) }
         });
-    
+
         // Aggregator thread
         debug!("Starting aggregator thread...");
         let aggregator = std::thread::spawn({
             let stopping = stopping.clone();
-            move || -> DuckResult<()> { run_aggregator(barrier, stopping, bus) }
+            move || -> DuckResult<()> { run_aggregator(barrier, stopping, bus, receiver) }
         });
-    
+
         Ok(EngineHandle {
             wait_handle: stopping,
             accumulator,
@@ -138,6 +145,7 @@ fn run_accumulator(
     barrier: Arc<Barrier>,
     stopping: Arc<dyn WaitHandle>,
     bus: Arc<NaiveMessageBus<EngineThreadMessage>>,
+    accumulator_sender: Sender<AccumulatorMessage>,
 ) -> DuckResult<()> {
     // Subscribe to engine messages
     let receiver = bus.subscribe();
@@ -146,10 +154,10 @@ fn run_accumulator(
     barrier.wait();
     debug!("Accumulator thread started.");
 
-    let mut context = accumulator::Context::new(stopping.clone(), receiver);
+    let mut context = accumulator::Context::new(stopping.clone(), receiver, accumulator_sender);
     loop {
         accumulator::accumulate(&mut context);
-        if stopping.wait(Duration::from_secs(1))? {
+        if stopping.wait(Duration::from_secs(5))? {
             break;
         }
     }
@@ -161,6 +169,7 @@ fn run_aggregator(
     barrier: Arc<Barrier>,
     stopping: Arc<dyn WaitHandle>,
     bus: Arc<NaiveMessageBus<EngineThreadMessage>>,
+    accumulator_receiver: Receiver<AccumulatorMessage>,
 ) -> DuckResult<()> {
     // Subscribe to engine messages
     let receiver = bus.subscribe();
@@ -169,10 +178,10 @@ fn run_aggregator(
     barrier.wait();
     debug!("Aggregator thread started.");
 
-    let context = aggregator::Context::new(stopping.clone(), receiver);
+    let context = aggregator::Context::new(stopping.clone(), receiver, accumulator_receiver);
     loop {
         aggregator::aggregate(&context);
-        if stopping.wait(Duration::from_secs(1))? {
+        if stopping.wait(Duration::from_secs(5))? {
             break;
         }
     }

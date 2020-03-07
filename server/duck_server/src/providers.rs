@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use waithandle::WaitHandle;
 
+use crate::builds::Build;
 use crate::config::{CollectorConfiguration, Configuration};
 use crate::DuckResult;
 
@@ -14,7 +15,7 @@ pub trait Collector {
     fn id(&self) -> &str;
     fn kind(&self) -> &str;
     fn enabled(&self) -> bool;
-    fn collect(&self, handle: Arc<dyn WaitHandle>);
+    fn collect(&self, handle: Arc<dyn WaitHandle>) -> Vec<Build>;
 }
 
 pub trait CollectorLoader {

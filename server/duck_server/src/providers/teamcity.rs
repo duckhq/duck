@@ -1,3 +1,4 @@
+use crate::builds::Build;
 use crate::config::TeamCityConfiguration;
 use crate::providers::{Collector, CollectorLoader};
 use crate::DuckResult;
@@ -53,7 +54,7 @@ impl Collector for TeamCityCollector {
         self.enabled
     }
 
-    fn collect(&self, _handle: std::sync::Arc<dyn waithandle::WaitHandle>) {
-        unimplemented!()
+    fn collect(&self, _handle: std::sync::Arc<dyn waithandle::WaitHandle>) -> Vec<Build> {
+        Vec::new()
     }
 }

@@ -1,4 +1,6 @@
 // Need macro_use for failure crate, but Rust doesn't think so...
+#[macro_use]
+extern crate derive_builder;
 #[allow(unused_imports)]
 #[macro_use]
 extern crate failure;
@@ -6,12 +8,14 @@ extern crate failure;
 extern crate serde;
 extern crate log;
 
-pub mod config;
+mod builds;
 mod engine;
 mod providers;
 mod state;
 mod utils;
 mod web;
+
+pub mod config;
 
 use failure::Error;
 use log::info;
