@@ -10,6 +10,7 @@ use crate::config::ViewConfiguration;
 pub struct ServerInfoModel<'a> {
     pub title: &'a str,
     pub version: &'static str,
+    pub started: u64,
     pub views: Vec<ViewInfoModel>,
 }
 

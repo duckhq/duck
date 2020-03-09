@@ -14,6 +14,7 @@ use super::models::{BuildViewModel, ServerInfoModel, ViewInfoModel};
 pub async fn server_info(state: web::Data<Arc<EngineState>>) -> HttpResponse {
     let info = ServerInfoModel {
         title: &state.title[..],
+        started: state.started.duration_since(std::time::SystemTime::UNIX_EPOCH).unwrap().as_secs(),
         version: VERSION,
         views: state
             .views

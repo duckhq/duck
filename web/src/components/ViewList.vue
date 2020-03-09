@@ -26,9 +26,7 @@
   </div>
   <div v-else>
     <!-- No views available -->
-    <div class="ui placeholder segment">
-      <div class="ui icon header">No views available</div>
-    </div>
+    <i>No views available</i>
   </div>
 </template>
 

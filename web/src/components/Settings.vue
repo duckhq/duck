@@ -8,20 +8,19 @@
             <a class="ui blue ribbon label" style="margin-left: -1px;">
               <i class="cog icon"></i>Settings
             </a>
-            <!-- Version -->
-            <div class="ui top right attached label">
-              <small>
-                <a href="https://github.com/spectresystems/duck" target="_blank">Duck v{{ getVersion() }}</a>
-              </small>
-            </div>
             <!-- Body -->
             <div class="modal-body">
+              <!-- Tabs -->
               <div class="ui top attached tabular menu">
-                <a class="active item">Views</a>
+                <a class="item" :class="{ active: show_views }" @click="current='views'">Views</a>
+                <a class="item" :class="{ active: show_info }" @click="current='info'">Information</a>
               </div>
-              <div class="ui bottom attached segment">
+              <!-- Tab content -->
+              <div class="ui bottom attached segment" style="min-height:200px">
                 <!-- Views -->
-                <ViewList @view_changed="$emit('close')" />
+                <ViewList v-if="show_views" @view_changed="$emit('close')" />
+                <!-- Information -->
+                <ServerInfo v-if="show_info" />
               </div>
             </div>
             <!-- Footer -->
@@ -37,16 +36,25 @@
 
 <script>
 import ViewList from "./ViewList.vue";
-import { data } from "@/js/store.js";
+import ServerInfo from "./ServerInfo.vue";
 
 export default {
   props: ["currentView", "views"],
   components: {
-    ViewList
+    ViewList, 
+    ServerInfo
   },
-  methods: {
-    getVersion() {
-      return data.version;
+  data() {
+    return {
+      current: 'views'
+    };
+  },
+  computed: {
+    show_views() {
+      return this.current == 'views';
+    },
+    show_info() {
+      return this.current == 'info';
     }
   }
 };

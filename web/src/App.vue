@@ -17,6 +17,7 @@
       v-if="showViewDialog"
       :currentView="currentView"
       :views="allViews"
+      :started="started"
       @close="showViewDialog = false"
     />
 
@@ -51,6 +52,12 @@ export default {
   computed: {
     hasError() {
       return data.error;
+    },
+    started() {
+      if (data.info == null) {
+        return null;
+      }
+      return data.info.started;
     },
     currentView() {
       return data.view;
