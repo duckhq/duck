@@ -3,12 +3,18 @@ use serde::Serialize;
 use crate::builds::{Build, BuildStatus};
 use crate::config::ViewConfiguration;
 
+///////////////////////////////////////////////////////////
+// Server information
+
 #[derive(Serialize, Clone)]
 pub struct ServerInfoModel<'a> {
     pub title: &'a str,
     pub version: &'static str,
     pub views: Vec<ViewInfoModel>,
 }
+
+///////////////////////////////////////////////////////////
+// View information
 
 #[derive(Serialize, Clone)]
 pub struct ViewInfoModel {
@@ -24,6 +30,9 @@ impl<'a> From<&ViewConfiguration> for ViewInfoModel {
         }
     }
 }
+
+///////////////////////////////////////////////////////////
+// Builds
 
 #[derive(Serialize, Clone)]
 pub struct BuildViewModel {

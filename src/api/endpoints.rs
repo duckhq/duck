@@ -8,6 +8,9 @@ use crate::utils::VERSION;
 
 use super::models::{BuildViewModel, ServerInfoModel, ViewInfoModel};
 
+///////////////////////////////////////////////////////////
+// Server information
+
 pub async fn server_info(state: web::Data<Arc<EngineState>>) -> HttpResponse {
     let info = ServerInfoModel {
         title: &state.title[..],
@@ -25,6 +28,9 @@ pub async fn server_info(state: web::Data<Arc<EngineState>>) -> HttpResponse {
         .body(json)
 }
 
+///////////////////////////////////////////////////////////
+// All builds
+
 pub async fn get_builds(state: web::Data<Arc<EngineState>>) -> HttpResponse {
     // Convert to view models
     let builds: Vec<BuildViewModel> = state
@@ -40,6 +46,9 @@ pub async fn get_builds(state: web::Data<Arc<EngineState>>) -> HttpResponse {
         .content_type("application/json")
         .body(json)
 }
+
+///////////////////////////////////////////////////////////
+// Builds for view
 
 pub async fn get_builds_for_view(
     id: web::Path<String>,

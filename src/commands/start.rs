@@ -5,6 +5,9 @@ use crate::DuckResult;
 
 pub const DEFAULT_CONFIG: &str = "config.json";
 
+///////////////////////////////////////////////////////////
+// Arguments
+
 #[derive(StructOpt, Debug)]
 pub struct Arguments {
     /// The configuration file
@@ -30,10 +33,15 @@ impl Default for Arguments {
     }
 }
 
-/// Executes the run command
+///////////////////////////////////////////////////////////
+// Command
+
 pub async fn execute(args: Arguments) -> DuckResult<()> {
     duck::run(args.config, args.server_address).await
 }
+
+///////////////////////////////////////////////////////////
+// Tests
 
 #[cfg(test)]
 mod tests {

@@ -18,10 +18,8 @@ mod accumulator;
 mod aggregator;
 pub mod state;
 
-pub struct Engine<'a> {
-    config: &'a Configuration,
-    state: Arc<EngineState>,
-}
+///////////////////////////////////////////////////////////
+// Engine handle
 
 pub struct EngineHandle {
     wait_handle: Arc<EventWaitHandle>,
@@ -37,6 +35,9 @@ impl EngineHandle {
         Ok(())
     }
 }
+
+///////////////////////////////////////////////////////////
+// Events
 
 pub enum EngineEvent {
     /// The build was updated.
@@ -62,6 +63,14 @@ impl EngineEvent {
             _ => false,
         }
     }
+}
+
+///////////////////////////////////////////////////////////
+// Engine
+
+pub struct Engine<'a> {
+    config: &'a Configuration,
+    state: Arc<EngineState>,
 }
 
 impl<'a> Engine<'a> {
@@ -107,6 +116,9 @@ impl<'a> Engine<'a> {
     }
 }
 
+///////////////////////////////////////////////////////////
+// Accumulator
+
 fn run_accumulator(
     handle: Arc<EventWaitHandle>,
     state: Arc<EngineState>,
@@ -151,6 +163,9 @@ fn run_accumulator(
 
     Ok(())
 }
+
+///////////////////////////////////////////////////////////
+// Aggregator
 
 fn run_aggregator(
     state: Arc<EngineState>,

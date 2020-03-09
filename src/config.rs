@@ -162,6 +162,61 @@ impl Validate for CollectorConfiguration {
 }
 
 #[derive(Serialize, Deserialize, JsonSchema, Clone)]
+pub enum ObserverConfiguration {
+    /// # Philips Hue observer
+    #[serde(rename = "hue")]
+    Hue(HueConfiguration),
+    /// # Slack observer
+    #[serde(rename = "slack")]
+    Slack(SlackConfiguration),
+    /// # Mattermost observer
+    #[serde(rename = "mattermost")]
+    Mattermost(MattermostConfiguration),
+}
+
+impl ObserverConfiguration {
+    pub fn get_id(&self) -> &str {
+        match self {
+            ObserverConfiguration::Hue(c) => &c.id,
+            ObserverConfiguration::Slack(c) => &c.id,
+            ObserverConfiguration::Mattermost(c) => &c.id,
+        }
+    }
+
+    pub fn is_enabled(&self) -> bool {
+        if let Some(enabled) = match self {
+            ObserverConfiguration::Hue(c) => c.enabled,
+            ObserverConfiguration::Slack(c) => c.enabled,
+            ObserverConfiguration::Mattermost(c) => c.enabled,
+        } {
+            return enabled;
+        }
+        return true;
+    }
+
+    pub fn get_collector_references(&self) -> Option<Vec<String>> {
+        match self {
+            ObserverConfiguration::Hue(c) => c.collectors.clone(),
+            ObserverConfiguration::Slack(c) => c.collectors.clone(),
+            ObserverConfiguration::Mattermost(c) => c.collectors.clone(),
+        }
+    }
+}
+
+impl Validate for ObserverConfiguration {
+    fn validate(&self) -> DuckResult<()> {
+        match self {
+            ObserverConfiguration::Hue(c) => c.validate(),
+            ObserverConfiguration::Slack(c) => c.validate(),
+            ObserverConfiguration::Mattermost(c) => c.validate(),
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////
+// TeamCity
+
+#[derive(Serialize, Deserialize, JsonSchema, Clone)]
 pub struct TeamCityConfiguration {
     /// # The TeamCity collector ID
     pub id: String,
@@ -194,6 +249,9 @@ pub enum TeamCityAuth {
     },
 }
 
+///////////////////////////////////////////////////////////
+// Azure DevOps
+
 #[derive(Serialize, Deserialize, JsonSchema, Clone)]
 pub struct AzureDevOpsConfiguration {
     /// # The Azure DevOps collector ID
@@ -225,6 +283,9 @@ pub enum AzureDevOpsCredentials {
     PersonalAccessToken(String),
 }
 
+///////////////////////////////////////////////////////////
+// GitHub Actions
+
 #[derive(Serialize, Deserialize, JsonSchema, Clone)]
 pub struct GitHubConfiguration {
     /// # The GitHub collector ID
@@ -254,6 +315,9 @@ pub enum GitHubCredentials {
         password: String,
     },
 }
+
+///////////////////////////////////////////////////////////
+// Octopus Deploy
 
 #[derive(Serialize, Deserialize, JsonSchema, Clone)]
 pub struct OctopusDeployConfiguration {
@@ -288,57 +352,8 @@ pub enum OctopusDeployCredentials {
     ApiKey(String),
 }
 
-#[derive(Serialize, Deserialize, JsonSchema, Clone)]
-pub enum ObserverConfiguration {
-    /// # Philips Hue observer
-    #[serde(rename = "hue")]
-    Hue(HueConfiguration),
-    /// # Slack observer
-    #[serde(rename = "slack")]
-    Slack(SlackConfiguration),
-    /// # Mattermost observer
-    #[serde(rename = "mattermost")]
-    Mattermost(MattermostConfiguration),
-}
-
-impl Validate for ObserverConfiguration {
-    fn validate(&self) -> DuckResult<()> {
-        match self {
-            ObserverConfiguration::Hue(c) => c.validate(),
-            ObserverConfiguration::Slack(c) => c.validate(),
-            ObserverConfiguration::Mattermost(c) => c.validate(),
-        }
-    }
-}
-
-impl ObserverConfiguration {
-    pub fn get_id(&self) -> &str {
-        match self {
-            ObserverConfiguration::Hue(c) => &c.id,
-            ObserverConfiguration::Slack(c) => &c.id,
-            ObserverConfiguration::Mattermost(c) => &c.id,
-        }
-    }
-
-    pub fn is_enabled(&self) -> bool {
-        if let Some(enabled) = match self {
-            ObserverConfiguration::Hue(c) => c.enabled,
-            ObserverConfiguration::Slack(c) => c.enabled,
-            ObserverConfiguration::Mattermost(c) => c.enabled,
-        } {
-            return enabled;
-        }
-        return true;
-    }
-
-    pub fn get_collector_references(&self) -> Option<Vec<String>> {
-        match self {
-            ObserverConfiguration::Hue(c) => c.collectors.clone(),
-            ObserverConfiguration::Slack(c) => c.collectors.clone(),
-            ObserverConfiguration::Mattermost(c) => c.collectors.clone(),
-        }
-    }
-}
+///////////////////////////////////////////////////////////
+// Hue
 
 #[derive(Serialize, Deserialize, JsonSchema, Clone)]
 pub struct HueConfiguration {
@@ -361,6 +376,9 @@ pub struct HueConfiguration {
     /// # The lights that should be controlled by this observer
     pub lights: Vec<String>,
 }
+
+///////////////////////////////////////////////////////////
+// Slack
 
 #[derive(Serialize, Deserialize, JsonSchema, Clone)]
 pub struct SlackConfiguration {
@@ -386,6 +404,9 @@ pub enum SlackCredentials {
     #[serde(rename = "webhook")]
     Webhook { url: String },
 }
+
+///////////////////////////////////////////////////////////
+// Mattermost
 
 #[derive(Serialize, Deserialize, JsonSchema, Clone)]
 pub struct MattermostConfiguration {

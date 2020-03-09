@@ -27,6 +27,9 @@ mod engine;
 mod providers;
 mod utils;
 
+///////////////////////////////////////////////////////////
+// Run
+
 pub async fn run<T: Into<PathBuf>>(
     config_path: T,
     server_address: Option<String>,
@@ -49,6 +52,9 @@ pub async fn run<T: Into<PathBuf>>(
     engine_handle.stop()?;
     Ok(())
 }
+
+///////////////////////////////////////////////////////////
+// Schema
 
 pub fn get_schema() -> String {
     let settings = schemars::gen::SchemaSettings::draft07().with(|s| {

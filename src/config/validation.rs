@@ -147,6 +147,9 @@ fn validate_collector_references(configuration: &Configuration) -> DuckResult<()
     Ok(())
 }
 
+///////////////////////////////////////////////////////////
+// Tests
+
 #[cfg(test)]
 mod tests {
     use super::*;
