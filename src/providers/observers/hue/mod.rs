@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 use std::iter::FromIterator;
 
-use log::info;
+use log::debug;
 
 use crate::config::HueConfiguration;
 use crate::providers::observers::{Observation, Observer, ObserverInfo, ObserverLoader};
@@ -77,14 +77,14 @@ impl<T: HttpClient + Default> Observer for HueObserver<T> {
     fn observe(&self, observation: Observation) -> DuckResult<()> {
         match observation {
             Observation::DuckStatusChanged(status) => {
-                info!(
+                debug!(
                     "[{}] Setting light state to '{:?}'...",
                     self.info.id, status
                 );
                 self.client.set_state(&self.http, status)?;
             }
             Observation::ShuttingDown => {
-                info!("[{}] Turning off all lights...", self.info.id);
+                debug!("[{}] Turning off all lights...", self.info.id);
                 self.client.turn_off(&self.http)?;
             }
             _ => {}

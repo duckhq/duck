@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use log::error;
+use log::{error, trace};
 
 use crate::builds::{Build, BuildStatus};
 use crate::engine::{EngineEvent, EngineState};
@@ -63,7 +63,13 @@ fn build_updated(context: &mut Context, build: Box<Build>) {
                 .state
                 .builds
                 .current_status_for_collectors(collectors);
-            if *previous_status != current_status && *previous_status != BuildStatus::Unknown {
+
+            if current_status.is_absolute() && *previous_status != current_status {
+                trace!(
+                    "Collector status changed for observer '{}' ({:?})",
+                    observer.info().id,
+                    current_status
+                );
                 // Status changed so send this to the observer.
                 propagate_to_observer(
                     &observer,
@@ -75,6 +81,11 @@ fn build_updated(context: &mut Context, build: Box<Build>) {
             // Not interested in specific collectors.
             // So did the overall build status change?
             if overall_status_changed {
+                trace!(
+                    "Overall status changed for observer '{}' ({:?})",
+                    observer.info().id,
+                    context.status
+                );
                 // Notify the observer.
                 propagate_to_observer(
                     &observer,

@@ -150,6 +150,29 @@ pub enum CollectorConfiguration {
     OctopusDeploy(OctopusDeployConfiguration),
 }
 
+impl CollectorConfiguration {
+    pub fn get_id(&self) -> &str {
+        match self {
+            CollectorConfiguration::TeamCity(c) => &c.id,
+            CollectorConfiguration::Azure(c) => &c.id,
+            CollectorConfiguration::GitHub(c) => &c.id,
+            CollectorConfiguration::OctopusDeploy(c) => &c.id,
+        }
+    }
+
+    pub fn is_enabled(&self) -> bool {
+        if let Some(enabled) = match self {
+            CollectorConfiguration::TeamCity(c) => c.enabled,
+            CollectorConfiguration::Azure(c) => c.enabled,
+            CollectorConfiguration::GitHub(c) => c.enabled,
+            CollectorConfiguration::OctopusDeploy(c) => c.enabled,
+        } {
+            return enabled;
+        }
+        return true;
+    }
+}
+
 impl Validate for CollectorConfiguration {
     fn validate(&self) -> DuckResult<()> {
         match self {

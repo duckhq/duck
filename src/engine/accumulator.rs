@@ -16,6 +16,7 @@ pub struct Context {
     pub sender: Sender<EngineEvent>,
 }
 
+#[allow(clippy::borrowed_box)]
 pub fn process(context: &Context, collector: &Box<dyn Collector>) {
     let mut build_hashes = std::collections::HashSet::<u64>::new();
     if let Err(e) = collector.collect(context.handle.clone(), &mut |build: Build| {

@@ -95,7 +95,7 @@ fn initialize_logging(level: &Option<LogLevel>) {
     };
 
     let filter = format!(
-        "{},actix=off,mio=off,tokio=off,want=off,hyper=off,reqwest=off",
+        "{},actix=off,mio=off,tokio=off,want=off,hyper=off,reqwest=off,rustls=off,h2=off",
         level
     );
 
