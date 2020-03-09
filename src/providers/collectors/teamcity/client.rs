@@ -5,7 +5,7 @@ use url::Url;
 
 use crate::config::{TeamCityAuth, TeamCityConfiguration};
 use crate::utils::date;
-use crate::utils::DuckResult;
+use crate::DuckResult;
 
 pub struct TeamCityClient {
     pub url: Url,

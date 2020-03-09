@@ -15,7 +15,7 @@ pub struct BuildRepository {
 pub enum BuildUpdateResult {
     Added,
     BuildUpdated,
-    BuildStatusChanged,
+    AbsoluteBuildStatusChanged,
     Unchanged,
 }
 
@@ -74,8 +74,8 @@ impl BuildRepository {
         if !statuses.contains_key(&build.partition) {
             statuses.insert(build.partition, build.status.clone());
         } else if let Some(val) = statuses.get_mut(&build.partition) {
-            if build.status != BuildStatus::Running && *val != build.status {
-                result = BuildUpdateResult::BuildStatusChanged;
+            if build.status.is_absolute() && *val != build.status {
+                result = BuildUpdateResult::AbsoluteBuildStatusChanged;
                 *val = build.status.clone();
             }
         }

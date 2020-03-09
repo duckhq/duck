@@ -2,8 +2,9 @@ use url::Url;
 
 use crate::builds::BuildStatus;
 use crate::config::HueConfiguration;
+use crate::utils::colors::Rgb;
 use crate::utils::http::{HttpClient, HttpRequestBuilder, HttpResponse};
-use crate::utils::{colors::Rgb, DuckResult};
+use crate::DuckResult;
 
 pub struct HueClient {
     brightness: u8,

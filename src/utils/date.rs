@@ -1,5 +1,6 @@
-use crate::utils::DuckResult;
 use chrono::DateTime;
+
+use crate::DuckResult;
 
 pub static TEAMCITY_FORMAT: &str = "%Y%m%dT%H%M%S%z";
 pub static AZURE_DEVOPS_FORMAT: &str = "%+";

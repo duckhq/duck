@@ -4,37 +4,38 @@ use waithandle::{EventWaitHandle, WaitHandle};
 
 use crate::builds::{Build, BuildBuilder, BuildProvider, BuildStatus};
 use crate::config::AzureDevOpsConfiguration;
-use crate::providers::collectors::{Collector, CollectorInfo};
-use crate::utils::{date, DuckResult};
+use crate::providers::collectors::{Collector, CollectorInfo, CollectorLoader};
+use crate::utils::date;
+use crate::DuckResult;
 
 use self::client::*;
 
 mod client;
 mod validation;
 
-pub struct AzureDevOpsCollector {
-    client: AzureDevOpsClient,
-    branches: Vec<String>,
-    definitions: Vec<String>,
-    info: CollectorInfo,
-}
-
-impl AzureDevOpsCollector {
-    pub fn new(config: &AzureDevOpsConfiguration) -> Self {
-        return AzureDevOpsCollector {
-            client: AzureDevOpsClient::new(config),
-            branches: config.branches.clone(),
-            definitions: config.definitions.clone(),
+impl CollectorLoader for AzureDevOpsConfiguration {
+    fn load(&self) -> DuckResult<Box<dyn Collector>> {
+        Ok(Box::new(AzureDevOpsCollector {
+            client: AzureDevOpsClient::new(self),
+            branches: self.branches.clone(),
+            definitions: self.definitions.clone(),
             info: CollectorInfo {
-                id: config.id.clone(),
-                enabled: match config.enabled {
+                id: self.id.clone(),
+                enabled: match self.enabled {
                     Option::None => true,
                     Option::Some(e) => e,
                 },
                 provider: BuildProvider::AzureDevOps,
             },
-        };
+        }))
     }
+}
+
+pub struct AzureDevOpsCollector {
+    client: AzureDevOpsClient,
+    branches: Vec<String>,
+    definitions: Vec<String>,
+    info: CollectorInfo,
 }
 
 impl Collector for AzureDevOpsCollector {
@@ -58,7 +59,10 @@ impl Collector for AzureDevOpsCollector {
                     BuildBuilder::new()
                         .build_id(build.id.to_string())
                         .provider(BuildProvider::AzureDevOps)
-                        .origin(format!("{}/{}", &self.client.organization, &self.client.project))
+                        .origin(format!(
+                            "{}/{}",
+                            &self.client.organization, &self.client.project
+                        ))
                         .collector(&self.info.id)
                         .project_id(&build.project.id)
                         .project_name(&build.project.name)

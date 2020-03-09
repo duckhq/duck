@@ -4,7 +4,7 @@ use reqwest::{Client, ClientBuilder, RequestBuilder};
 use url::Url;
 
 use crate::config::OctopusDeployCredentials;
-use crate::utils::DuckResult;
+use crate::DuckResult;
 
 pub struct OctopusDeployClient {
     url: Url,

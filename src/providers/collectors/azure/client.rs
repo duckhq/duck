@@ -3,7 +3,7 @@ use reqwest::header::ACCEPT;
 use reqwest::{Client, ClientBuilder, RequestBuilder};
 
 use crate::config::{AzureDevOpsConfiguration, AzureDevOpsCredentials};
-use crate::utils::DuckResult;
+use crate::DuckResult;
 
 pub struct AzureDevOpsClient {
     pub organization: String,

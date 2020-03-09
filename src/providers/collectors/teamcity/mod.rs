@@ -6,34 +6,36 @@ use waithandle::{EventWaitHandle, WaitHandle};
 use crate::builds::{Build, BuildBuilder, BuildProvider, BuildStatus};
 use crate::config::TeamCityConfiguration;
 use crate::providers::collectors::{Collector, CollectorInfo};
-use crate::utils::{date, DuckResult};
+use crate::utils::date;
+use crate::DuckResult;
 
 use self::client::*;
+use super::CollectorLoader;
 
 mod client;
 mod validation;
 
-pub struct TeamCityCollector {
-    client: TeamCityClient,
-    build_types: Vec<String>,
-    info: CollectorInfo,
-}
-
-impl TeamCityCollector {
-    pub fn new(config: &TeamCityConfiguration) -> Self {
-        return Self {
-            client: TeamCityClient::new(config),
-            build_types: config.builds.clone(),
+impl CollectorLoader for TeamCityConfiguration {
+    fn load(&self) -> DuckResult<Box<dyn Collector>> {
+        Ok(Box::new(TeamCityCollector {
+            client: TeamCityClient::new(self),
+            build_types: self.builds.clone(),
             info: CollectorInfo {
-                id: config.id.clone(),
-                enabled: match config.enabled {
+                id: self.id.clone(),
+                enabled: match self.enabled {
                     Option::None => true,
                     Option::Some(e) => e,
                 },
                 provider: BuildProvider::TeamCity,
             },
-        };
+        }))
     }
+}
+
+pub struct TeamCityCollector {
+    client: TeamCityClient,
+    build_types: Vec<String>,
+    info: CollectorInfo,
 }
 
 impl Collector for TeamCityCollector {

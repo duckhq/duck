@@ -11,32 +11,32 @@ use self::client::*;
 mod client;
 mod validation;
 
-pub struct OctopusDeployCollector {
-    server_url: Url,
-    projects: Vec<OctopusDeployProject>,
-    client: OctopusDeployClient,
-    info: CollectorInfo,
-}
-
-impl OctopusDeployCollector {
-    pub fn new(config: &OctopusDeployConfiguration) -> Self {
-        OctopusDeployCollector {
-            server_url: Url::parse(&config.server_url[..]).unwrap(),
-            projects: config.projects.clone(),
+impl CollectorLoader for OctopusDeployConfiguration {
+    fn load(&self) -> DuckResult<Box<dyn Collector>> {
+        Ok(Box::new(OctopusDeployCollector {
+            server_url: Url::parse(&self.server_url[..]).unwrap(),
+            projects: self.projects.clone(),
             client: OctopusDeployClient::new(
-                Url::parse(&config.server_url[..]).unwrap(),
-                config.credentials.clone(),
+                Url::parse(&self.server_url[..]).unwrap(),
+                self.credentials.clone(),
             ),
             info: CollectorInfo {
-                id: config.id.clone(),
-                enabled: match config.enabled {
+                id: self.id.clone(),
+                enabled: match self.enabled {
                     Option::None => true,
                     Option::Some(e) => e,
                 },
                 provider: BuildProvider::OctopusDeploy,
             },
-        }
+        }))
     }
+}
+
+pub struct OctopusDeployCollector {
+    server_url: Url,
+    projects: Vec<OctopusDeployProject>,
+    client: OctopusDeployClient,
+    info: CollectorInfo,
 }
 
 impl Collector for OctopusDeployCollector {

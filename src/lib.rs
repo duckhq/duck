@@ -12,11 +12,13 @@ extern crate derive_builder;
 
 use std::path::PathBuf;
 
+use failure::Error;
 use log::info;
 
 use crate::config::Configuration;
 use crate::utils::text::EnvironmentVariableProvider;
-use crate::utils::DuckResult;
+
+pub type DuckResult<T> = Result<T, Error>;
 
 mod api;
 mod builds;
@@ -25,7 +27,10 @@ mod engine;
 mod providers;
 mod utils;
 
-pub fn run<T: Into<PathBuf>>(config_path: T, server_address: Option<String>) -> DuckResult<()> {
+pub async fn run<T: Into<PathBuf>>(
+    config_path: T,
+    server_address: Option<String>,
+) -> DuckResult<()> {
     // Write some info to the console.
     info!("Version {}", utils::VERSION);
 
@@ -38,7 +43,7 @@ pub fn run<T: Into<PathBuf>>(config_path: T, server_address: Option<String>) -> 
 
     // Start the HTTP server.
     // This will block until CTRL+C is pressed.
-    api::start_and_block(engine.get_state(), server_address)?;
+    api::start_and_block(engine.get_state(), server_address).await?;
 
     // Stop the engine.
     engine_handle.stop()?;

@@ -1,6 +1,6 @@
 use crate::config::{SlackConfiguration, SlackCredentials};
 use crate::utils::http::{HttpClient, HttpRequestBuilder, HttpResponse};
-use crate::utils::DuckResult;
+use crate::DuckResult;
 
 pub struct SlackClient {
     credentials: SlackCredentials,

@@ -143,3 +143,16 @@ pub enum BuildStatus {
     Canceled,
     Queued,
 }
+
+impl BuildStatus {
+    pub fn is_absolute(&self) -> bool {
+        match self {
+            BuildStatus::Unknown => false,
+            BuildStatus::Success => true,
+            BuildStatus::Failed => true,
+            BuildStatus::Running => false,
+            BuildStatus::Canceled => false,
+            BuildStatus::Queued => false,
+        }
+    }
+}

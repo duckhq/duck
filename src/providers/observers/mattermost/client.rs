@@ -1,6 +1,6 @@
 use crate::config::{MattermostConfiguration, MattermostCredentials};
 use crate::utils::http::{HttpClient, HttpRequestBuilder, HttpResponse};
-use crate::utils::DuckResult;
+use crate::DuckResult;
 
 pub struct MattermostClient {
     channel: Option<String>,
