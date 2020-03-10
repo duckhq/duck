@@ -1,0 +1,653 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Configuration",
+  "type": "object",
+  "required": [
+    "collectors"
+  ],
+  "properties": {
+    "collectors": {
+      "title": "Collectors",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/CollectorConfiguration"
+      }
+    },
+    "interval": {
+      "title": "Update interval",
+      "description": "The update interval in seconds",
+      "default": null,
+      "allOf": [
+        {
+          "$ref": "#/definitions/Interval"
+        }
+      ]
+    },
+    "observers": {
+      "title": "Observers",
+      "default": null,
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ObserverConfiguration"
+      }
+    },
+    "title": {
+      "title": "Duck frontend title",
+      "description": "The title that is displayed in the UI",
+      "default": null,
+      "type": "string"
+    },
+    "views": {
+      "title": "Views",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ViewConfiguration"
+      }
+    }
+  },
+  "definitions": {
+    "AzureDevOpsConfiguration": {
+      "type": "object",
+      "required": [
+        "branches",
+        "credentials",
+        "definitions",
+        "id",
+        "organization",
+        "project"
+      ],
+      "properties": {
+        "branches": {
+          "title": "The branches to include",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "credentials": {
+          "title": "The Azure DevOps credentials",
+          "allOf": [
+            {
+              "$ref": "#/definitions/AzureDevOpsCredentials"
+            }
+          ]
+        },
+        "definitions": {
+          "title": "The build definitions to include",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "enabled": {
+          "title": "Determines whether or not this collector is enabled",
+          "default": null,
+          "type": "boolean"
+        },
+        "id": {
+          "title": "The Azure DevOps collector ID",
+          "type": "string"
+        },
+        "organization": {
+          "title": "The Azure DevOps organization",
+          "type": "string"
+        },
+        "project": {
+          "title": "The Azure DevOps project",
+          "type": "string"
+        }
+      }
+    },
+    "AzureDevOpsCredentials": {
+      "anyOf": [
+        {
+          "enum": [
+            "anonymous"
+          ]
+        },
+        {
+          "title": "Personal access token",
+          "description": "Authenticate using a personal access token (PAT)",
+          "type": "object",
+          "required": [
+            "pat"
+          ],
+          "properties": {
+            "pat": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "CollectorConfiguration": {
+      "anyOf": [
+        {
+          "title": "TeamCity collector",
+          "description": "Gets builds from TeamCity",
+          "type": "object",
+          "required": [
+            "teamcity"
+          ],
+          "properties": {
+            "teamcity": {
+              "$ref": "#/definitions/TeamCityConfiguration"
+            }
+          }
+        },
+        {
+          "title": "Azure DevOps collector",
+          "description": "Gets builds from Azure DevOps",
+          "type": "object",
+          "required": [
+            "azure"
+          ],
+          "properties": {
+            "azure": {
+              "$ref": "#/definitions/AzureDevOpsConfiguration"
+            }
+          }
+        },
+        {
+          "title": "GitHub collector",
+          "description": "Gets builds from GitHub Actions",
+          "type": "object",
+          "required": [
+            "github"
+          ],
+          "properties": {
+            "github": {
+              "$ref": "#/definitions/GitHubConfiguration"
+            }
+          }
+        },
+        {
+          "title": "Octopus Deploy collector",
+          "description": "Gets deployments from Octopus Deploy",
+          "type": "object",
+          "required": [
+            "octopus"
+          ],
+          "properties": {
+            "octopus": {
+              "$ref": "#/definitions/OctopusDeployConfiguration"
+            }
+          }
+        }
+      ]
+    },
+    "GitHubConfiguration": {
+      "type": "object",
+      "required": [
+        "credentials",
+        "id",
+        "owner",
+        "repository",
+        "workflow"
+      ],
+      "properties": {
+        "credentials": {
+          "title": "The GitHub credentials",
+          "allOf": [
+            {
+              "$ref": "#/definitions/GitHubCredentials"
+            }
+          ]
+        },
+        "enabled": {
+          "title": "Determines whether or not this collector is enabled",
+          "default": null,
+          "type": "boolean"
+        },
+        "id": {
+          "title": "The GitHub collector ID",
+          "type": "string"
+        },
+        "owner": {
+          "title": "The GitHub owner",
+          "type": "string"
+        },
+        "repository": {
+          "title": "The GitHub repository",
+          "type": "string"
+        },
+        "workflow": {
+          "title": "The GitHub Actions workflow",
+          "type": "string"
+        }
+      }
+    },
+    "GitHubCredentials": {
+      "anyOf": [
+        {
+          "title": "Basic authentication",
+          "description": "Authenticate using basic authentication",
+          "type": "object",
+          "required": [
+            "basic"
+          ],
+          "properties": {
+            "basic": {
+              "type": "object",
+              "required": [
+                "password",
+                "username"
+              ],
+              "properties": {
+                "password": {
+                  "title": "The password to use",
+                  "type": "string"
+                },
+                "username": {
+                  "title": "The username to use",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "HueConfiguration": {
+      "type": "object",
+      "required": [
+        "hubUrl",
+        "id",
+        "lights",
+        "username"
+      ],
+      "properties": {
+        "brightness": {
+          "title": "The brightness of the lamps",
+          "default": null,
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "collectors": {
+          "title": "The collectors to include events from",
+          "default": null,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "enabled": {
+          "title": "Determines whether or not this collector is enabled",
+          "default": null,
+          "type": "boolean"
+        },
+        "hubUrl": {
+          "title": "The Philips Hue hub URL",
+          "type": "string"
+        },
+        "id": {
+          "title": "The Philips Hue collector ID",
+          "type": "string"
+        },
+        "lights": {
+          "title": "The lights that should be controlled by this observer",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "username": {
+          "title": "The Philips Hue username",
+          "type": "string"
+        }
+      }
+    },
+    "Interval": {
+      "type": "integer",
+      "format": "uint32",
+      "minimum": 0.0
+    },
+    "MattermostConfiguration": {
+      "type": "object",
+      "required": [
+        "credentials",
+        "id"
+      ],
+      "properties": {
+        "channel": {
+          "title": "The Mattermost channel to send messages to",
+          "default": null,
+          "type": "string"
+        },
+        "collectors": {
+          "title": "The collectors to include events from",
+          "default": null,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "credentials": {
+          "title": "The Mattermost credentials",
+          "allOf": [
+            {
+              "$ref": "#/definitions/MattermostCredentials"
+            }
+          ]
+        },
+        "enabled": {
+          "title": "Determines whether or not this collector is enabled",
+          "default": null,
+          "type": "boolean"
+        },
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "MattermostCredentials": {
+      "anyOf": [
+        {
+          "title": "Webhook",
+          "description": "Send messages directly to a webhook",
+          "type": "object",
+          "required": [
+            "webhook"
+          ],
+          "properties": {
+            "webhook": {
+              "type": "object",
+              "required": [
+                "url"
+              ],
+              "properties": {
+                "url": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ObserverConfiguration": {
+      "anyOf": [
+        {
+          "title": "Philips Hue observer",
+          "type": "object",
+          "required": [
+            "hue"
+          ],
+          "properties": {
+            "hue": {
+              "$ref": "#/definitions/HueConfiguration"
+            }
+          }
+        },
+        {
+          "title": "Slack observer",
+          "type": "object",
+          "required": [
+            "slack"
+          ],
+          "properties": {
+            "slack": {
+              "$ref": "#/definitions/SlackConfiguration"
+            }
+          }
+        },
+        {
+          "title": "Mattermost observer",
+          "type": "object",
+          "required": [
+            "mattermost"
+          ],
+          "properties": {
+            "mattermost": {
+              "$ref": "#/definitions/MattermostConfiguration"
+            }
+          }
+        }
+      ]
+    },
+    "OctopusDeployConfiguration": {
+      "type": "object",
+      "required": [
+        "credentials",
+        "id",
+        "projects",
+        "serverUrl"
+      ],
+      "properties": {
+        "credentials": {
+          "title": "The Octopus Deploy credentials",
+          "allOf": [
+            {
+              "$ref": "#/definitions/OctopusDeployCredentials"
+            }
+          ]
+        },
+        "enabled": {
+          "title": "Determines whether or not this collector is enabled",
+          "default": null,
+          "type": "boolean"
+        },
+        "id": {
+          "title": "The Octopus Deploy collector ID",
+          "type": "string"
+        },
+        "projects": {
+          "title": "The Octopus Deploy projects to include",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OctopusDeployProject"
+          }
+        },
+        "serverUrl": {
+          "title": "The Octopus Deploy server URL",
+          "type": "string"
+        }
+      }
+    },
+    "OctopusDeployCredentials": {
+      "anyOf": [
+        {
+          "title": "API Key",
+          "description": "Authenticate using an API key",
+          "type": "object",
+          "required": [
+            "apiKey"
+          ],
+          "properties": {
+            "apiKey": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "OctopusDeployProject": {
+      "type": "object",
+      "required": [
+        "environments",
+        "projectId"
+      ],
+      "properties": {
+        "environments": {
+          "title": "The Octopus Deploy environment IDs within the project",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "projectId": {
+          "title": "The Octopus Deploy project ID",
+          "type": "string"
+        }
+      }
+    },
+    "SlackConfiguration": {
+      "type": "object",
+      "required": [
+        "credentials",
+        "id"
+      ],
+      "properties": {
+        "channel": {
+          "title": "The Slack channel to send messages to",
+          "default": null,
+          "type": "string"
+        },
+        "collectors": {
+          "title": "The collectors to include events from",
+          "default": null,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "credentials": {
+          "title": "The Slack credentials",
+          "allOf": [
+            {
+              "$ref": "#/definitions/SlackCredentials"
+            }
+          ]
+        },
+        "enabled": {
+          "title": "Determines whether or not this collector is enabled",
+          "default": null,
+          "type": "boolean"
+        },
+        "id": {
+          "title": "The Slack collector ID",
+          "type": "string"
+        }
+      }
+    },
+    "SlackCredentials": {
+      "anyOf": [
+        {
+          "title": "Webhook",
+          "description": "Send messages directly to a webhook",
+          "type": "object",
+          "required": [
+            "webhook"
+          ],
+          "properties": {
+            "webhook": {
+              "type": "object",
+              "required": [
+                "url"
+              ],
+              "properties": {
+                "url": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "TeamCityAuth": {
+      "anyOf": [
+        {
+          "enum": [
+            "guest"
+          ]
+        },
+        {
+          "title": "Basic authentication",
+          "description": "Authenticate using basic authentication",
+          "type": "object",
+          "required": [
+            "basic"
+          ],
+          "properties": {
+            "basic": {
+              "type": "object",
+              "required": [
+                "password",
+                "username"
+              ],
+              "properties": {
+                "password": {
+                  "title": "The password to use",
+                  "type": "string"
+                },
+                "username": {
+                  "title": "The username to use",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "TeamCityConfiguration": {
+      "type": "object",
+      "required": [
+        "builds",
+        "credentials",
+        "id",
+        "serverUrl"
+      ],
+      "properties": {
+        "builds": {
+          "title": "The TeamCity builds definitions to include",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "credentials": {
+          "title": "The TeamCity credentials",
+          "allOf": [
+            {
+              "$ref": "#/definitions/TeamCityAuth"
+            }
+          ]
+        },
+        "enabled": {
+          "title": "Determines whether or not this collector is enabled",
+          "default": null,
+          "type": "boolean"
+        },
+        "id": {
+          "title": "The TeamCity collector ID",
+          "type": "string"
+        },
+        "serverUrl": {
+          "title": "The TeamCity server URL",
+          "type": "string"
+        }
+      }
+    },
+    "ViewConfiguration": {
+      "type": "object",
+      "required": [
+        "collectors",
+        "id",
+        "name"
+      ],
+      "properties": {
+        "collectors": {
+          "title": "Included collectors",
+          "description": "The collectors included in this view",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "id": {
+          "title": "View ID",
+          "description": "The ID of the view",
+          "type": "string"
+        },
+        "name": {
+          "title": "View name",
+          "description": "the name of the view",
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -20,7 +20,7 @@ Duck is a build system agnostic build monitor written in Rust (backend server) a
 The absolute easiest way of getting started with Duck is to use the docker image. You will have to provide a configuration file for it to work.
 
 ```
-> docker run --rm -it -v ./data:/data -p 8080:15825 duckhq/duck:latest --config /data/duck.json
+> docker run --rm -it -v ./data:/data -p 8080:15825 duckhq/duck:latest start --config /data/duck.json
 ```
 
 *If you're using WSL, you will need to specify the absolute path to your data directory.*
@@ -62,7 +62,7 @@ Below is an example configuration that specifies multiple collectors and observe
 
 ```json
 {
-    "$schema": "https://raw.githubusercontent.com/spectresystems/duck/master/schemas/v0.8.json",
+    "$schema": "https://raw.githubusercontent.com/spectresystems/duck/master/schemas/v0.9.json",
     "interval": 30,
     "views": [
         {
