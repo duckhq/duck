@@ -19,7 +19,7 @@ failure = "0.1.6"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 url = "2.1.0"
-reqwest = { version = "0.9.02", default-features = false, features = [ "rustls-tls" ] }
+reqwest = { version = "0.9.22", default-features = false, features = [ "rustls-tls" ] }
 waithandle = "0.1.0"
 actix-web = "2"
 actix-files = "0.2.1"
