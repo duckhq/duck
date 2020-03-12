@@ -3,7 +3,7 @@ import axios from "axios";
 
 //This represent the application state
 export const data = Vue.observable({
-    server: process.env.VUE_APP_MY_DUCK_SERVER,
+    server: null,
     version: process.env.VUE_APP_VERSION,
     builds: null,
     view: null,
@@ -12,10 +12,16 @@ export const data = Vue.observable({
 });
 
 export const store = {
-    update(progress, view) {
+    update(progress, server, view) {
         progress.start();
 
-        let address = `${data.server}/api/builds`;
+        if(server == undefined) {
+            server = "";
+        }
+
+        data.server = server;
+
+        let address = `${server}/api/builds`;
         if (view != undefined && view != null) {
             data.view = view;
             address = address + "/view/" + view;

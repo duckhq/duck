@@ -19,7 +19,7 @@ export default {
   methods: {
     getMessage: function() {
       if (data.server === '') {
-        return "The Duck server could not be reached.";
+        return "The local Duck server could not be reached.";
       } else {
         return `The Duck server could not be reached at ${data.server}.`;
       }

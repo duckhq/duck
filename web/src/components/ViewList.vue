@@ -56,9 +56,17 @@ export default {
     visitView(view) {
       if (view != undefined) {
         if (view == "/") {
-          this.$router.push(``);
+          if (data.server != null && data.server !== '') {
+            this.$router.push(`?server=${data.server}`);
+          } else {
+            this.$router.push(``);
+          }
         } else {
-          this.$router.push(`/?view=${view}`);
+          if (data.server != null && data.server !== '') {
+            this.$router.push(`/?view=${view}&server=${data.server}`);
+          } else {
+            this.$router.push(`/?view=${view}`);
+          }
         }
         // Send an event to the parent 
         // saying that the view was changed.

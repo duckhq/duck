@@ -101,7 +101,7 @@ export default {
     setInterval(
       function() {
         // Load data for the current view.
-        store.update(this.$Progress, this.$route.query.view);
+        store.update(this.$Progress, this.$route.query.server, this.$route.query.view);
       }.bind(this),
       5000
     );
