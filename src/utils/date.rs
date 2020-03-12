@@ -6,6 +6,7 @@ pub static TEAMCITY_FORMAT: &str = "%Y%m%dT%H%M%S%z";
 pub static AZURE_DEVOPS_FORMAT: &str = "%+";
 pub static GITHUB_FORMAT: &str = "%+";
 pub static OCTOPUS_DEPLOY_FORMAT: &str = "%+";
+pub static APPVEYOR_FORMAT: &str = "%+";
 
 pub fn to_timestamp(input: &str, pattern: &str) -> DuckResult<i64> {
     match DateTime::parse_from_str(input, pattern) {
@@ -40,5 +41,11 @@ mod tests {
     fn should_parse_github_format() {
         let result = to_timestamp("2020-02-01T20:43:16Z", GITHUB_FORMAT).unwrap();
         assert_eq!(1580589796, result);
+    }
+
+    #[test]
+    fn should_parse_appveyor_format() {
+        let result = to_timestamp("2020-03-11T12:09:48.1638791+00:00", APPVEYOR_FORMAT).unwrap();
+        assert_eq!(1583928588, result);
     }
 }

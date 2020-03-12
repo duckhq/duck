@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 
 use log::warn;
 
-use super::{CollectorConfiguration, Configuration, Validate};
+use super::{Configuration, Validate};
 use crate::DuckResult;
 
 impl Validate for Configuration {
@@ -74,44 +74,7 @@ fn validate_collector_references(configuration: &Configuration) -> DuckResult<()
     // Build a list of all collectors and whether or not they are enabled.
     let mut collectors: HashMap<String, bool> = HashMap::new();
     for collector in configuration.collectors.iter() {
-        match collector {
-            CollectorConfiguration::TeamCity(c) => {
-                collectors.insert(
-                    c.id.clone(),
-                    match c.enabled {
-                        None => true,
-                        Some(enabled) => enabled,
-                    },
-                );
-            }
-            CollectorConfiguration::Azure(c) => {
-                collectors.insert(
-                    c.id.clone(),
-                    match c.enabled {
-                        None => true,
-                        Some(enabled) => enabled,
-                    },
-                );
-            }
-            CollectorConfiguration::GitHub(c) => {
-                collectors.insert(
-                    c.id.clone(),
-                    match c.enabled {
-                        None => true,
-                        Some(enabled) => enabled,
-                    },
-                );
-            }
-            CollectorConfiguration::OctopusDeploy(c) => {
-                collectors.insert(
-                    c.id.clone(),
-                    match c.enabled {
-                        None => true,
-                        Some(enabled) => enabled,
-                    },
-                );
-            }
-        }
+        collectors.insert(collector.get_id().to_string(), collector.is_enabled());
     }
 
     // Validate referenced collectors.

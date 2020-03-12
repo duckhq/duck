@@ -132,6 +132,7 @@ pub enum BuildProvider {
     AzureDevOps,
     GitHub,
     OctopusDeploy,
+    AppVeyor,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

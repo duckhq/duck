@@ -5,6 +5,7 @@ use waithandle::EventWaitHandle;
 use crate::builds::{Build, BuildProvider};
 use crate::DuckResult;
 
+mod appveyor;
 mod azure;
 mod github;
 mod octopus;

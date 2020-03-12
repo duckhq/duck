@@ -63,6 +63,10 @@ impl HttpRequestBuilder {
         self.headers.insert(name.into(), value.into());
     }
 
+    pub fn bearer<T: fmt::Display>(&mut self, token: T) {
+        self.add_header("Authorization", &format!("Bearer {}", token))
+    }
+
     // Borrowed from https://github.com/seanmonstar/reqwest/blob/master/src/blocking/request.rs#L234
     pub fn basic_auth<U, P>(&mut self, username: U, password: Option<P>)
     where
