@@ -5,6 +5,7 @@ for i in "$@"; do
     -s | --schema ) SCHEMA=true ;;
     -v | --version) VERSION="$2"; shift ;;
     -u | --update) UPDATE=true ;;
+    -e | --embedded) EMBEDDED=true ;;
     * ) break ;;
   esac
   shift
@@ -38,4 +39,9 @@ if [ $DOCKER ]; then
         -t "spectresystems/duck:latest" \
         -t "spectresystems/duck:$VERSION" \
         --build-arg "VERSION=$VERSION" .
+fi
+
+# Embedded server?
+if [ $EMBEDDED ]; then
+    cargo build --release --features embedded-web
 fi
