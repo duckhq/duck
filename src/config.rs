@@ -10,6 +10,10 @@ use crate::DuckResult;
 mod expansions;
 mod validation;
 
+pub trait Validate {
+    fn validate(&self) -> DuckResult<()>;
+}
+
 #[derive(Serialize, Deserialize, JsonSchema, Clone)]
 pub struct Configuration {
     /// # Update interval
@@ -27,10 +31,6 @@ pub struct Configuration {
     /// # Observers
     #[serde(default)]
     pub observers: Option<Vec<ObserverConfiguration>>,
-}
-
-pub trait Validate {
-    fn validate(&self) -> DuckResult<()>;
 }
 
 impl Configuration {
@@ -90,6 +90,7 @@ impl Configuration {
                 CollectorConfiguration::Azure(c) => c.id.clone(),
                 CollectorConfiguration::OctopusDeploy(c) => c.id.clone(),
                 CollectorConfiguration::GitHub(c) => c.id.clone(),
+                CollectorConfiguration::AppVeyor(c) => c.id.clone(),
             })
             .collect();
         // Get all observer id:s
@@ -110,6 +111,14 @@ impl Configuration {
 }
 
 #[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
+pub struct Interval(pub u32);
+impl Default for Interval {
+    fn default() -> Self {
+        Interval(15)
+    }
+}
+
+#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
 pub struct ViewConfiguration {
     /// # View ID
     /// The ID of the view
@@ -120,14 +129,6 @@ pub struct ViewConfiguration {
     /// # Included collectors
     /// The collectors included in this view
     pub collectors: Vec<String>,
-}
-
-#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
-pub struct Interval(pub u32);
-impl Default for Interval {
-    fn default() -> Self {
-        Interval(15)
-    }
 }
 
 #[derive(Serialize, Deserialize, JsonSchema, Clone)]
@@ -148,6 +149,10 @@ pub enum CollectorConfiguration {
     /// Gets deployments from Octopus Deploy
     #[serde(rename = "octopus")]
     OctopusDeploy(OctopusDeployConfiguration),
+    /// # AppVeyor collector
+    /// Gets builds from AppVeyor
+    #[serde(rename = "appveyor")]
+    AppVeyor(AppVeyorConfiguration),
 }
 
 impl CollectorConfiguration {
@@ -157,6 +162,7 @@ impl CollectorConfiguration {
             CollectorConfiguration::Azure(c) => &c.id,
             CollectorConfiguration::GitHub(c) => &c.id,
             CollectorConfiguration::OctopusDeploy(c) => &c.id,
+            CollectorConfiguration::AppVeyor(c) => &c.id,
         }
     }
 
@@ -166,6 +172,7 @@ impl CollectorConfiguration {
             CollectorConfiguration::Azure(c) => c.enabled,
             CollectorConfiguration::GitHub(c) => c.enabled,
             CollectorConfiguration::OctopusDeploy(c) => c.enabled,
+            CollectorConfiguration::AppVeyor(c) => c.enabled,
         } {
             return enabled;
         }
@@ -180,6 +187,7 @@ impl Validate for CollectorConfiguration {
             CollectorConfiguration::Azure(c) => c.validate(),
             CollectorConfiguration::GitHub(c) => c.validate(),
             CollectorConfiguration::OctopusDeploy(c) => c.validate(),
+            CollectorConfiguration::AppVeyor(c) => c.validate(),
         }
     }
 }
@@ -234,6 +242,42 @@ impl Validate for ObserverConfiguration {
             ObserverConfiguration::Mattermost(c) => c.validate(),
         }
     }
+}
+
+///////////////////////////////////////////////////////////
+// AppVeyor
+
+#[derive(Serialize, Deserialize, JsonSchema, Clone)]
+pub struct AppVeyorConfiguration {
+    /// # The AppVeyor collector ID
+    pub id: String,
+    /// # Determines whether or not this collector is enabled
+    #[serde(default)]
+    pub enabled: Option<bool>,
+    /// # The TeamCity credentials
+    pub credentials: AppVeyorCredentials,
+    /// # The AppVeyor account
+    pub account: String,
+    /// # The AppVeyor project
+    pub project: String,
+    /// # The number of builds to retrieve
+    #[serde(default)]
+    pub count: Option<u16>,
+}
+
+impl AppVeyorConfiguration {
+    pub fn get_count(&self) -> u16 {
+        match self.count {
+            None => 1,
+            Some(count) => std::cmp::max(1, count),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, JsonSchema, Clone)]
+pub enum AppVeyorCredentials {
+    #[serde(rename = "bearer")]
+    Bearer(String),
 }
 
 ///////////////////////////////////////////////////////////

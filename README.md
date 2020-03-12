@@ -44,6 +44,7 @@ other systems such as build servers.
 * [Azure DevOps](https://azure.microsoft.com/en-us/services/devops)
 * [GitHub Actions](https://github.com/features/actions)
 * [Octopus Deploy](https://octopus.com/)
+* [AppVeyor](https://www.appveyor.com/)
 
 ### Observers
 
@@ -170,6 +171,16 @@ Below is an example configuration that specifies multiple collectors and observe
                         ]
                     }
                 ]
+            }
+        },
+        {
+            "appveyor": {
+                "id": "appveyor",
+                "credentials": {
+                    "bearer": "${APPVEYOR_BEARER_TOKEN}"
+                },
+                "account": "myaccount",
+                "project": "myproject-slug"
             }
         }
     ],

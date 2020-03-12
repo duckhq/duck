@@ -65,6 +65,17 @@ mod tests {
                         }
                     ]
                 }
+            },
+            {
+                "appveyor": {
+                    "id": "${APPVEYOR_ID}",
+                    "credentials": {
+                        "bearer": "${APPVEYOR_BEARER_TOKEN}"
+                    },
+                    "account": "${APPVEYOR_ACCOUNT}",
+                    "project": "${APPVEYOR_PROJECT}",
+                    "count": ${APPVEYOR_COUNT}
+                }
             }
         ],
         "observers": [
@@ -148,6 +159,11 @@ mod tests {
         variables.add("OCTOPUS_PROJECT_PREFIX", "Projects");
         variables.add("OCTOPUS_ENVIRONMENT_PREFIX", "Environments");
         variables.add("OCTOPUS_API_KEY", "SECRET-API-KEY");
+        variables.add("APPVEYOR_ID", "appveyor");
+        variables.add("APPVEYOR_BEARER_TOKEN", "SECRET-APPVEYOR-TOKEN");
+        variables.add("APPVEYOR_ACCOUNT", "patriksvensson");
+        variables.add("APPVEYOR_PROJECT", "spectre-commandline");
+        variables.add("APPVEYOR_COUNT", "4");
         variables.add("HUE_ID", "hue");
         variables.add("HUE_BRIGHTNESS", "128");
         variables.add("HUE_HOST", "192.168.1.155");
@@ -228,6 +244,21 @@ mod tests {
         assert_eq!("Projects-1", octopus.projects[0].project_id);
         assert_eq!("Environments-1", octopus.projects[0].environments[0]);
         assert_eq!("Environments-2", octopus.projects[0].environments[1]);
+    }
+
+    #[test]
+    fn should_expand_appveyor_configuration() {
+        // Given, When
+        let config = read_config!(CONFIGURATION);
+
+        // Then
+        let appveyor = find_config!(config.collectors, CollectorConfiguration::AppVeyor);
+
+        assert_eq!("appveyor", appveyor.id);
+        assert_eq!("patriksvensson", appveyor.account);
+        assert_eq!("spectre-commandline", appveyor.project);
+        assert_eq!("SECRET-APPVEYOR-TOKEN", appveyor.get_bearer_token());
+        assert_eq!(4, appveyor.get_count());
     }
 
     #[test]
@@ -314,6 +345,14 @@ mod utilities {
         pub fn get_api_key(&self) -> &str {
             match &self.credentials {
                 OctopusDeployCredentials::ApiKey(key) => key,
+            }
+        }
+    }
+
+    impl AppVeyorConfiguration {
+        pub fn get_bearer_token(&self) -> &str {
+            match &self.credentials {
+                AppVeyorCredentials::Bearer(token) => token,
             }
         }
     }

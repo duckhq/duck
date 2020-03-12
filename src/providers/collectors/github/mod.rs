@@ -168,7 +168,6 @@ mod tests {
 
         // Then
         assert_eq!(4, result.len());
-
         assert_eq!("33801182", result[0].build_id);
         assert_eq!(BuildProvider::GitHub, result[0].provider);
         assert_eq!("github", result[0].collector);
