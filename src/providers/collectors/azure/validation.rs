@@ -3,40 +3,37 @@ use crate::DuckResult;
 
 impl Validate for AzureDevOpsConfiguration {
     fn validate(&self) -> DuckResult<()> {
-        self.credentials.validate()?;
-        if self.id.is_empty() {
-            return Err(format_err!("Azure DevOps collector have no ID."));
-        }
         if self.organization.is_empty() {
-            return Err(format_err!("Azure DevOps organization is empty."));
+            return Err(format_err!(
+                "[{}] Azure DevOps organization is empty",
+                self.id
+            ));
         }
         if self.project.is_empty() {
-            return Err(format_err!("Azure DevOps project is empty."));
+            return Err(format_err!("[{}] Azure DevOps project is empty", self.id));
         }
         if self.definitions.is_empty() {
             return Err(format_err!(
-                "Azure DevOps configuration have not specified any build definitions."
+                "[{}] Azure DevOps configuration have not specified any build definitions",
+                self.id
             ));
         }
         if self.branches.is_empty() {
             return Err(format_err!(
-                "Azure DevOps configuration have not specified any branches."
+                "[{}] Azure DevOps configuration have not specified any branches",
+                self.id
             ));
         }
-        Ok(())
-    }
-}
 
-impl Validate for AzureDevOpsCredentials {
-    fn validate(&self) -> DuckResult<()> {
-        match self {
+        match &self.credentials {
             AzureDevOpsCredentials::Anonymous => {}
             AzureDevOpsCredentials::PersonalAccessToken(token) => {
                 if token.is_empty() {
-                    return Err(format_err!("Azure DevOps PAT token is empty."));
+                    return Err(format_err!("[{}] Azure DevOps PAT token is empty", self.id));
                 }
             }
         };
+
         Ok(())
     }
 }
@@ -48,7 +45,7 @@ mod tests {
     use crate::utils::text::TestVariableProvider;
 
     #[test]
-    #[should_panic(expected = "The id \\'\\' is invalid.")]
+    #[should_panic(expected = "The id \\'\\' is invalid")]
     fn should_return_error_if_azure_devops_id_is_empty() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -75,7 +72,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Azure DevOps organization is empty.")]
+    #[should_panic(expected = "[foo] Azure DevOps organization is empty")]
     fn should_return_error_if_azure_devops_organization_is_empty() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -102,7 +99,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Azure DevOps project is empty.")]
+    #[should_panic(expected = "[foo] Azure DevOps project is empty")]
     fn should_return_error_if_azure_devops_project_is_empty() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -130,7 +127,7 @@ mod tests {
 
     #[test]
     #[should_panic(
-        expected = "Azure DevOps configuration have not specified any build definitions."
+        expected = "[foo] Azure DevOps configuration have not specified any build definitions"
     )]
     fn should_return_error_if_azure_devops_definitions_are_empty() {
         let config = Configuration::from_json(
@@ -158,7 +155,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Azure DevOps configuration have not specified any branches.")]
+    #[should_panic(expected = "[foo] Azure DevOps configuration have not specified any branches")]
     fn should_return_error_if_azure_devops_branches_are_empty() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -185,7 +182,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Azure DevOps PAT token is empty.")]
+    #[should_panic(expected = "[foo] Azure DevOps PAT token is empty")]
     fn should_return_error_if_azure_devops_token_is_empty() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -201,7 +198,7 @@ mod tests {
                                 "pat": ""
                             },
                             "definitions": [ "1", "3", "5" ],
-                            "branches": [ ]
+                            "branches": [ "refs/heads/develop" ]
                         }
                     }
                 ] 

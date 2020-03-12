@@ -4,22 +4,22 @@ use crate::DuckResult;
 impl Validate for GitHubConfiguration {
     fn validate(&self) -> DuckResult<()> {
         if self.owner.is_empty() {
-            return Err(format_err!("GitHub owner is empty."));
+            return Err(format_err!("[{}] GitHub owner is empty", self.id));
         }
         if self.repository.is_empty() {
-            return Err(format_err!("GitHub repository is empty."));
+            return Err(format_err!("[{}] GitHub repository is empty", self.id));
         }
         if self.workflow.is_empty() {
-            return Err(format_err!("GitHub workflow is empty."));
+            return Err(format_err!("[{}] GitHub workflow is empty", self.id));
         }
 
         match &self.credentials {
             GitHubCredentials::Basic { username, password } => {
                 if username.is_empty() {
-                    return Err(format_err!("GitHub username is empty."));
+                    return Err(format_err!("[{}] GitHub username is empty", self.id));
                 }
                 if password.is_empty() {
-                    return Err(format_err!("GitHub password is empty."));
+                    return Err(format_err!("[{}] GitHub password is empty", self.id));
                 }
             }
         };
@@ -35,7 +35,7 @@ mod tests {
     use crate::utils::text::TestVariableProvider;
 
     #[test]
-    #[should_panic(expected = "The id \\'\\' is invalid.")]
+    #[should_panic(expected = "The id \\'\\' is invalid")]
     fn should_return_error_if_github_id_is_empty() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -66,7 +66,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "GitHub owner is empty.")]
+    #[should_panic(expected = "[duck_pullrequests] GitHub owner is empty")]
     fn should_return_error_if_github_owner_is_empty() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -97,7 +97,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "GitHub repository is empty.")]
+    #[should_panic(expected = "[duck_pullrequests] GitHub repository is empty")]
     fn should_return_error_if_github_repository_is_empty() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -128,7 +128,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "GitHub workflow is empty.")]
+    #[should_panic(expected = "[duck_pullrequests] GitHub workflow is empty")]
     fn should_return_error_if_github_workflow_is_empty() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -159,7 +159,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "GitHub username is empty.")]
+    #[should_panic(expected = "[duck_pullrequests] GitHub username is empty")]
     fn should_return_error_if_github_username_is_empty() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -191,7 +191,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "GitHub password is empty.")]
+    #[should_panic(expected = "[duck_pullrequests] GitHub password is empty")]
     fn should_return_error_if_github_password_is_empty() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),

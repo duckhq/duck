@@ -1,67 +1,58 @@
 use url::Url;
 
-use crate::config::{
-    OctopusDeployConfiguration, OctopusDeployCredentials, OctopusDeployProject, Validate,
-};
+use crate::config::{OctopusDeployConfiguration, OctopusDeployCredentials, Validate};
 use crate::DuckResult;
 
 impl Validate for OctopusDeployConfiguration {
     fn validate(&self) -> DuckResult<()> {
-        self.credentials.validate()?;
-
-        if self.id.is_empty() {
-            return Err(format_err!("Octopus Deploy collector have no ID."));
-        }
         if let Err(e) = Url::parse(&self.server_url[..]) {
-            return Err(format_err!("Octopus Deploy server URL is invalid: {}", e));
+            return Err(format_err!(
+                "[{}] Octopus Deploy server URL is invalid: {}",
+                self.id,
+                e
+            ));
         }
 
         if self.projects.is_empty() {
             return Err(format_err!(
-                "Octopus Deploy collector '{}' have no configured projects.",
+                "[{}] Octopus Deploy projects are empty",
                 self.id
             ));
         }
+
         for project in self.projects.iter() {
-            project.validate()?;
+            if project.project_id.is_empty() {
+                return Err(format_err!(
+                    "[{}] Octopus Deploy project name is empty",
+                    self.id
+                ));
+            }
+            if project.environments.is_empty() {
+                return Err(format_err!(
+                    "[{}] The Octopus Deploy project '{}' contains no environments",
+                    self.id,
+                    project.project_id
+                ));
+            }
+            for environment in project.environments.iter() {
+                if environment.is_empty() {
+                    return Err(format_err!(
+                        "[{}] An Octopus Deploy environment in project '{}' is empty",
+                        self.id,
+                        project.project_id
+                    ));
+                }
+            }
         }
 
-        Ok(())
-    }
-}
-
-impl Validate for OctopusDeployCredentials {
-    fn validate(&self) -> DuckResult<()> {
-        match self {
+        match &self.credentials {
             OctopusDeployCredentials::ApiKey(key) => {
                 if key.is_empty() {
-                    return Err(format_err!("Octopus Deploy API key is empty."));
+                    return Err(format_err!("[{}] Octopus Deploy API key is empty", self.id));
                 }
             }
         };
-        Ok(())
-    }
-}
 
-impl Validate for OctopusDeployProject {
-    fn validate(&self) -> DuckResult<()> {
-        if self.project_id.is_empty() {
-            return Err(format_err!("Octopus Deploy project name is empty."));
-        }
-        if self.environments.is_empty() {
-            return Err(format_err!(
-                "The Octopus Deploy project '{}' contains no environments.",
-                self.project_id
-            ));
-        }
-        for environment in self.environments.iter() {
-            if environment.is_empty() {
-                return Err(format_err!(
-                    "An Octopus Deploy environment in project '{}' is empty.",
-                    self.project_id
-                ));
-            }
-        }
         Ok(())
     }
 }
@@ -73,7 +64,7 @@ mod tests {
     use crate::utils::text::TestVariableProvider;
 
     #[test]
-    #[should_panic(expected = "The id \\'\\' is invalid.")]
+    #[should_panic(expected = "The id \\'\\' is invalid")]
     fn should_return_error_if_octopus_deploy_id_is_empty() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -109,7 +100,9 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Octopus Deploy server URL is invalid: relative URL without a base")]
+    #[should_panic(
+        expected = "[foo] Octopus Deploy server URL is invalid: relative URL without a base"
+    )]
     fn should_return_error_if_server_url_is_empty_or_invalid() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -118,7 +111,7 @@ mod tests {
                 "collectors": [ 
                     {
                         "octopus": {
-                            "id": "octopus",
+                            "id": "foo",
                             "serverUrl": "",
                             "credentials": {
                                 "apiKey": "MY-SECRET-API-KEY"
@@ -145,7 +138,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Octopus Deploy API key is empty.")]
+    #[should_panic(expected = "[foo] Octopus Deploy API key is empty")]
     fn should_return_error_if_api_key_is_empty() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -154,7 +147,7 @@ mod tests {
                 "collectors": [ 
                     {
                         "octopus": {
-                            "id": "octopus",
+                            "id": "foo",
                             "serverUrl": "http://localhost:9000",
                             "credentials": {
                                 "apiKey": ""
@@ -181,9 +174,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(
-        expected = "Octopus Deploy collector \\'octopus\\' have no configured projects."
-    )]
+    #[should_panic(expected = "[foo] Octopus Deploy projects are empty")]
     fn should_return_error_if_there_are_no_projects() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -192,7 +183,7 @@ mod tests {
                 "collectors": [ 
                     {
                         "octopus": {
-                            "id": "octopus",
+                            "id": "foo",
                             "serverUrl": "http://localhost:9000",
                             "credentials": {
                                 "apiKey": "MY-SECRET-API-KEY"
@@ -210,7 +201,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Octopus Deploy project name is empty.")]
+    #[should_panic(expected = "[foo] Octopus Deploy project name is empty")]
     fn should_return_error_if_project_name_is_empty() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -219,7 +210,7 @@ mod tests {
                 "collectors": [ 
                     {
                         "octopus": {
-                            "id": "octopus",
+                            "id": "foo",
                             "serverUrl": "http://localhost:9000",
                             "credentials": {
                                 "apiKey": "MY-SECRET-API-KEY"
@@ -246,7 +237,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "An Octopus Deploy environment in project \\'foo\\' is empty.")]
+    #[should_panic(expected = "[foo] An Octopus Deploy environment in project \\'bar\\' is empty")]
     fn should_return_error_if_environment_name_is_empty() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -255,14 +246,14 @@ mod tests {
                 "collectors": [ 
                     {
                         "octopus": {
-                            "id": "octopus",
+                            "id": "foo",
                             "serverUrl": "http://localhost:9000",
                             "credentials": {
                                 "apiKey": "MY-SECRET-API-KEY"
                             },
                             "projects": [
                                 {
-                                    "projectId": "foo",
+                                    "projectId": "bar",
                                     "environments": [
                                         "Development", 
                                         "Staging",
@@ -282,7 +273,9 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "The Octopus Deploy project \\'foo\\' contains no environments.")]
+    #[should_panic(
+        expected = "[foo] The Octopus Deploy project \\'bar\\' contains no environments"
+    )]
     fn should_return_error_if_there_are_no_environments_in_projects() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -291,14 +284,14 @@ mod tests {
                 "collectors": [ 
                     {
                         "octopus": {
-                            "id": "octopus",
+                            "id": "foo",
                             "serverUrl": "http://localhost:9000",
                             "credentials": {
                                 "apiKey": "MY-SECRET-API-KEY"
                             },
                             "projects": [
                                 {
-                                    "projectId": "foo",
+                                    "projectId": "bar",
                                     "environments": [ ]
                                 }
                             ]

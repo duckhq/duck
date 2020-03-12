@@ -1,7 +1,7 @@
 use log::{trace, warn};
 
 use crate::builds::BuildStatus;
-use crate::config::{AppVeyorCredentials, AppVeyorConfiguration};
+use crate::config::{AppVeyorConfiguration, AppVeyorCredentials};
 use crate::utils::date;
 use crate::utils::http::*;
 use crate::DuckResult;

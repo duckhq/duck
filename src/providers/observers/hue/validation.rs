@@ -5,14 +5,11 @@ use crate::DuckResult;
 
 impl Validate for HueConfiguration {
     fn validate(&self) -> DuckResult<()> {
-        if self.id.is_empty() {
-            return Err(format_err!("Hue ID is empty."));
-        }
         if let Err(e) = Url::parse(&self.hub_url[..]) {
-            return Err(format_err!("Hue hub URL is invalid: {}", e));
+            return Err(format_err!("[{}] Hue hub URL is invalid: {}", self.id, e));
         }
         if self.username.is_empty() {
-            return Err(format_err!("Hue username is empty."));
+            return Err(format_err!("[{}] Hue username is empty", self.id));
         }
         Ok(())
     }
@@ -25,7 +22,7 @@ mod tests {
     use crate::utils::text::TestVariableProvider;
 
     #[test]
-    #[should_panic(expected = "The id \\'\\' is invalid.")]
+    #[should_panic(expected = "The id \\'\\' is invalid")]
     fn should_return_error_if_hue_id_is_empty() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -51,7 +48,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Hue hub URL is invalid: relative URL without a base")]
+    #[should_panic(expected = "[bar] Hue hub URL is invalid: relative URL without a base")]
     fn should_return_error_if_hue_hub_url_is_empty() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -77,7 +74,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Hue username is empty.")]
+    #[should_panic(expected = "[bar] Hue username is empty")]
     fn should_return_error_if_hue_username_is_empty() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),

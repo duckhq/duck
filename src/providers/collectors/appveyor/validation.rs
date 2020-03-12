@@ -4,15 +4,15 @@ use crate::DuckResult;
 impl Validate for AppVeyorConfiguration {
     fn validate(&self) -> DuckResult<()> {
         if self.account.is_empty() {
-            return Err(format_err!("AppVeyor account is empty"));
+            return Err(format_err!("[{}] AppVeyor account is empty", self.id));
         }
         if self.project.is_empty() {
-            return Err(format_err!("AppVeyor project is empty"));
+            return Err(format_err!("[{}] AppVeyor project is empty", self.id));
         }
         match &self.credentials {
             crate::config::AppVeyorCredentials::Bearer(token) => {
                 if token.is_empty() {
-                    return Err(format_err!("AppVeyor bearer token is empty"));
+                    return Err(format_err!("[{}] AppVeyor bearer token is empty", self.id));
                 }
             }
         };
@@ -36,7 +36,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "The id \\'\\' is invalid.")]
+    #[should_panic(expected = "The id \\'\\' is invalid")]
     fn should_return_error_if_id_is_empty() {
         create_collectors_from_config(
             r#"
@@ -59,7 +59,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "AppVeyor bearer token is empty")]
+    #[should_panic(expected = "[appveyor_spectrecli] AppVeyor bearer token is empty")]
     fn should_return_error_if_credentials_is_empty() {
         create_collectors_from_config(
             r#"
@@ -82,7 +82,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "AppVeyor account is empty")]
+    #[should_panic(expected = "[appveyor_spectrecli] AppVeyor account is empty")]
     fn should_return_error_if_account_is_empty() {
         create_collectors_from_config(
             r#"
@@ -105,7 +105,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "AppVeyor project is empty")]
+    #[should_panic(expected = "[appveyor_spectrecli] AppVeyor project is empty")]
     fn should_return_error_if_project_is_empty() {
         create_collectors_from_config(
             r#"

@@ -5,13 +5,14 @@ use crate::DuckResult;
 
 impl Validate for SlackConfiguration {
     fn validate(&self) -> DuckResult<()> {
-        if self.id.is_empty() {
-            return Err(format_err!("Slack observer have no ID."));
-        }
         match &self.credentials {
             SlackCredentials::Webhook { url } => {
                 if let Err(e) = Url::parse(url) {
-                    return Err(format_err!("Slack webhook URL is invalid: {}", e));
+                    return Err(format_err!(
+                        "[{}] Slack webhook URL is invalid: {}",
+                        self.id,
+                        e
+                    ));
                 }
             }
         };
@@ -26,7 +27,7 @@ mod tests {
     use crate::utils::text::TestVariableProvider;
 
     #[test]
-    #[should_panic(expected = "The id \\'\\' is invalid.")]
+    #[should_panic(expected = "The id \\'\\' is invalid")]
     fn should_return_error_if_slack_id_is_empty() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -54,7 +55,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Slack webhook URL is invalid: relative URL without a base")]
+    #[should_panic(expected = "[foo] Slack webhook URL is invalid: relative URL without a base")]
     fn should_return_error_if_slack_webhook_url_is_invalid() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),

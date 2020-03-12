@@ -9,7 +9,7 @@ use crate::DuckResult;
 impl Validate for Configuration {
     fn validate(&self) -> DuckResult<()> {
         if self.collectors.is_empty() {
-            warn!("No collectors have been specified.");
+            warn!("No collectors have been specified");
         }
 
         validate_views(&self)?;
@@ -38,11 +38,11 @@ fn validate_views(configuration: &Configuration) -> DuckResult<()> {
         let mut known_ids = HashSet::<String>::new();
         for view in views.iter() {
             if !valid_id_pattern.is_match(&view.id) {
-                return Err(format_err!("The view id '{}' is invalid.", view.id));
+                return Err(format_err!("The view id '{}' is invalid", view.id));
             }
             if known_ids.contains(&view.id) {
                 return Err(format_err!(
-                    "Found duplicate view id '{}' in configuration.",
+                    "Found duplicate view id '{}' in configuration",
                     view.id
                 ));
             }
@@ -59,10 +59,10 @@ fn validate_ids(configuration: &Configuration) -> DuckResult<()> {
     let valid_id_pattern = Regex::new(r"^[a-zA-Z0-9_]+$")?;
     for id in configuration.get_all_ids() {
         if !valid_id_pattern.is_match(&id) {
-            return Err(format_err!("The id '{}' is invalid.", id));
+            return Err(format_err!("The id '{}' is invalid", id));
         }
         if unique_ids.contains(&id) {
-            return Err(format_err!("Found duplicate id '{}' in configuration.", id));
+            return Err(format_err!("Found duplicate id '{}' in configuration", id));
         }
         unique_ids.insert(id);
     }
@@ -85,7 +85,7 @@ fn validate_collector_references(configuration: &Configuration) -> DuckResult<()
                     if !collectors.contains_key(&reference) {
                         // The referenced collector does not exist.
                         return Err(format_err!(
-                            "The observer '{}' is dependent on collector '{}' which do not exist.",
+                            "The observer '{}' is dependent on collector '{}' which do not exist",
                             observer.get_id(),
                             reference
                         ));
@@ -95,7 +95,7 @@ fn validate_collector_references(configuration: &Configuration) -> DuckResult<()
                         if let Some(enabled) = collectors.get(&reference) {
                             if !enabled {
                                 warn!(
-                                    "The observer '{}' is dependent on disabled collector '{}'.",
+                                    "The observer '{}' is dependent on disabled collector '{}'",
                                     observer.get_id(),
                                     reference
                                 );
@@ -119,7 +119,7 @@ mod tests {
     use crate::utils::text::TestVariableProvider;
 
     #[test]
-    #[should_panic(expected = "Found duplicate view id \\'foo\\' in configuration.")]
+    #[should_panic(expected = "Found duplicate view id \\'foo\\' in configuration")]
     fn should_return_error_if_views_have_the_same_id() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -146,7 +146,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "The view id \\'foo bar\\' is invalid.")]
+    #[should_panic(expected = "The view id \\'foo bar\\' is invalid")]
     fn should_return_error_if_a_view_have_an_invalid_id() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -168,7 +168,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Found duplicate id \\'foo\\' in configuration.")]
+    #[should_panic(expected = "Found duplicate id \\'foo\\' in configuration")]
     fn should_return_error_if_two_collectors_have_the_same_id() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -200,7 +200,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Found duplicate id \\'foo\\' in configuration.")]
+    #[should_panic(expected = "Found duplicate id \\'foo\\' in configuration")]
     fn should_return_error_if_a_collector_and_an_observer_have_the_same_id() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -235,7 +235,7 @@ mod tests {
 
     #[test]
     #[should_panic(
-        expected = "The observer \\'bar\\' is dependent on collector \\'baz\\' which do not exist."
+        expected = "The observer \\'bar\\' is dependent on collector \\'baz\\' which do not exist"
     )]
     fn should_return_error_if_an_observer_is_dependent_on_non_existing_collector() {
         let config = Configuration::from_json(

@@ -5,28 +5,24 @@ use crate::DuckResult;
 
 impl Validate for MattermostConfiguration {
     fn validate(&self) -> DuckResult<()> {
-        self.credentials.validate()?;
-        if self.id.is_empty() {
-            return Err(format_err!("Mattermost observer have no ID."));
-        }
         if let Some(channel) = &self.channel {
             if channel.is_empty() {
-                return Err(format_err!("Mattermost channel is empty."));
+                return Err(format_err!("[{}] Mattermost channel is empty", self.id));
             }
         }
-        Ok(())
-    }
-}
 
-impl Validate for MattermostCredentials {
-    fn validate(&self) -> DuckResult<()> {
-        match self {
+        match &self.credentials {
             MattermostCredentials::Webhook { url } => {
                 if let Err(e) = Url::parse(url) {
-                    return Err(format_err!("Mattermost webhook URL is invalid: {}", e));
+                    return Err(format_err!(
+                        "[{}] Mattermost webhook URL is invalid: {}",
+                        self.id,
+                        e
+                    ));
                 }
             }
         };
+
         Ok(())
     }
 }
@@ -38,7 +34,7 @@ mod tests {
     use crate::utils::text::TestVariableProvider;
 
     #[test]
-    #[should_panic(expected = "The id \\'\\' is invalid.")]
+    #[should_panic(expected = "The id \\'\\' is invalid")]
     fn should_return_error_if_mattermost_id_is_empty() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -66,7 +62,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Mattermost channel is empty.")]
+    #[should_panic(expected = "[foo] Mattermost channel is empty")]
     fn should_return_error_if_mattermost_channel_is_empty() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -76,7 +72,7 @@ mod tests {
                 "observers": [
                     {
                         "mattermost": {
-                            "id": "bar",
+                            "id": "foo",
                             "channel": "",
                             "credentials": {
                                 "webhook": {
@@ -95,7 +91,9 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Mattermost webhook URL is invalid: relative URL without a base")]
+    #[should_panic(
+        expected = "[foo] Mattermost webhook URL is invalid: relative URL without a base"
+    )]
     fn should_return_error_if_mattermost_webhook_url_is_invalid() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -105,7 +103,7 @@ mod tests {
                 "observers": [
                     {
                         "mattermost": {
-                            "id": "bar",
+                            "id": "foo",
                             "credentials": {
                                 "webhook": {
                                     "url": ""
