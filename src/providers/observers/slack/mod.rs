@@ -16,23 +16,7 @@ mod validation;
 
 impl ObserverLoader for SlackConfiguration {
     fn load(&self) -> DuckResult<Box<dyn Observer>> {
-        Ok(Box::new(SlackObserver::<ReqwestClient> {
-            client: SlackClient::new(self),
-            http: Default::default(),
-            info: ObserverInfo {
-                id: self.id.clone(),
-                enabled: match self.enabled {
-                    None => true,
-                    Some(e) => e,
-                },
-                collectors: match &self.collectors {
-                    Option::None => Option::None,
-                    Option::Some(collectors) => {
-                        Some(HashSet::from_iter(collectors.iter().cloned()))
-                    }
-                },
-            },
-        }))
+        Ok(Box::new(SlackObserver::<ReqwestClient>::new(self)))
     }
 }
 
@@ -43,7 +27,6 @@ pub struct SlackObserver<T: HttpClient + Default> {
 }
 
 impl<T: HttpClient + Default> SlackObserver<T> {
-    #[cfg(test)]
     pub fn new(config: &SlackConfiguration) -> Self {
         SlackObserver {
             client: SlackClient::new(config),

@@ -15,18 +15,7 @@ mod validation;
 
 impl CollectorLoader for GitHubConfiguration {
     fn load(&self) -> DuckResult<Box<dyn Collector>> {
-        Ok(Box::new(GitHubCollector::<ReqwestClient> {
-            client: GitHubClient::new(self),
-            http: Default::default(),
-            info: CollectorInfo {
-                id: self.id.clone(),
-                enabled: match self.enabled {
-                    Option::None => true,
-                    Option::Some(e) => e,
-                },
-                provider: BuildProvider::AzureDevOps,
-            },
-        }))
+        Ok(Box::new(GitHubCollector::<ReqwestClient>::new(self)))
     }
 }
 
@@ -37,7 +26,6 @@ pub struct GitHubCollector<T: HttpClient + Default> {
 }
 
 impl<T: HttpClient + Default> GitHubCollector<T> {
-    #[cfg(test)]
     pub fn new(config: &GitHubConfiguration) -> Self {
         return GitHubCollector {
             client: GitHubClient::new(config),
