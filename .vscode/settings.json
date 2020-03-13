@@ -1,6 +1,5 @@
 {
     "files.exclude": {
-        ".github": true,
         ".vscode": true,
         "Cargo.lock": true,
         "CODE_OF_CONDUCT.md": true,

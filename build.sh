@@ -24,8 +24,8 @@ fi
 # Update versions?
 if [ $UPDATE ]; then
   if [ ! -z $VERSION ]; then
-    sed -i -e "/version/ s/[[:digit:]].[[:digit:]].[[:digit:]]/$VERSION/" Cargo.toml
-    sed -i -e "/version/ s/[[:digit:]].[[:digit:]].[[:digit:]]/$VERSION/" web/package.json
+    sed -i -e "/^version/ s/[[:digit:]][[:digit:]]*.[[:digit:]][[:digit:]]*.[[:digit:]][[:digit:]]*/$VERSION/" Cargo.toml
+    sed -i -e "/version/ s/[[:digit:]][[:digit:]]*.[[:digit:]][[:digit:]]*.[[:digit:]][[:digit:]]*/$VERSION/" web/package.json
   else
     echo "You must specify a version using the --version option."
     exit -1;

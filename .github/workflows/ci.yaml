@@ -1,0 +1,184 @@
+name: Continuous Integration
+on: [push, pull_request]
+
+jobs:
+  lint:
+    name: Lint
+    if: "!contains(github.event.head_commit.message, 'skip-ci')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      # Check rustfmt
+      - name: Install rustfmt
+        run: rustup component add rustfmt
+      - name: check rustfmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: -- --check --color always
+
+      # Check clippy
+      - name: Install clippy
+        run: rustup component add clippy
+      - name: Run cargo fetch
+        uses: actions-rs/cargo@v1
+        with:
+          command: fetch
+      - name: Run cargo clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --lib --bin duck -- -D warnings
+
+  test:
+    name: Test
+    if: "!contains(github.event.head_commit.message, 'skip-ci')"
+    strategy:
+      matrix:
+        kind: ['linux']
+        include:
+          - kind: linux
+            os: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: cargo fetch
+        uses: actions-rs/cargo@v1
+        with:
+          command: fetch
+      - name: cargo test build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --tests
+      - name: cargo test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+
+  release:
+    name: Release
+    needs: [test]
+    if: startsWith(github.ref, 'refs/tags/')
+    strategy:
+      matrix:
+        kind: ['linux', 'rpi', 'windows']
+        include:
+          - kind: linux
+            os: ubuntu-latest
+            rust: stable
+            target: x86_64-unknown-linux-musl
+            bin: duck
+          - kind: rpi
+            os: ubuntu-latest
+            rust: stable
+            target: armv7-unknown-linux-gnueabihf
+            bin: duck
+          - kind: windows
+            os: windows-latest
+            rust: stable
+            target: x86_64-pc-windows-msvc
+            bin: duck.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+          target: ${{ matrix.target }}
+      - name: Install musl tools
+        if: matrix.target == 'x86_64-unknown-linux-musl'
+        run: |
+          sudo apt-get install -y musl-tools
+      - name: Install ARM tools
+        if: matrix.target == 'armv7-unknown-linux-gnueabihf'
+        run: |
+          sudo apt-get update --fix-missing -y
+          sudo apt-get install -y build-essential gcc-arm-linux-gnueabihf
+          rustup target add armv7-unknown-linux-gnueabihf
+          cat >>~/.cargo/config <<EOF
+          [target.armv7-unknown-linux-gnueabihf]
+          linker = "arm-linux-gnueabihf-gcc"
+          EOF
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Build web
+        run: |
+          cd web
+          npm install
+          npm run build
+      - name: Fetch crates
+        uses: actions-rs/cargo@v1
+        with:
+          command: fetch
+          args: --target ${{ matrix.target }}
+      - name: Release build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --target ${{ matrix.target }} --features embedded-web
+      - name: Package
+        shell: bash
+        run: |
+          name=duck
+          tag=$(git describe --tags --abbrev=0)
+          release_name="$name-$tag-${{ matrix.target }}"
+          mkdir "$release_name"
+
+          if [ "${{ matrix.target }}" != "x86_64-pc-windows-msvc" ]; then
+            if [ "${{ matrix.target }}" != "armv7-unknown-linux-gnueabihf" ]; then
+              strip "target/${{ matrix.target }}/release/${{ matrix.bin }}"
+            fi
+          fi
+
+          cp "target/${{ matrix.target }}/release/${{ matrix.bin }}" "$release_name/"
+          cp LICENSE "$release_name/"
+
+          if [ "${{ matrix.target }}" != "x86_64-pc-windows-msvc" ]; then
+            tar czvf "${release_name}.tar.gz" "$release_name"
+          else
+            7z a -tzip "${release_name}.zip" "./${release_name}/*"
+          fi
+
+          rm -r "$release_name"
+      - name: Publish
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          files: "duck*"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  docker:
+    name: Docker
+    needs: [test]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v1
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      - name: Build Docker image
+        run: |
+          ./build.sh --docker --version ${{ steps.get_version.outputs.VERSION }}
+      - name: Publish Docker image
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_TOKEN }}
+        run: |
+          docker login -u ${DOCKER_USERNAME} -p "${DOCKER_PASSWORD}"
+          docker push duckhq/duck:latest
+          docker push duckhq/duck:${{ steps.get_version.outputs.VERSION }}
+          docker push spectresystems/duck:latest
+          docker push spectresystems/duck:${{ steps.get_version.outputs.VERSION }}
