@@ -61,7 +61,7 @@ impl AzureDevOpsCredentials {
         match self {
             AzureDevOpsCredentials::Anonymous => builder,
             AzureDevOpsCredentials::PersonalAccessToken(token) => {
-                (builder.basic_auth("", Some(token)))
+                builder.basic_auth("", Some(token))
             }
         }
     }

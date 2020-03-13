@@ -88,7 +88,7 @@ impl TeamCityAuth {
         return match self {
             TeamCityAuth::Guest => builder,
             TeamCityAuth::BasicAuth { username, password } => {
-                (builder.basic_auth(username, Some(password)))
+                builder.basic_auth(username, Some(password))
             }
         };
     }
