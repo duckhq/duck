@@ -41,7 +41,7 @@ pub async fn start_and_block(
                 // Bind to host container
                 info!("Duck is compiled for docker, so binding to host container.");
                 DOCKER_SERVER_ADDRESS
-            } else if cfg!(feature = "embedded-web") { 
+            } else if cfg!(feature = "embedded-web") {
                 // Bind to port 8080
                 info!("Duck is compiled with embedded content, so binding to port 8080.");
                 EMBEDDED_SERVER_ADDRESS
@@ -70,9 +70,7 @@ pub async fn start_and_block(
         // Serve embedded web?
         if cfg!(feature = "embedded-web") {
             let generated = generate();
-            return app.service(actix_web_static_files::ResourceFiles::new(
-                "/", generated,
-            ));
+            return app.service(actix_web_static_files::ResourceFiles::new("/", generated));
         }
 
         return app;

@@ -1,9 +1,9 @@
+use actix_web_static_files::resource_dir;
 use std::env;
 use std::path::Path;
-use actix_web_static_files::resource_dir;
 fn main() {
     // Embed the web server?
-    if let Ok(_) = env::var("CARGO_FEATURE_EMBEDDED_WEB") {
+    if env::var("CARGO_FEATURE_EMBEDDED_WEB").is_ok() {
         let dir = Path::new("./web/dist");
         if !dir.exists() {
             panic!("The UI have not been built.");
