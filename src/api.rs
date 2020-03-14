@@ -43,7 +43,7 @@ pub async fn start_and_block(
                 DOCKER_SERVER_ADDRESS
             } else if cfg!(feature = "embedded-web") {
                 // Bind to port 8080
-                info!("Duck is compiled with embedded content, so binding to port 8080.");
+                info!("Duck is compiled with embedded UI, so binding to port 8080.");
                 EMBEDDED_SERVER_ADDRESS
             } else {
                 // Bind to localhost
@@ -51,6 +51,11 @@ pub async fn start_and_block(
             }
         }
     };
+
+    // Are we running embedded web?
+    if cfg!(feature = "embedded-web") {
+        info!("Serving embedded UI.");
+    }
 
     info!("Duck server address: {}", bind);
 
