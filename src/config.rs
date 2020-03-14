@@ -35,8 +35,28 @@ pub struct Configuration {
 
 impl Configuration {
     pub fn from_file(variables: &impl VariableProvider, path: PathBuf) -> DuckResult<Self> {
+        if !path.exists() {
+            if cfg!(feature = "docker") {
+                return Err(format_err!(
+                    "The configuration '{}' does not exist. Have you added a Docker volume mapping?",
+                    path.to_str().unwrap()
+                ));
+            }
+            return Err(format_err!(
+                "The configuration '{}' does not exist",
+                path.to_str().unwrap()
+            ));
+        }
+        let json = std::fs::read_to_string(path)?;
+        Configuration::from_json(variables, json)
+    }
+
+    pub fn from_json<T: Into<String>>(
+        variables: &impl VariableProvider,
+        json: T,
+    ) -> DuckResult<Self> {
         let expander = &Expander::new(variables);
-        let json = expander.expand(std::fs::read_to_string(path)?)?;
+        let json = expander.expand(json)?;
         let config: Configuration = serde_json::from_str(&json[..])?;
         config.validate()?;
         Ok(config)
@@ -50,18 +70,6 @@ impl Configuration {
             "collectors": []
         }"#,
         );
-    }
-
-    #[allow(dead_code)]
-    pub fn from_json<T: Into<String>>(
-        variables: &impl VariableProvider,
-        json: T,
-    ) -> DuckResult<Self> {
-        let expander = &Expander::new(variables);
-        let json = expander.expand(json)?;
-        let config: Configuration = serde_json::from_str(&json[..])?;
-        config.validate()?;
-        Ok(config)
     }
 
     pub fn get_title(&self) -> &str {
