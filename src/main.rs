@@ -43,6 +43,8 @@ enum Command {
     Start(commands::start::Arguments),
     /// Generates the JSON schema
     Schema(commands::schema::Arguments),
+    /// Validates the Duck configuration
+    Validate(commands::validate::Arguments),
 }
 
 impl Command {
@@ -50,6 +52,7 @@ impl Command {
         match self {
             Command::Start(_) => true,
             Command::Schema(_) => false,
+            Command::Validate(_) => false,
         }
     }
 }
@@ -72,6 +75,7 @@ async fn main() {
     let result = match args.command {
         Command::Start(args) => commands::start::execute(args).await,
         Command::Schema(args) => commands::schema::execute(args).await,
+        Command::Validate(args) => commands::validate::execute(args).await,
     };
 
     // Return the correct exit code

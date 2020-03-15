@@ -65,3 +65,12 @@ pub fn get_schema() -> String {
     let schema = gen.into_root_schema_for::<config::Configuration>();
     serde_json::to_string_pretty(&schema).unwrap()
 }
+
+///////////////////////////////////////////////////////////
+// Validate
+
+pub async fn validate_config<T: Into<PathBuf>>(config_path: T) -> DuckResult<()> {
+    // Load and validate the configuration file.
+    Configuration::from_file(&EnvironmentVariableProvider::new(), config_path.into())?;
+    Ok(())
+}
