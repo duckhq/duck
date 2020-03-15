@@ -105,6 +105,7 @@ export default {
       }.bind(this),
       5000
     );
+    store.update(this.$Progress, this.$route.query.view);
   }
 };
 </script>
