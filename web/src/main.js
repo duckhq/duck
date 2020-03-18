@@ -9,6 +9,7 @@ import { data } from "@/js/store.js";
 
 import 'semantic-ui-css/semantic.min.css';
 import '@/css/card.css';
+import "@/assets/styles/main.css";
 
 Vue.component('vue-headful', vueHeadful);
 
