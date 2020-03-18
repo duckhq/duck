@@ -101,11 +101,11 @@ export default {
     setInterval(
       function() {
         // Load data for the current view.
-        store.update(this.$Progress, this.$route.query.server, this.$route.query.view);
+        store.update(this.$Progress, process.env.VUE_APP_MY_DUCK_SERVER || this.$route.query.server, this.$route.query.view);
       }.bind(this),
       5000
     );
-    store.update(this.$Progress, this.$route.query.view);
+    store.update(this.$Progress, process.env.VUE_APP_MY_DUCK_SERVER || this.$route.query.server,  this.$route.query.view);
   }
 };
 </script>

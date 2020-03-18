@@ -1,0 +1,26 @@
+version: '3'
+services:
+  app:
+    image: duckhq/app:dev
+    build: 
+      context: .
+      dockerfile: app.dev.dockerfile
+    ports:
+      - "15825:15825"
+    volumes:
+      - './:/home/rust/src/duck'
+    container_name: duck-app
+  ui:
+    image: duckhq/ui:dev
+    environment:
+      - VUE_APP_MY_DUCK_SERVER=http://localhost:15825
+    build:
+      context: .
+      dockerfile: ui.dev.dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - './web:/ui'
+    container_name: duck-ui
+    depends_on: 
+      - app

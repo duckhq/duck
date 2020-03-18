@@ -25,6 +25,16 @@ The absolute easiest way of getting started with Duck is to use the docker image
 
 *If you're using WSL, you will need to specify the absolute path to your data directory.*
 
+## Development
+
+There is also a Docker Compose file and separate dockerfiles for running Duck in docker for development. This runs two different containers: one for the rust app and one for the Vue UI. Both containers are set up to watch for changes to their respective source code.
+
+```
+> docker-compose up
+```
+
+*__Note:__ Although the `ui` container is set up to depend on the `app` container (to ensure that running the ui will also run the app) it is your browser which has the dependency on the app, __not__ the ui.*
+
 ## How it works
 
 The server part is responsible for collecting information from different `collectors` and forward interesting events to `observers`. The aggregated information is available for other services (such as the Vue frontend) via a HTTP API.
