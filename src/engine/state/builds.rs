@@ -111,6 +111,14 @@ impl BuildRepository {
         statuses.retain(|id, _| builds.iter().any(|b| &b.partition == id));
     }
 
+    /// Retains all builds that belong to the provided collectors.
+    pub fn retain(&self, collectors: &HashSet<String>) {
+        let mut builds = self.builds.lock().unwrap();
+        builds.retain(|b| {
+            return collectors.contains(&b.collector[..]);
+        });
+    }
+
     pub fn current_status(&self) -> BuildStatus {
         let results = self.builds.lock().unwrap();
         if results.len() == 0 {

@@ -1,83 +1,88 @@
-use std::collections::HashMap;
 use std::collections::HashSet;
+use std::sync::Mutex;
 
-use crate::config::{Configuration, ViewConfiguration};
+use crate::config::ViewConfiguration;
 
 pub struct ViewRepository {
-    views: Vec<ViewConfiguration>,
-    collectors: HashMap<String, HashSet<String>>,
+    views: Mutex<Vec<ViewConfiguration>>,
 }
 
 impl ViewRepository {
-    pub fn new(config: &Configuration) -> Self {
-        let mut map = HashMap::<String, HashSet<String>>::new();
-        if let Some(views) = &config.views {
-            for view in views.iter() {
-                let mut collectors = HashSet::<String>::new();
-                for collector in view.collectors.iter() {
-                    collectors.insert(collector.clone());
-                }
-                map.insert(view.id.clone(), collectors);
-            }
-        }
-
+    pub fn new() -> Self {
         Self {
-            collectors: map,
-            views: match &config.views {
-                Some(views) => views.clone(),
-                None => vec![],
-            },
+            views: Mutex::new(Vec::new()),
         }
     }
 
-    pub fn get_collectors(&self, view_id: &str) -> Option<&HashSet<String>> {
-        self.collectors.get(view_id)
+    pub fn add_views(&self, views: &[ViewConfiguration]) {
+        let mut guard = self.views.lock().unwrap();
+        guard.clear();
+        for view in views.iter() {
+            guard.push(view.clone());
+        }
     }
 
-    pub fn get_views(&self) -> &Vec<ViewConfiguration> {
-        &self.views
+    pub fn get_collectors(&self, view_id: &str) -> Option<HashSet<String>> {
+        let guard = self.views.lock().unwrap();
+        let view = guard.iter().find(|&x| x.id == view_id);
+        if let Some(view) = view {
+            let mut result = HashSet::<String>::new();
+            for collector in view.collectors.iter() {
+                result.insert(collector.clone());
+            }
+            return Some(result);
+        }
+        None
+    }
+
+    pub fn get_views(&self) -> Vec<ViewConfiguration> {
+        let guard = self.views.lock().unwrap();
+        guard.clone()
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::config::Configuration;
     use crate::utils::text::TestVariableProvider;
 
     #[test]
     fn should_return_collectors_for_view() {
         // Given
-        let views = ViewRepository::new(
+        let repository = ViewRepository::new();
+        repository.add_views(
             &Configuration::from_json(
                 &TestVariableProvider::new(),
                 r#"
-            { 
-                "collectors": [ ],
-                "views": [
-                    {
-                        "id": "foo",
-                        "name": "Foo",
-                        "collectors": [ "a1", "a2" ]
-                    },
-                    {
-                        "id": "bar",
-                        "name": "Bar",
-                        "collectors": [ "b1", "b2", "b3" ]
-                    },
-                    {
-                        "id": "baz",
-                        "name": "Bar",
-                        "collectors": [ "c1", "c2", "c3", "c4" ]
-                    }
-                ]
-            }
-        "#,
+                { 
+                    "collectors": [ ],
+                    "views": [
+                        {
+                            "id": "foo",
+                            "name": "Foo",
+                            "collectors": [ "a1", "a2" ]
+                        },
+                        {
+                            "id": "bar",
+                            "name": "Bar",
+                            "collectors": [ "b1", "b2", "b3" ]
+                        },
+                        {
+                            "id": "baz",
+                            "name": "Bar",
+                            "collectors": [ "c1", "c2", "c3", "c4" ]
+                        }
+                    ]
+                }"#,
             )
+            .unwrap()
+            .views
             .unwrap(),
         );
 
         // When
-        let collectors = views.get_collectors("bar").unwrap();
+        let collectors = repository.get_collectors("bar").unwrap();
 
         // Then
         assert_eq!(3, collectors.len());

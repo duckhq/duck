@@ -1,6 +1,4 @@
-use std::sync::Arc;
-
-use waithandle::EventWaitHandle;
+use waithandle::WaitHandleListener;
 
 use crate::builds::{Build, BuildProvider};
 use crate::DuckResult;
@@ -19,7 +17,7 @@ pub trait Collector: Send {
     fn info(&self) -> &CollectorInfo;
     fn collect(
         &self,
-        handle: Arc<EventWaitHandle>,
+        handle: WaitHandleListener,
         callback: &mut dyn FnMut(Build),
     ) -> DuckResult<()>;
 }

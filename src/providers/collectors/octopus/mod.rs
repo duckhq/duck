@@ -44,10 +44,18 @@ impl Collector for OctopusDeployCollector {
         &self.info
     }
 
-    fn collect(&self, _: Arc<EventWaitHandle>, callback: &mut dyn FnMut(Build)) -> DuckResult<()> {
+    fn collect(
+        &self,
+        listener: WaitHandleListener,
+        callback: &mut dyn FnMut(Build),
+    ) -> DuckResult<()> {
         let response = self.client.get_dashboard()?;
 
         for project in self.projects.iter() {
+            if listener.check().unwrap() {
+                return Ok(());
+            }
+
             // Get the project from the result.
             let found_project = match response.find_project(&project.project_id[..]) {
                 Some(p) => p,
@@ -58,6 +66,10 @@ impl Collector for OctopusDeployCollector {
             };
 
             for environment in project.environments.iter() {
+                if listener.check().unwrap() {
+                    return Ok(());
+                }
+
                 // Get the environment from the result.
                 let found_environment = match response.get_environment(environment) {
                     Some(e) => e,

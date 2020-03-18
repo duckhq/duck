@@ -6,7 +6,7 @@ use actix_files as fs;
 use actix_web::web;
 use actix_web::{App, HttpServer};
 use actix_web_static_files;
-use log::info;
+use log::{debug, info};
 
 mod endpoints;
 mod models;
@@ -54,7 +54,7 @@ pub async fn start_and_block(
 
     // Are we running embedded web?
     if cfg!(feature = "embedded-web") {
-        info!("Serving embedded UI.");
+        debug!("Serving embedded UI.");
     }
 
     info!("Duck server address: {}", bind);
@@ -84,6 +84,8 @@ pub async fn start_and_block(
     .unwrap()
     .run()
     .await?;
+
+    info!("Web server stopped.");
 
     Ok(())
 }
