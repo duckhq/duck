@@ -14,7 +14,6 @@
         "tailwindcss": "^1.2.0",
         "axios": "^0.19.0",
         "core-js": "^3.4.4",
-        "semantic-ui-css": "^2.4.1",
         "vue": "^2.6.10",
         "vue-headful": "^2.1.0",
         "vue-moment": "^4.1.0",

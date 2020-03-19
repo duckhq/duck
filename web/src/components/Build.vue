@@ -1,40 +1,53 @@
 <template>
-  <div class="ui link card" :class="getBackgroundClass()" @click="navigateToBuild()">
-    <div class="content">
+  <div class="cursor-pointer text-gray-100 mx-3 p-4 rounded-lg shadow-lg hover:scale-110 lg:w-1/6" :class="getBackgroundClass()" @click="navigateToBuild()">
+    <div class="flex flex-col justify-between h-full">
       <!-- Project -->
-      <div class="header">
-        <span class="project">{{ build.project }}</span>
-        <BuildIcon :build="build" class="right floated" />
+      <div class="flex justify-between align-middle">
+        <div class="text-xl font-bold">{{ build.project }}</div>
+        <BuildIcon :build="build" class />
       </div>
-      <div class="description">
+      <div>
         <!-- Project -->
-        <div class="item">
-          <i class="hashtag icon"></i>
-          {{ build.build }}
+        <div class="my-3 flex flex-row justify-start">
+          <span>
+            <fa-icon class="font-semibold" icon="hashtag" fixed-width />
+          </span>
+          <div class="ml-2 leading-normal">{{ build.build }}</div>
         </div>
+
         <!-- Branch -->
-        <div class="item">
-          <i class="code branch icon"></i>
-          {{ build.branch }}
+        <div class="my-3 flex flex-row justify-start">
+          <span>
+            <fa-icon class="font-semibold" icon="code-branch" fixed-width />
+          </span>
+          <span class="ml-2 leading-normal">{{ build.branch }}</span>
         </div>
+
         <!-- Build number -->
-        <div class="item">
-          <StatusIcon :build="build" />
-          {{ getBuildKind() }} {{ build.buildNumber }}
+        <div class="my-3 flex flex-row justify-start">
+          <span>
+            <StatusIcon :build="build" />
+          </span>
+          <span class="ml-2">{{ getBuildKind() }} {{ build.buildNumber }}</span>
         </div>
+
       </div>
-    </div>
-    <div class="extra content">
-      <span>{{ getStatusText() }}&nbsp;</span>
-      <span v-if="build.status != 'Running'">{{ build.finished | moment("from", "now") }}</span>
-      <span v-if="build.status == 'Running'">{{ build.started | moment("from", "now") }}</span>
+      <div class="mt-2 mb-0 border-grey-100 border-t-2 pt-2 text-right">
+        <span>{{ getStatusText() }}&nbsp;</span>
+        <span class="font-semibold" v-if="build.status != 'Running'">{{ build.finished | moment("from", "now") }}</span>
+        <span v-if="build.status == 'Running'">{{ build.started | moment("from", "now") }}</span>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { faHashtag, faCodeBranch } from "@fortawesome/free-solid-svg-icons";
 import BuildIcon from "./BuildIcon.vue";
 import StatusIcon from "./StatusIcon.vue";
+
+library.add(faHashtag, faCodeBranch);
 
 export default {
   props: ["build"],
@@ -72,27 +85,23 @@ export default {
 </script>
 
 <style scoped>
-.project {
-  padding-right: 32px;
-}
-
 .success {
-  background-color: #66bb6a !important;
+  background-color: #66bb6a;
 }
 
 .failed {
-  background-color: #d84b4b !important;
+  background-color: #d84b4b;
 }
 
 .running {
-  background-color: #29b6f6 !important;
+  background-color: #29b6f6;
 }
 
 .canceled {
-  background-color: #999999 !important;
+  background-color: #999999;
 }
 
 .queued {
-  background-color: #999999 !important;
+  background-color: #999999;
 }
 </style>

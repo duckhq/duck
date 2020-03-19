@@ -1,5 +1,5 @@
 <template>
-  <transition-group name="build" tag="div" class="ui stackable cards">
+  <transition-group name="build" tag="div" class="flex flex-row flex-wrap content-between">
     <Build v-for="build in builds" :key="build.id" :build="build" />
   </transition-group>
 </template>

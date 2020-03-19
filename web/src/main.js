@@ -7,11 +7,12 @@ import VueProgressBar from 'vue-progressbar'
 import App from './App.vue'
 import { data } from "@/js/store.js";
 
-import 'semantic-ui-css/semantic.min.css';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import '@/css/card.css';
 import "@/assets/styles/main.css";
 
 Vue.component('vue-headful', vueHeadful);
+Vue.component('fa-icon', FontAwesomeIcon)
 
 Vue.use(Moment);
 Vue.use(VueRouter);

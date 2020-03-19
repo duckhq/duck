@@ -1,5 +1,5 @@
 <template>
-  <img :src="getImagePath()" class="build-icon" />
+  <img :src="getImagePath()" class="w-8 h-8 border border-gray-200 p-1 rounded-sm shadow-md bg-gray-100" />
 </template>
 
 <script>
@@ -15,16 +15,5 @@ export default {
 </script>
 
 <style scoped>
-.build-icon {
-  opacity: 1 !important;
-  padding: 3px !important;
-  border: 1px !important;
-  border-style: solid !important;
-  border-color: #999999 !important;
-  border-radius: 5px !important;
-  width: 32px !important;
-  height: 32px !important;
-  background: #f1f1f1 !important;
-  box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.15) !important;
-}
+
 </style>
