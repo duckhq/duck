@@ -83,16 +83,25 @@ jobs:
             rust: stable
             target: x86_64-unknown-linux-musl
             bin: duck
+            name: linux_x64
           - kind: rpi
             os: ubuntu-latest
             rust: stable
             target: armv7-unknown-linux-gnueabihf
             bin: duck
+            name: linux_arm
           - kind: windows
             os: windows-latest
             rust: stable
             target: x86_64-pc-windows-msvc
             bin: duck.exe
+            name: windows_x64
+          - kind: macOS
+            os: macos-latest
+            rust: stable
+            target: x86_64-apple-darwin
+            bin: duck
+            name: darwin_x64
     runs-on: ${{ matrix.os }}
     steps:
       - name: Install stable toolchain
@@ -137,7 +146,7 @@ jobs:
         run: |
           name=duck
           tag=$(git describe --tags --abbrev=0)
-          release_name="$name-$tag-${{ matrix.target }}"
+          release_name="$name-$tag-${{ matrix.name }}"
           mkdir "$release_name"
 
           if [ "${{ matrix.target }}" != "x86_64-pc-windows-msvc" ]; then
