@@ -1,6 +1,4 @@
-use std::sync::Arc;
-
-use waithandle::{EventWaitHandle, WaitHandle};
+use waithandle::WaitHandleListener;
 
 use crate::builds::{Build, BuildBuilder, BuildProvider, BuildStatus};
 use crate::config::AzureDevOpsConfiguration;
@@ -45,16 +43,20 @@ impl Collector for AzureDevOpsCollector {
 
     fn collect(
         &self,
-        handle: Arc<EventWaitHandle>,
+        listener: WaitHandleListener,
         callback: &mut dyn FnMut(Build),
     ) -> DuckResult<()> {
         for branch in self.branches.iter() {
-            if handle.check().unwrap() {
+            if listener.check().unwrap() {
                 return Ok(());
             }
 
             let builds = self.client.get_builds(branch, &self.definitions)?;
             for build in builds.value.iter() {
+                if listener.check().unwrap() {
+                    return Ok(());
+                }
+
                 callback(
                     BuildBuilder::new()
                         .build_id(build.id.to_string())
@@ -89,7 +91,10 @@ impl Collector for AzureDevOpsCollector {
             }
 
             // Wait for a litle time between calls.
-            if handle.wait(std::time::Duration::from_millis(300)).unwrap() {
+            if listener
+                .wait(std::time::Duration::from_millis(300))
+                .unwrap()
+            {
                 return Ok(());
             }
         }

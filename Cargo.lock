@@ -739,7 +739,7 @@ dependencies = [
  "structopt 0.3.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "test-case 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "url 2.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "waithandle 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "waithandle 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -2408,7 +2408,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "waithandle"
-version = "0.1.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -2808,7 +2808,7 @@ dependencies = [
 "checksum vec_map 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)" = "05c78687fb1a80548ae3250346c3db86a80a7cdd77bda190189f2d0a0987c81a"
 "checksum version_check 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "914b1a6776c4c929a602fafd8bc742e06365d4bcbe48c30f9cca5824f70dc9dd"
 "checksum version_check 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)" = "078775d0255232fb988e6fccf26ddc9d1ac274299aaedcedce21c6f72cc533ce"
-"checksum waithandle 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "9d0f6e507547598d1ef89c1d9f535f2d81d82fa333e26e58482369e170f872dd"
+"checksum waithandle 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "eed03db779e0ac886f4627f444982b66ed3a6adb27aa40e38162e3fd82c3f073"
 "checksum want 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b6395efa4784b027708f7451087e647ec73cc74f5d9bc2e418404248d679a230"
 "checksum wasi 0.9.0+wasi-snapshot-preview1 (registry+https://github.com/rust-lang/crates.io-index)" = "cccddf32554fecc6acb585f82a32a72e28b48f8c4c1883ddfeeeaa96f7d8e519"
 "checksum wasm-bindgen 0.2.59 (registry+https://github.com/rust-lang/crates.io-index)" = "3557c397ab5a8e347d434782bcd31fc1483d927a6826804cec05cc792ee2519d"

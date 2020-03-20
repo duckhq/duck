@@ -1,6 +1,4 @@
-use std::sync::Arc;
-
-use waithandle::EventWaitHandle;
+use waithandle::WaitHandleListener;
 
 use crate::builds::{Build, BuildBuilder, BuildProvider};
 use crate::config::GitHubConfiguration;
@@ -54,7 +52,7 @@ impl<T: HttpClient + Default> Collector for GitHubCollector<T> {
 
     fn collect(
         &self,
-        _handle: Arc<EventWaitHandle>,
+        listener: WaitHandleListener,
         callback: &mut dyn FnMut(Build),
     ) -> DuckResult<()> {
         let response = self.client.get_builds(&self.http)?;
@@ -62,6 +60,10 @@ impl<T: HttpClient + Default> Collector for GitHubCollector<T> {
         // Convert the workflow run to a Duck build representation.
         let mut builds = Vec::<Build>::new();
         for run in response.workflow_runs.iter() {
+            if listener.check().unwrap() {
+                return Ok(());
+            }
+
             builds.push(
                 BuildBuilder::new()
                     .build_id(run.id.to_string())
@@ -142,16 +144,15 @@ mod tests {
             .returns_body(include_str!("test_data/builds.json"))
         );
 
+        let (_, listener) = waithandle::new();
+
         // When
         let mut result = Vec::<Build>::new();
         github
-            .collect(
-                Arc::new(waithandle::EventWaitHandle::new()),
-                &mut |build: Build| {
-                    // Store the results
-                    result.push(build);
-                },
-            )
+            .collect(listener, &mut |build: Build| {
+                // Store the results
+                result.push(build);
+            })
             .unwrap();
 
         // Then

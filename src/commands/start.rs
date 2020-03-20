@@ -1,9 +1,9 @@
 use std::path::PathBuf;
+
+use duck::DuckResult;
 use structopt::StructOpt;
 
-use crate::DuckResult;
-
-pub const DEFAULT_CONFIG: &str = "config.json";
+use crate::commands::{DEFAULT_CONFIG, ENV_BINDING, ENV_CONFIG};
 
 ///////////////////////////////////////////////////////////
 // Arguments
@@ -16,11 +16,11 @@ pub struct Arguments {
         long,
         parse(from_os_str),
         default_value = DEFAULT_CONFIG,
-        env = "DUCK_CONFIG"
+        env = ENV_CONFIG
     )]
     pub config: PathBuf,
     /// The server address to bind to
-    #[structopt(name = "bind", short, long, env = "DUCK_BIND")]
+    #[structopt(name = "bind", short, long, env = ENV_BINDING)]
     server_address: Option<String>,
 }
 
@@ -54,6 +54,16 @@ mod tests {
         // When
         let config = args.config.to_str().unwrap();
         // Then
-        assert_eq!("config.json", config);
+        assert_eq!(DEFAULT_CONFIG, config);
+    }
+
+    #[test]
+    pub fn default_arguments_should_have_correct_server_address() {
+        // Given, When
+        let args = Arguments::default();
+        // When
+        let server_address = args.server_address;
+        // Then
+        assert!(server_address.is_none());
     }
 }

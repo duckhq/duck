@@ -1,43 +1,54 @@
 use std::collections::HashMap;
 use std::sync::mpsc::{channel, Receiver, Sender};
-use std::sync::Arc;
-use std::thread::JoinHandle;
+use std::sync::{Arc, Barrier};
+use std::{thread::JoinHandle, time::Duration};
+
+use log::{debug, error, info, trace};
+use waithandle::{WaitHandleListener, WaitHandleSignaler};
 
 use crate::builds::{Build, BuildStatus};
-use crate::config::Configuration;
-use crate::providers::collectors::*;
-use crate::providers::observers::*;
+use crate::config::{Configuration, ConfigurationLoader};
+use crate::utils::NaiveMessageBus;
 use crate::DuckResult;
 
 use self::state::EngineState;
 
-use log::{debug, error, info};
-use waithandle::{EventWaitHandle, WaitHandle};
-
 mod accumulator;
 mod aggregator;
+mod watcher;
+
 pub mod state;
 
 ///////////////////////////////////////////////////////////
 // Engine handle
 
 pub struct EngineHandle {
-    wait_handle: Arc<EventWaitHandle>,
-    collector_thread: JoinHandle<DuckResult<()>>,
-    observer_thread: JoinHandle<DuckResult<()>>,
+    signaler: WaitHandleSignaler,
+    watcher: JoinHandle<DuckResult<()>>,
+    accumulator: JoinHandle<DuckResult<()>>,
+    aggregator: JoinHandle<DuckResult<()>>,
 }
 
 impl EngineHandle {
     pub fn stop(self) -> DuckResult<()> {
-        self.wait_handle.signal()?;
-        self.collector_thread.join().unwrap()?;
-        self.observer_thread.join().unwrap()?;
+        self.signaler.signal()?;
+        self.watcher.join().unwrap()?;
+        trace!("The configuration watcher stopped.");
+        self.accumulator.join().unwrap()?;
+        trace!("The accumulator stopped.");
+        self.aggregator.join().unwrap()?;
+        trace!("The aggregator stopped.");
         Ok(())
     }
 }
 
 ///////////////////////////////////////////////////////////
 // Events
+
+#[derive(Clone)]
+pub enum EngineThreadMessage {
+    ConfigurationUpdated(Configuration),
+}
 
 pub enum EngineEvent {
     /// The build was updated.
@@ -56,7 +67,6 @@ impl EngineEvent {
             _ => false,
         }
     }
-
     fn is_build_status_changed(&self) -> bool {
         match self {
             EngineEvent::AbsoluteBuildStatusChanged(_) => true,
@@ -68,16 +78,14 @@ impl EngineEvent {
 ///////////////////////////////////////////////////////////
 // Engine
 
-pub struct Engine<'a> {
-    config: &'a Configuration,
+pub struct Engine {
     state: Arc<EngineState>,
 }
 
-impl<'a> Engine<'a> {
-    pub fn new(config: &'a Configuration) -> DuckResult<Self> {
+impl Engine {
+    pub fn new() -> DuckResult<Self> {
         Ok(Engine {
-            config,
-            state: Arc::new(EngineState::new(config)),
+            state: Arc::new(EngineState::new()),
         })
     }
 
@@ -85,77 +93,121 @@ impl<'a> Engine<'a> {
         self.state.clone()
     }
 
-    pub fn run(&self) -> DuckResult<EngineHandle> {
-        let handle = Arc::new(EventWaitHandle::new());
+    pub fn run(&self, loader: impl ConfigurationLoader + 'static) -> DuckResult<EngineHandle> {
+        let barrier = Arc::new(Barrier::new(3));
+        let bus = Arc::new(NaiveMessageBus::<EngineThreadMessage>::new());
         let (sender, receiver) = channel::<EngineEvent>();
+        let (signaler, listener) = waithandle::new();
 
-        // Create all collectors.
-        let collectors = crate::providers::create_collectors(self.config)?;
-        let observers = crate::providers::create_observers(self.config)?;
+        // Configuration watcher thread
+        debug!("Starting configuration watcher thread...");
+        let watcher = std::thread::spawn({
+            let listener = listener.clone();
+            let state = self.state.clone();
+            let barrier = barrier.clone();
+            let bus = bus.clone();
+            move || -> DuckResult<()> { watch_configuration(barrier, listener, state, bus, loader) }
+        });
 
         debug!("Starting aggregator thread...");
-        let observer_thread = std::thread::spawn({
+        let aggregator = std::thread::spawn({
+            let listener = listener.clone();
             let state = self.state.clone();
-            move || -> DuckResult<()> { run_aggregator(state, observers, receiver) }
+            let barrier = barrier.clone();
+            let bus = bus.clone();
+            move || -> DuckResult<()> { run_aggregator(barrier, listener, state, receiver, bus) }
         });
 
         debug!("Starting accumulator thread...");
-        let collector_thread = std::thread::spawn({
-            let handle = handle.clone();
-            let config = self.config.clone();
+        let accumulator = std::thread::spawn({
             let state = self.state.clone();
-            move || -> DuckResult<()> { run_accumulator(handle, state, config, collectors, sender) }
+            move || -> DuckResult<()> { run_accumulator(barrier, listener, state, sender, bus) }
         });
 
         info!("Engine started.");
         Ok(EngineHandle {
-            wait_handle: handle,
-            collector_thread,
-            observer_thread,
+            signaler,
+            watcher,
+            accumulator,
+            aggregator,
         })
     }
+}
+
+///////////////////////////////////////////////////////////
+// Watcher
+
+fn watch_configuration(
+    barrier: Arc<Barrier>,
+    stopping: WaitHandleListener,
+    state: Arc<EngineState>,
+    bus: Arc<NaiveMessageBus<EngineThreadMessage>>,
+    loader: impl ConfigurationLoader,
+) -> DuckResult<()> {
+    // Signal other threads that we've started
+    barrier.wait();
+    debug!("Configuration watcher thread started");
+
+    let environment = crate::utils::text::EnvironmentVariableProvider::new();
+    let mut context = watcher::Context::new(environment);
+    loop {
+        // Check if the configuration have changed
+        if let Some(config) = watcher::try_load(&mut context, &loader) {
+            state.refresh(&config);
+            trace!("Sending configuration updated message");
+            bus.send(EngineThreadMessage::ConfigurationUpdated(config))?;
+        }
+
+        // Time to bail?
+        if stopping.wait(Duration::from_secs(5))? {
+            debug!("The configuration watcher was instructed to stop");
+            break;
+        }
+    }
+
+    Ok(())
 }
 
 ///////////////////////////////////////////////////////////
 // Accumulator
 
 fn run_accumulator(
-    handle: Arc<EventWaitHandle>,
+    barrier: Arc<Barrier>,
+    handle: WaitHandleListener,
     state: Arc<EngineState>,
-    config: Configuration,
-    collectors: Vec<Box<dyn Collector>>,
     sender: Sender<EngineEvent>,
+    bus: Arc<NaiveMessageBus<EngineThreadMessage>>,
 ) -> DuckResult<()> {
-    let interval: u64 = config.get_interval();
+    // Subscribe to engine messages
+    let receiver = bus.subscribe();
 
-    for collector in collectors.iter() {
-        info!("Added collector '{}'.", collector.info().id);
+    barrier.wait();
+    debug!("Accumulator thread started.");
+
+    let mut context = accumulator::Context::new(handle.clone(), state, receiver, sender.clone());
+
+    trace!("Waiting for a configuration to be loaded");
+    loop {
+        match accumulator::check_for_updated_configuration(&mut context) {
+            Err(_) => (),
+            Ok(result) => match result {
+                accumulator::ConfigurationResult::Unchanged => (),
+                accumulator::ConfigurationResult::Updated => break,
+            },
+        };
     }
 
-    let context = accumulator::Context {
-        handle: handle.clone(),
-        state,
-        sender: sender.clone(),
-    };
-
     while !handle.check().unwrap() {
-        for collector in collectors.iter() {
-            if handle.check().unwrap() {
-                break;
-            }
-            accumulator::process(&context, collector);
-        }
+        accumulator::accumulate(&mut context);
 
         // Wait for a little while
-        if handle
-            .wait(std::time::Duration::from_secs(interval))
-            .unwrap()
-        {
-            info!("We've been instructed to stop.");
+        if handle.wait(std::time::Duration::from_secs(15)).unwrap() {
+            debug!("The accumulator was instructed to stop.");
             break;
         }
     }
 
+    debug!("Sending shutdown message");
     match sender.send(EngineEvent::ShuttingDown) {
         Result::Ok(_) => (),
         Result::Err(e) => error!("Failed to send shut down event. {}", e),
@@ -168,47 +220,56 @@ fn run_accumulator(
 // Aggregator
 
 fn run_aggregator(
+    barrier: Arc<Barrier>,
+    listener: WaitHandleListener,
     state: Arc<EngineState>,
-    observers: Vec<Box<dyn Observer>>,
-    receiver: Receiver<EngineEvent>,
+    accumulator_receiver: Receiver<EngineEvent>,
+    bus: Arc<NaiveMessageBus<EngineThreadMessage>>,
 ) -> DuckResult<()> {
-    for observer in observers.iter() {
-        info!("Added observer '{}'.", observer.info().id);
-        if let Some(collectors) = &observer.info().collectors {
-            for collector in collectors {
-                info!(
-                    "Observer '{}' is interested in collector '{}'",
-                    observer.info().id,
-                    collector
-                );
-            }
-        };
-    }
+    // Subscribe to engine messages
+    let engine_receiver = bus.subscribe();
+
+    // Wait for other threads to start
+    barrier.wait();
+    debug!("Aggregator thread started.");
 
     let mut context = aggregator::Context {
-        observers: &observers,
+        observers: Vec::new(),
+        listener,
+        engine_receiver,
+        accumulator_receiver,
         state,
-        observer_status: HashMap::<&str, BuildStatus>::new(),
+        observer_status: HashMap::<String, BuildStatus>::new(),
         status: BuildStatus::Unknown,
     };
 
     loop {
-        let result = receiver.recv();
-        if result.is_err() {
-            match result {
-                Result::Ok(_) => (),
-                Result::Err(e) => {
-                    info!("Observer have been disconnected! {}", e);
-                    break;
-                }
+        match aggregator::aggregate(&mut context) {
+            aggregator::AggregateResult::Stopped => {
+                debug!("The aggregator was instructed to stop.");
+                break;
             }
-        }
-
-        let command = result.unwrap();
-        if aggregator::process(&mut context, command) {
-            break;
+            aggregator::AggregateResult::Disconnected => break,
+            _ => {}
         }
     }
 
     Ok(())
+}
+
+///////////////////////////////////////////////////////////
+// Utilities
+
+fn try_get_updated_configuration(
+    receiver: &Receiver<EngineThreadMessage>,
+) -> Option<Configuration> {
+    let mut result: Option<Configuration> = None;
+    while let Ok(message) = receiver.try_recv() {
+        match message {
+            EngineThreadMessage::ConfigurationUpdated(config) => {
+                result = Some(config);
+            }
+        }
+    }
+    result
 }

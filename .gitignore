@@ -3,5 +3,5 @@
 **/*.rs.bk
 
 # Configuration
-config.json
+/config.json
 data/

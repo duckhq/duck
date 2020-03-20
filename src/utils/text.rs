@@ -18,7 +18,7 @@ pub struct Expander<'a> {
 }
 
 impl<'a> Expander<'a> {
-    pub fn new(provider: &'a impl VariableProvider) -> Self {
+    pub fn new(provider: &'a dyn VariableProvider) -> Self {
         Self {
             provider,
             regex: Regex::new(VARIABLE_REGEX).unwrap(),

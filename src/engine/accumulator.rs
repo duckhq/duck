@@ -1,74 +1,141 @@
-use std::sync::mpsc::Sender;
+use std::collections::HashSet;
+use std::sync::mpsc::{Receiver, Sender};
 use std::sync::Arc;
 
-use log::error;
-use waithandle::EventWaitHandle;
+use log::{debug, error, trace};
+use waithandle::WaitHandleListener;
 
 use crate::builds::Build;
 use crate::engine::{EngineEvent, EngineState};
+use crate::providers;
 use crate::providers::collectors::Collector;
+use crate::DuckResult;
 
 use super::state::builds::BuildUpdateResult;
+use super::EngineThreadMessage;
 
 pub struct Context {
-    pub handle: Arc<EventWaitHandle>,
-    pub state: Arc<EngineState>,
-    pub sender: Sender<EngineEvent>,
+    listener: WaitHandleListener,
+    engine_receiver: Receiver<EngineThreadMessage>,
+    state: Arc<EngineState>,
+    sender: Sender<EngineEvent>,
+    collectors: Vec<Box<dyn Collector>>,
+}
+
+impl Context {
+    pub fn new(
+        handle: WaitHandleListener,
+        state: Arc<EngineState>,
+        engine_receiver: Receiver<EngineThreadMessage>,
+        accumulator_sender: Sender<EngineEvent>,
+    ) -> Self {
+        Self {
+            listener: handle,
+            engine_receiver,
+            state,
+            sender: accumulator_sender,
+            collectors: vec![],
+        }
+    }
 }
 
 #[allow(clippy::borrowed_box)]
-pub fn process(context: &Context, collector: &Box<dyn Collector>) {
-    let mut build_hashes = std::collections::HashSet::<u64>::new();
-    if let Err(e) = collector.collect(context.handle.clone(), &mut |build: Build| {
-        build_hashes.insert(build.id);
-        match context.state.builds.update(&build) {
-            BuildUpdateResult::Added | BuildUpdateResult::BuildUpdated => {
-                // The build was updated
-                match context
-                    .sender
-                    .send(EngineEvent::BuildUpdated(Box::new(build)))
-                {
-                    Result::Ok(_) => (),
-                    Result::Err(e) => error!("Failed to send build update event. {}", e),
-                }
-            }
-            BuildUpdateResult::AbsoluteBuildStatusChanged => {
-                // The build's status was changed (success->failed or failed->success)
-                match context
-                    .sender
-                    .send(EngineEvent::AbsoluteBuildStatusChanged(Box::new(build)))
-                {
-                    Result::Ok(_) => (),
-                    Result::Err(e) => error!("Failed to send build status event. {}", e),
-                }
-            }
-            _ => {}
-        };
-    }) {
-        // Log the error but continue as normal since
-        // we don't want to retain the builds that we could
-        // not collect information about
-        error!(
-            "An error occured while collecting builds from '{}': {}",
-            collector.info().id,
-            e
-        );
-    };
+pub fn accumulate(context: &mut Context) {
+    if let Err(e) = check_for_updated_configuration(context) {
+        error!("{}", e);
+        return;
+    }
 
-    // Retain builds that were updated
-    context
-        .state
-        .builds
-        .retain_builds(&collector.info(), build_hashes);
+    for collector in context.collectors.iter() {
+        let mut build_hashes = std::collections::HashSet::<u64>::new();
+        if let Err(e) = collector.collect(context.listener.clone(), &mut |build: Build| {
+            build_hashes.insert(build.id);
+            match context.state.builds.update(&build) {
+                BuildUpdateResult::Added | BuildUpdateResult::BuildUpdated => {
+                    // The build was updated
+                    match context
+                        .sender
+                        .send(EngineEvent::BuildUpdated(Box::new(build)))
+                    {
+                        Result::Ok(_) => (),
+                        Result::Err(e) => error!("Failed to send build update event. {}", e),
+                    }
+                }
+                BuildUpdateResult::AbsoluteBuildStatusChanged => {
+                    // The build's status was changed (success->failed or failed->success)
+                    match context
+                        .sender
+                        .send(EngineEvent::AbsoluteBuildStatusChanged(Box::new(build)))
+                    {
+                        Result::Ok(_) => (),
+                        Result::Err(e) => error!("Failed to send build status event. {}", e),
+                    }
+                }
+                _ => {}
+            };
+        }) {
+            // Log the error but continue as normal since
+            // we don't want to retain the builds that we could
+            // not collect information about
+            error!(
+                "An error occured while collecting builds from '{}': {}",
+                collector.info().id,
+                e
+            );
+        };
+
+        // Retain builds that were updated
+        context
+            .state
+            .builds
+            .retain_builds(&collector.info(), build_hashes);
+    }
+}
+
+pub enum ConfigurationResult {
+    Unchanged,
+    Updated,
+}
+
+pub fn check_for_updated_configuration(context: &mut Context) -> DuckResult<ConfigurationResult> {
+    if let Some(config) = super::try_get_updated_configuration(&context.engine_receiver) {
+        trace!("Applying new configuration...");
+        match providers::create_collectors(&config) {
+            Ok(collectors) => {
+                context.collectors.clear();
+                for collector in collectors {
+                    debug!(
+                        "Loaded {:?} collector: {:?}",
+                        collector.info().provider,
+                        collector.info().id
+                    );
+                    context.collectors.push(collector);
+                }
+
+                // Remove state for unloaded collectors.
+                let mut collector_ids = HashSet::<String>::new();
+                for collector in context.collectors.iter() {
+                    collector_ids.insert(collector.info().id.clone());
+                }
+                context.state.builds.retain(&collector_ids);
+                return Ok(ConfigurationResult::Updated);
+            }
+            Err(err) => {
+                return Err(format_err!(
+                    "An error occured while loading collectors: {}",
+                    err
+                ));
+            }
+        }
+    }
+    Ok(ConfigurationResult::Unchanged)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::builds::{BuildBuilder, BuildProvider, BuildStatus};
-    use crate::config::Configuration;
     use crate::providers::collectors::CollectorInfo;
-    use crate::utils::text::TestVariableProvider;
     use crate::DuckResult;
     use std::sync::mpsc::channel;
     use test_case::test_case;
@@ -97,7 +164,7 @@ mod tests {
         }
         fn collect(
             &self,
-            _: Arc<EventWaitHandle>,
+            _: WaitHandleListener,
             callback: &mut dyn FnMut(Build),
         ) -> DuckResult<()> {
             callback(self.build.clone());
@@ -108,19 +175,24 @@ mod tests {
     #[test]
     fn should_send_build_updated_event_if_build_is_new() {
         // Given
-        let config = Configuration::empty(&TestVariableProvider::new()).unwrap();
         let (sender, receiver) = channel::<EngineEvent>();
-        let context = Context {
-            handle: Arc::new(EventWaitHandle::new()),
+        let (_, engine_receiver) = channel::<EngineThreadMessage>();
+        let (_, listener) = waithandle::new();
+
+        let mut context = Context {
+            listener,
             sender,
-            state: Arc::new(EngineState::new(&config)),
+            engine_receiver,
+            state: Arc::new(EngineState::new()),
+            collectors: Vec::new(),
         };
 
         let new_build = DummyCollector::new(BuildBuilder::dummy().build().unwrap());
         let collector = Box::new(new_build) as Box<dyn Collector>;
+        context.collectors.push(collector);
 
         // When
-        process(&context, &collector);
+        accumulate(&mut context);
 
         // Then
         assert!(receiver.try_recv().unwrap().is_build_updated());
@@ -130,12 +202,16 @@ mod tests {
     #[should_panic(expected = "Channel does not have any events")]
     fn should_not_send_build_updated_event_if_build_is_known() {
         // Given
-        let config = Configuration::empty(&TestVariableProvider::new()).unwrap();
         let (sender, receiver) = channel::<EngineEvent>();
-        let context = Context {
-            handle: Arc::new(EventWaitHandle::new()),
+        let (_, engine_receiver) = channel::<EngineThreadMessage>();
+        let (_, listener) = waithandle::new();
+
+        let mut context = Context {
+            listener,
             sender,
-            state: Arc::new(EngineState::new(&config)),
+            engine_receiver,
+            state: Arc::new(EngineState::new()),
+            collectors: Vec::new(),
         };
 
         let current_build = BuildBuilder::dummy().build().unwrap();
@@ -143,9 +219,10 @@ mod tests {
 
         let new_build = BuildBuilder::dummy().build().unwrap();
         let collector = Box::new(DummyCollector::new(new_build)) as Box<dyn Collector>;
+        context.collectors.push(collector);
 
         // When
-        process(&context, &collector);
+        accumulate(&mut context);
 
         // Then
         receiver
@@ -178,12 +255,16 @@ mod tests {
         to: BuildStatus,
     ) {
         // Given
-        let config = Configuration::empty(&TestVariableProvider::new()).unwrap();
         let (sender, receiver) = channel::<EngineEvent>();
-        let context = Context {
-            handle: Arc::new(EventWaitHandle::new()),
+        let (_, engine_receiver) = channel::<EngineThreadMessage>();
+        let (_, listener) = waithandle::new();
+
+        let mut context = Context {
+            listener,
             sender,
-            state: Arc::new(EngineState::new(&config)),
+            engine_receiver,
+            state: Arc::new(EngineState::new()),
+            collectors: Vec::new(),
         };
 
         let current_build = BuildBuilder::dummy().status(from).build().unwrap();
@@ -191,9 +272,10 @@ mod tests {
 
         let new_build = BuildBuilder::dummy().status(to).build().unwrap();
         let collector = Box::new(DummyCollector::new(new_build)) as Box<dyn Collector>;
+        context.collectors.push(collector);
 
         // When
-        process(&context, &collector);
+        accumulate(&mut context);
 
         // Then
         assert!(receiver.try_recv().unwrap().is_build_updated());
@@ -212,12 +294,16 @@ mod tests {
         to: BuildStatus,
     ) {
         // Given
-        let config = Configuration::empty(&TestVariableProvider::new()).unwrap();
         let (sender, receiver) = channel::<EngineEvent>();
-        let context = Context {
-            handle: Arc::new(EventWaitHandle::new()),
+        let (_, engine_receiver) = channel::<EngineThreadMessage>();
+        let (_, listener) = waithandle::new();
+
+        let mut context = Context {
+            listener,
             sender,
-            state: Arc::new(EngineState::new(&config)),
+            engine_receiver,
+            state: Arc::new(EngineState::new()),
+            collectors: Vec::new(),
         };
 
         let current_build = BuildBuilder::dummy().status(from).build().unwrap();
@@ -225,9 +311,10 @@ mod tests {
 
         let new_build = BuildBuilder::dummy().status(to).build().unwrap();
         let collector = Box::new(DummyCollector::new(new_build)) as Box<dyn Collector>;
+        context.collectors.push(collector);
 
         // When
-        process(&context, &collector);
+        accumulate(&mut context);
 
         // Then
         assert!(receiver.try_recv().unwrap().is_build_status_changed());

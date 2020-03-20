@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use schemars::JsonSchema;
 use serde::Deserialize;
 
@@ -10,22 +8,31 @@ use crate::DuckResult;
 mod expansions;
 mod validation;
 
+pub mod loader;
+
 pub trait Validate {
     fn validate(&self) -> DuckResult<()>;
 }
 
-#[derive(Serialize, Deserialize, JsonSchema, Clone)]
+/// Represents a way of loading a configuration
+pub trait ConfigurationLoader: Sync + Send + Clone {
+    fn exist(&self) -> bool;
+    fn has_changed(&self) -> DuckResult<bool>;
+    fn load(&self, variables: &dyn VariableProvider) -> DuckResult<Configuration>;
+}
+
+#[derive(Serialize, Deserialize, JsonSchema, Clone, Default)]
 pub struct Configuration {
     /// # Update interval
     /// The update interval in seconds
-    #[serde(default)]
-    pub interval: Option<Interval>,
+    #[serde(default = "default_interval")]
+    pub interval: u16,
     /// # Views
     pub views: Option<Vec<ViewConfiguration>>,
     /// # Duck frontend title
     /// The title that is displayed in the UI
-    #[serde(default)]
-    pub title: Option<String>,
+    #[serde(default = "default_title")]
+    pub title: String,
     /// # Collectors
     pub collectors: Vec<CollectorConfiguration>,
     /// # Observers
@@ -34,25 +41,8 @@ pub struct Configuration {
 }
 
 impl Configuration {
-    pub fn from_file(variables: &impl VariableProvider, path: PathBuf) -> DuckResult<Self> {
-        if !path.exists() {
-            if cfg!(feature = "docker") {
-                return Err(format_err!(
-                    "The configuration '{}' does not exist. Have you added a Docker volume mapping?",
-                    path.to_str().unwrap()
-                ));
-            }
-            return Err(format_err!(
-                "The configuration '{}' does not exist",
-                path.to_str().unwrap()
-            ));
-        }
-        let json = std::fs::read_to_string(path)?;
-        Configuration::from_json(variables, json)
-    }
-
     pub fn from_json<T: Into<String>>(
-        variables: &impl VariableProvider,
+        variables: &dyn VariableProvider,
         json: T,
     ) -> DuckResult<Self> {
         let expander = &Expander::new(variables);
@@ -62,55 +52,19 @@ impl Configuration {
         Ok(config)
     }
 
-    #[cfg(test)]
-    pub fn empty(variables: &impl VariableProvider) -> DuckResult<Self> {
-        return Configuration::from_json(
-            variables,
-            r#"{
-            "collectors": []
-        }"#,
-        );
-    }
-
-    pub fn get_title(&self) -> &str {
-        match &self.title {
-            Some(title) => title,
-            None => "Duck",
-        }
-    }
-
-    pub fn get_interval(&self) -> u64 {
-        if let Some(i) = &self.interval {
-            if i.0 >= 15 {
-                return u64::from(i.0);
-            }
-        }
-        return 15;
-    }
-
     pub fn get_all_ids(&self) -> Vec<String> {
         // Get all collector id:s
         let mut result: Vec<String> = self
             .collectors
             .iter()
-            .map(|i| match i {
-                CollectorConfiguration::TeamCity(c) => c.id.clone(),
-                CollectorConfiguration::Azure(c) => c.id.clone(),
-                CollectorConfiguration::OctopusDeploy(c) => c.id.clone(),
-                CollectorConfiguration::GitHub(c) => c.id.clone(),
-                CollectorConfiguration::AppVeyor(c) => c.id.clone(),
-            })
+            .map(|i| i.get_id().to_owned())
             .collect();
         // Get all observer id:s
         match self.observers {
             Option::None => (),
             Option::Some(ref observers) => {
                 for observer in observers.iter() {
-                    match observer {
-                        ObserverConfiguration::Hue(c) => result.push(c.id.clone()),
-                        ObserverConfiguration::Slack(c) => result.push(c.id.clone()),
-                        ObserverConfiguration::Mattermost(c) => result.push(c.id.clone()),
-                    };
+                    result.push(observer.get_id().to_owned());
                 }
             }
         }
@@ -505,4 +459,15 @@ pub enum MattermostCredentials {
     /// Send messages directly to a webhook
     #[serde(rename = "webhook")]
     Webhook { url: String },
+}
+
+///////////////////////////////////////////////////////////
+// Default values
+
+fn default_title() -> String {
+    "Duck".to_owned()
+}
+
+fn default_interval() -> u16 {
+    15
 }

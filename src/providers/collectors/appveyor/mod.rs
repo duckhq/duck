@@ -1,6 +1,4 @@
-use std::sync::Arc;
-
-use waithandle::EventWaitHandle;
+use waithandle::WaitHandleListener;
 
 use crate::builds::{Build, BuildBuilder, BuildProvider};
 use crate::config::AppVeyorConfiguration;
@@ -60,7 +58,7 @@ impl<T: HttpClient + Default> Collector for AppVeyorCollector<T> {
 
     fn collect(
         &self,
-        _handle: Arc<EventWaitHandle>,
+        listener: WaitHandleListener,
         callback: &mut dyn FnMut(Build),
     ) -> DuckResult<()> {
         let result =
@@ -68,7 +66,9 @@ impl<T: HttpClient + Default> Collector for AppVeyorCollector<T> {
                 .get_builds(&self.http, &self.account, &self.project, self.count)?;
 
         for (count, build) in result.builds.iter().enumerate() {
-            // Got enough?
+            if listener.check().unwrap() {
+                break;
+            }
             if count >= self.count as usize {
                 break;
             }
@@ -137,16 +137,15 @@ mod tests {
             .returns_body(include_str!("test_data/builds.json"))
         );
 
+        let (_, listener) = waithandle::new();
+
         // When
         let mut result = Vec::<Build>::new();
         appveyor
-            .collect(
-                Arc::new(waithandle::EventWaitHandle::new()),
-                &mut |build: Build| {
-                    // Store the results
-                    result.push(build);
-                },
-            )
+            .collect(listener, &mut |build: Build| {
+                // Store the results
+                result.push(build);
+            })
             .unwrap();
 
         // Then

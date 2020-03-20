@@ -1,7 +1,5 @@
-use std::sync::Arc;
-
 use log::{error, trace, warn};
-use waithandle::{EventWaitHandle, WaitHandle};
+use waithandle::WaitHandleListener;
 
 use crate::builds::{Build, BuildBuilder, BuildProvider, BuildStatus};
 use crate::config::TeamCityConfiguration;
@@ -45,7 +43,7 @@ impl Collector for TeamCityCollector {
 
     fn collect(
         &self,
-        handle: Arc<EventWaitHandle>,
+        listener: WaitHandleListener,
         callback: &mut dyn FnMut(Build),
     ) -> DuckResult<()> {
         // Make sure TeamCity is online.
@@ -59,7 +57,7 @@ impl Collector for TeamCityCollector {
 
         // Get builds for all build types.
         for build_type in self.build_types.iter() {
-            if handle.check().unwrap() {
+            if listener.check().unwrap() {
                 return Ok(());
             }
 
@@ -78,6 +76,10 @@ impl Collector for TeamCityCollector {
             trace!("Getting builds for {}...", build_type);
             let result = self.client.get_builds(found)?;
             for branch in result.branches {
+                if listener.check().unwrap() {
+                    return Ok(());
+                }
+
                 let branch_name = if branch.name == "<default>" {
                     "default"
                 } else {
@@ -114,7 +116,10 @@ impl Collector for TeamCityCollector {
             }
 
             // Wait for a little time between calls.
-            if handle.wait(std::time::Duration::from_millis(300)).unwrap() {
+            if listener
+                .wait(std::time::Duration::from_millis(300))
+                .unwrap()
+            {
                 return Ok(());
             }
         }

@@ -15,7 +15,8 @@ use std::path::PathBuf;
 use failure::Error;
 use log::info;
 
-use crate::config::Configuration;
+use crate::config::loader::JsonConfigurationLoader;
+use crate::config::ConfigurationLoader;
 use crate::utils::text::EnvironmentVariableProvider;
 
 pub type DuckResult<T> = Result<T, Error>;
@@ -37,12 +38,10 @@ pub async fn run<T: Into<PathBuf>>(
     // Write some info to the console.
     info!("Version {}", utils::VERSION);
 
-    // Load and validate the configuration file.
-    let config = Configuration::from_file(&EnvironmentVariableProvider::new(), config_path.into())?;
-
     // Start the engine.
-    let engine = engine::Engine::new(&config)?;
-    let engine_handle = engine.run()?;
+    let loader = JsonConfigurationLoader::new(config_path.into());
+    let engine = engine::Engine::new()?;
+    let engine_handle = engine.run(loader)?;
 
     // Start the HTTP server.
     // This will block until CTRL+C is pressed.
@@ -71,6 +70,7 @@ pub fn get_schema() -> String {
 
 pub async fn validate_config<T: Into<PathBuf>>(config_path: T) -> DuckResult<()> {
     // Load and validate the configuration file.
-    Configuration::from_file(&EnvironmentVariableProvider::new(), config_path.into())?;
+    let loader = JsonConfigurationLoader::new(config_path.into());
+    loader.load(&EnvironmentVariableProvider::new())?;
     Ok(())
 }

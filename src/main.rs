@@ -1,7 +1,6 @@
 extern crate env_logger;
 extern crate log;
 
-use duck::DuckResult;
 use env_logger::Env;
 use log::error;
 use structopt::StructOpt;
