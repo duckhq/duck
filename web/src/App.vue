@@ -116,7 +116,7 @@ export default {
 
 <style scoped lang="scss">
 .settings-button {
-  @apply text-gray-100 border border-blue-900 bg-blue-500 text-lg py-2 px-3 rounded-full fixed right-0 bottom-0 mr-4 mb-4 transform transition duration-500 ease-in-out opacity-25
+  @apply text-gray-100 border border-blue-900 bg-blue-500 text-lg py-2 px-3 rounded-full fixed right-0 bottom-0 mr-4 mb-4 transform transition duration-500 ease-in-out opacity-25 z-50
 }
 
 .settings-button:hover {

@@ -1,36 +1,48 @@
 <template>
   <div v-if="hasViews">
-    <div class="ui vertical buttons fluid">
+    <ol class="leading-loose">
       <!-- Start button -->
-      <button
-        v-if="hasViews"
-        class="ui button icon labeled"
-        :class="{ active: currentView == null }"
-        @click="visitView('/')"
-      >
-        <i class="right icon" :class="{ arrow: currentView == null}"></i>
-        <span>{{ title }}</span>
-      </button>
+      <li class="view-item">
+        <button
+          v-if="hasViews"
+          :class="{ active: currentView == null }"
+          @click="visitView('/')"
+        >
+          <span class="w-8 text-center inline-block">
+            <fa-icon icon="arrow-right" v-show="currentView == null" />
+          </span>
+          <span class="inline-block p-2">{{ title }}</span>
+        </button>
+      </li>
       <!-- View buttons -->
-      <button
+      <li 
+        class="view-item"
         v-for="view in allViews"
-        :key="view.slug"
-        class="ui button icon labeled"
-        :class="{ active: view.slug == currentView }"
-        @click="visitView(view.slug)"
-      >
-        <i class="right icon" :class="{ arrow: view.slug == currentView}"></i>
-        <span>{{ view.name }}</span>
-      </button>
-    </div>
+        :key="view.slug">
+        <button
+          :class="{ active: view.slug == currentView }"
+          @click="visitView(view.slug)"
+        >
+          <span class="w-8 text-center inline-block ">
+            <fa-icon icon="arrow-right" v-show="view.slug == currentView" />
+          </span>
+          <span class="inline-block p-2">{{ view.name }}</span>
+        </button>
+      </li>
+    </ol>
   </div>
   <div v-else>
     <!-- No views available -->
-    <i>No views available</i>
+    <span class="italic">No views available</span>
   </div>
 </template>
 
 <script>
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+
+library.add(faArrowRight);
+
 import { data } from "@/js/store.js";
 
 export default {
@@ -76,3 +88,29 @@ export default {
   }
 };
 </script>
+
+<style scoped lang="scss">
+.view-item { 
+  @apply bg-gray-400;
+}
+
+.view-item button {
+  @apply font-semibold;
+}
+
+li button.active {
+  @apply text-black bg-gray-600;
+}
+
+li button {
+  @apply w-full text-left;
+}
+
+li:first-child {
+  @apply rounded-t-lg;
+}
+
+li:last-child {
+  @apply rounded-b-lg;
+}
+</style>
