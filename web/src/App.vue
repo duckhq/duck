@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" class="min-h-screen p-4">
     <!-- Page title -->
     <vue-headful :title="title" />
 
@@ -9,7 +9,7 @@
       <Error v-if="hasError" />
 
       <!-- Builds -->
-      <BuildList v-else :builds="allBuilds" class="builds" />
+      <BuildList v-else :builds="allBuilds" class="pb-4" />
     </transition>
 
     <!-- Settings dialog -->
@@ -22,8 +22,8 @@
     />
 
     <!-- Floating action button -->
-    <button class="circular blue ui icon button fab" @click="showViewDialog = true">
-      <i class="icon cog"></i>
+    <button class="settings-button" @click="showViewDialog = true">
+      <fa-icon icon="cog" fixed-width />
     </button>
 
     <!-- Progress -->
@@ -35,7 +35,11 @@
 import BuildList from "./components/BuildList.vue";
 import Error from "./Error.vue";
 import Settings from "./components/Settings.vue";
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { faCog } from "@fortawesome/free-solid-svg-icons";
 import { data, store } from "@/js/store.js";
+
+library.add(faCog);
 
 export default {
   name: "App",
@@ -110,37 +114,12 @@ export default {
 };
 </script>
 
-<style scoped>
-#app {
-  padding: 1rem 1rem;
-  height: 100vh;
+<style scoped lang="scss">
+.settings-button {
+  @apply text-gray-100 border border-blue-900 bg-blue-500 text-lg py-2 px-3 rounded-full fixed right-0 bottom-0 mr-4 mb-4 transform transition duration-500 ease-in-out opacity-25
 }
 
-#app .main-enter-active,
-#app .main-leave-active {
-  transition: opacity 0.6s ease;
-}
-
-#app .main-enter,
-#app .main-leave-to {
-  opacity: 0;
-}
-
-.builds {
-  padding-bottom: 1rem;
-}
-
-.fab {
-  position: fixed;
-  width: 50px;
-  height: 50px;
-  bottom: 20px;
-  right: 20px;
-  opacity: 0.25;
-  box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.4) !important;
-}
-.fab:hover {
-  opacity: 1;
-  transition: 0.4s;
+.settings-button:hover {
+  @apply shadow-xl -translate-y-1 opacity-100
 }
 </style>

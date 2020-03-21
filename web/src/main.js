@@ -8,7 +8,6 @@ import App from './App.vue'
 import { data } from "@/js/store.js";
 
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import '@/css/card.css';
 import "@/assets/styles/main.css";
 
 Vue.component('vue-headful', vueHeadful);
