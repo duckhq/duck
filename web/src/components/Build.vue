@@ -1,5 +1,5 @@
 <template>
-  <div class="cursor-pointer text-gray-100 p-4 rounded-lg shadow-lg" :class="getBackgroundClass()" @click="navigateToBuild()">
+  <div class="cursor-pointer text-gray-100 p-4 rounded-lg shadow-lg transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-105" :class="getBackgroundClass()" @click="navigateToBuild()">
     <div class="flex flex-col justify-between h-full">
       <!-- Project -->
       <div class="flex justify-between align-middle">
