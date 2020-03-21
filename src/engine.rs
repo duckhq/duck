@@ -31,6 +31,7 @@ pub struct EngineHandle {
 
 impl EngineHandle {
     pub fn stop(self) -> DuckResult<()> {
+        info!("Shutting down engine...");
         self.signaler.signal()?;
         self.watcher.join().unwrap()?;
         trace!("The configuration watcher stopped.");
@@ -153,6 +154,7 @@ fn watch_configuration(
     loop {
         // Check if the configuration have changed
         if let Some(config) = watcher::try_load(&mut context, &loader) {
+            info!("Configuration reloaded");
             state.refresh(&config);
             trace!("Sending configuration updated message");
             bus.send(EngineThreadMessage::ConfigurationUpdated(config))?;
