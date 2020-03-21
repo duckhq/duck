@@ -1,5 +1,5 @@
 <template>
-  <div class="cursor-pointer text-gray-100 mx-3 p-4 rounded-lg shadow-lg hover:scale-110 lg:w-1/6" :class="getBackgroundClass()" @click="navigateToBuild()">
+  <div class="cursor-pointer text-gray-100 p-4 rounded-lg shadow-lg" :class="getBackgroundClass()" @click="navigateToBuild()">
     <div class="flex flex-col justify-between h-full">
       <!-- Project -->
       <div class="flex justify-between align-middle">
