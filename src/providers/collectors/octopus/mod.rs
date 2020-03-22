@@ -26,7 +26,7 @@ impl CollectorLoader for OctopusDeployConfiguration {
                     Option::None => true,
                     Option::Some(e) => e,
                 },
-                provider: BuildProvider::OctopusDeploy,
+                provider: "OctopusDeploy".to_owned(),
             },
         }))
     }
@@ -102,7 +102,7 @@ impl Collector for OctopusDeployCollector {
                 callback(
                     BuildBuilder::new()
                         .build_id(&deployment.id)
-                        .provider(BuildProvider::OctopusDeploy)
+                        .provider("OctopusDeploy")
                         .origin(self.server_url.as_str())
                         .collector(&self.info.id)
                         .project_id(&found_project.id)

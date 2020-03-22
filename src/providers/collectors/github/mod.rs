@@ -1,6 +1,6 @@
 use waithandle::WaitHandleListener;
 
-use crate::builds::{Build, BuildBuilder, BuildProvider};
+use crate::builds::{Build, BuildBuilder};
 use crate::config::GitHubConfiguration;
 use crate::providers::collectors::{Collector, CollectorInfo, CollectorLoader};
 use crate::utils::http::{HttpClient, ReqwestClient};
@@ -34,7 +34,7 @@ impl<T: HttpClient + Default> GitHubCollector<T> {
                     Option::None => true,
                     Option::Some(e) => e,
                 },
-                provider: BuildProvider::AzureDevOps,
+                provider: "GitHub".to_owned(),
             },
         };
     }
@@ -67,7 +67,7 @@ impl<T: HttpClient + Default> Collector for GitHubCollector<T> {
             builds.push(
                 BuildBuilder::new()
                     .build_id(run.id.to_string())
-                    .provider(BuildProvider::GitHub)
+                    .provider("GitHub")
                     .origin(format!(
                         "{}/{}/{}",
                         &self.client.owner, &self.client.repository, &self.client.workflow
@@ -118,10 +118,8 @@ mod tests {
     use crate::utils::http::{HttpMethod, MockHttpClient, MockHttpResponseBuilder};
     use reqwest::StatusCode;
 
-    #[test]
-    fn should_get_correct_data() {
-        // Given
-        let github = GitHubCollector::<MockHttpClient>::new(&GitHubConfiguration {
+    fn create_collector() -> GitHubCollector<MockHttpClient> {
+        GitHubCollector::<MockHttpClient>::new(&GitHubConfiguration {
             id: "github".to_owned(),
             enabled: Some(true),
             owner: "spectresystems".to_owned(),
@@ -131,8 +129,23 @@ mod tests {
                 username: "foo".to_owned(),
                 password: "lol".to_owned(),
             },
-        });
+        })
+    }
 
+    #[test]
+    fn should_return_correct_provider_name() {
+        // Given
+        let github = create_collector();
+        // When
+        let provider = &github.info().provider;
+        // Then
+        assert_eq!("GitHub", provider);
+    }
+
+    #[test]
+    fn should_get_correct_data() {
+        // Given
+        let github = create_collector();
         let client = github.get_client();
 
         client.add_response(
@@ -158,7 +171,7 @@ mod tests {
         // Then
         assert_eq!(4, result.len());
         assert_eq!("33801182", result[0].build_id);
-        assert_eq!(BuildProvider::GitHub, result[0].provider);
+        assert_eq!("GitHub", result[0].provider);
         assert_eq!("github", result[0].collector);
         assert_eq!("spectresystems_duck", result[0].project_id);
         assert_eq!("spectresystems/duck", result[0].project_name);

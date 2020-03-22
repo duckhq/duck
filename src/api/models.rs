@@ -67,7 +67,7 @@ impl From<&Build> for BuildViewModel {
     fn from(item: &Build) -> Self {
         BuildViewModel {
             id: item.id,
-            provider: format!("{:?}", item.provider),
+            provider: item.provider.clone(),
             collector: item.collector.clone(),
             project: item.project_name.clone(),
             build: item.definition_name.clone(),

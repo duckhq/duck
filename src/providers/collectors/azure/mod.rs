@@ -1,6 +1,6 @@
 use waithandle::WaitHandleListener;
 
-use crate::builds::{Build, BuildBuilder, BuildProvider, BuildStatus};
+use crate::builds::{Build, BuildBuilder, BuildStatus};
 use crate::config::AzureDevOpsConfiguration;
 use crate::providers::collectors::{Collector, CollectorInfo, CollectorLoader};
 use crate::utils::date;
@@ -23,7 +23,7 @@ impl CollectorLoader for AzureDevOpsConfiguration {
                     Option::None => true,
                     Option::Some(e) => e,
                 },
-                provider: BuildProvider::AzureDevOps,
+                provider: "AzureDevOps".to_string(),
             },
         }))
     }
@@ -60,7 +60,7 @@ impl Collector for AzureDevOpsCollector {
                 callback(
                     BuildBuilder::new()
                         .build_id(build.id.to_string())
-                        .provider(BuildProvider::AzureDevOps)
+                        .provider("AzureDevOps")
                         .origin(format!(
                             "{}/{}",
                             &self.client.organization, &self.client.project
