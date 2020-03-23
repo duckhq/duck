@@ -10,7 +10,7 @@ pub struct Build {
     pub partition: u64,
     pub origin: String,
     pub build_id: String,
-    pub provider: BuildProvider,
+    pub provider: String,
     pub collector: String,
     pub project_id: String,
     pub project_name: String,
@@ -33,7 +33,7 @@ impl BuildBuilder {
     pub fn dummy() -> Self {
         BuildBuilder::new()
             .build_id("foo")
-            .provider(BuildProvider::TeamCity)
+            .provider("TeamCity")
             .origin("origin")
             .collector("collector")
             .project_id("project_id")
@@ -124,15 +124,6 @@ impl BuildBuilder {
     pub fn unwrap(&self) -> Build {
         self.build().unwrap()
     }
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub enum BuildProvider {
-    TeamCity,
-    AzureDevOps,
-    GitHub,
-    OctopusDeploy,
-    AppVeyor,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

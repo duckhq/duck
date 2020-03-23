@@ -115,6 +115,10 @@ pub enum CollectorConfiguration {
     /// Gets builds from AppVeyor
     #[serde(rename = "appveyor")]
     AppVeyor(AppVeyorConfiguration),
+    /// # Duck collector
+    /// Gets builds from another Duck instance
+    #[serde(rename = "duck")]
+    Duck(DuckConfiguration),
 }
 
 impl CollectorConfiguration {
@@ -125,6 +129,7 @@ impl CollectorConfiguration {
             CollectorConfiguration::GitHub(c) => &c.id,
             CollectorConfiguration::OctopusDeploy(c) => &c.id,
             CollectorConfiguration::AppVeyor(c) => &c.id,
+            CollectorConfiguration::Duck(c) => &c.id,
         }
     }
 
@@ -135,6 +140,7 @@ impl CollectorConfiguration {
             CollectorConfiguration::GitHub(c) => c.enabled,
             CollectorConfiguration::OctopusDeploy(c) => c.enabled,
             CollectorConfiguration::AppVeyor(c) => c.enabled,
+            CollectorConfiguration::Duck(c) => c.enabled,
         } {
             return enabled;
         }
@@ -150,6 +156,7 @@ impl Validate for CollectorConfiguration {
             CollectorConfiguration::GitHub(c) => c.validate(),
             CollectorConfiguration::OctopusDeploy(c) => c.validate(),
             CollectorConfiguration::AppVeyor(c) => c.validate(),
+            CollectorConfiguration::Duck(c) => c.validate(),
         }
     }
 }
@@ -379,6 +386,21 @@ pub enum OctopusDeployCredentials {
     /// Authenticate using an API key
     #[serde(rename = "apiKey")]
     ApiKey(String),
+}
+
+///////////////////////////////////////////////////////////
+// Duck
+
+#[derive(Serialize, Deserialize, JsonSchema, Clone)]
+pub struct DuckConfiguration {
+    /// # The Duck collector ID
+    pub id: String,
+    /// # Determines whether or not this collector is enabled
+    #[serde(default)]
+    pub enabled: Option<bool>,
+    /// # The Duck server URL
+    #[serde(rename = "serverUrl")]
+    pub server_url: String,
 }
 
 ///////////////////////////////////////////////////////////

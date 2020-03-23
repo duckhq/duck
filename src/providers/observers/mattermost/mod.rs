@@ -68,7 +68,7 @@ impl<T: HttpClient + Default> Observer for MattermostObserver<T> {
                 self.client.send(
                     &self.http,
                     &format!(
-                        "{:?} build status for {}::{} ({}) changed to *{:?}*",
+                        "{} build status for {}::{} ({}) changed to *{:?}*",
                         build.provider,
                         build.project_name,
                         build.definition_name,
