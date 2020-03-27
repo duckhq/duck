@@ -105,7 +105,7 @@ pub fn check_for_updated_configuration(context: &mut Context) -> DuckResult<Conf
                 context.collectors.clear();
                 for collector in collectors {
                     debug!(
-                        "Loaded {:?} collector: {:?}",
+                        "Loaded {} collector: {}",
                         collector.info().provider,
                         collector.info().id
                     );
@@ -134,7 +134,7 @@ pub fn check_for_updated_configuration(context: &mut Context) -> DuckResult<Conf
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::builds::{BuildBuilder, BuildProvider, BuildStatus};
+    use crate::builds::{BuildBuilder, BuildStatus};
     use crate::providers::collectors::CollectorInfo;
     use crate::DuckResult;
     use std::sync::mpsc::channel;
@@ -152,7 +152,7 @@ mod tests {
                 info: CollectorInfo {
                     id: "dummy".to_owned(),
                     enabled: true,
-                    provider: BuildProvider::GitHub,
+                    provider: "GitHub".to_owned(),
                 },
             }
         }

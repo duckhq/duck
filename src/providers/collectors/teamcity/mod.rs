@@ -1,7 +1,7 @@
 use log::{error, trace, warn};
 use waithandle::WaitHandleListener;
 
-use crate::builds::{Build, BuildBuilder, BuildProvider, BuildStatus};
+use crate::builds::{Build, BuildBuilder, BuildStatus};
 use crate::config::TeamCityConfiguration;
 use crate::providers::collectors::{Collector, CollectorInfo};
 use crate::utils::date;
@@ -24,7 +24,7 @@ impl CollectorLoader for TeamCityConfiguration {
                     Option::None => true,
                     Option::Some(e) => e,
                 },
-                provider: BuildProvider::TeamCity,
+                provider: "TeamCity".to_string(),
             },
         }))
     }
@@ -92,7 +92,7 @@ impl Collector for TeamCityCollector {
                         callback(
                             BuildBuilder::new()
                                 .build_id(build.id.to_string())
-                                .provider(BuildProvider::TeamCity)
+                                .provider("TeamCity")
                                 .origin(self.client.url.as_str())
                                 .collector(&self.info.id)
                                 .project_id(&found.project_id)

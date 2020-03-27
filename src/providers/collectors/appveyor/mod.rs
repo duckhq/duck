@@ -1,6 +1,6 @@
 use waithandle::WaitHandleListener;
 
-use crate::builds::{Build, BuildBuilder, BuildProvider};
+use crate::builds::{Build, BuildBuilder};
 use crate::config::AppVeyorConfiguration;
 use crate::providers::collectors::{Collector, CollectorInfo, CollectorLoader};
 use crate::utils::http::*;
@@ -40,7 +40,7 @@ impl<T: HttpClient + Default> AppVeyorCollector<T> {
                     Option::None => true,
                     Option::Some(e) => e,
                 },
-                provider: BuildProvider::AppVeyor,
+                provider: "AppVeyor".to_owned(),
             },
         }
     }
@@ -76,7 +76,7 @@ impl<T: HttpClient + Default> Collector for AppVeyorCollector<T> {
             callback(
                 BuildBuilder::new()
                     .build_id(build.build_id.to_string())
-                    .provider(BuildProvider::AppVeyor)
+                    .provider("AppVeyor")
                     .origin(format!(
                         "https://ci.appveyor.com/project/{account}/{project}",
                         account = self.account,
@@ -115,19 +115,33 @@ mod tests {
     use crate::utils::http::{HttpMethod, MockHttpClient, MockHttpResponseBuilder};
     use reqwest::StatusCode;
 
-    #[test]
-    fn should_get_correct_data() {
-        // Given
-        let appveyor = AppVeyorCollector::<MockHttpClient>::new(&AppVeyorConfiguration {
+    fn create_collector() -> AppVeyorCollector<MockHttpClient> {
+        AppVeyorCollector::<MockHttpClient>::new(&AppVeyorConfiguration {
             id: "appveyor".to_owned(),
             enabled: Some(true),
             account: "patriksvensson".to_owned(),
             project: "spectre-commandline".to_owned(),
             credentials: AppVeyorCredentials::Bearer("SECRET".to_owned()),
             count: Option::None,
-        });
+        })
+    }
 
+    #[test]
+    fn should_return_correct_provider_name() {
+        // Given
+        let github = create_collector();
+        // When
+        let provider = &github.info().provider;
+        // Then
+        assert_eq!("AppVeyor", provider);
+    }
+
+    #[test]
+    fn should_get_correct_data() {
+        // Given
+        let appveyor = create_collector();
         let client = appveyor.get_client();
+
         client.add_response(
             MockHttpResponseBuilder::new(
                 HttpMethod::Get,
@@ -151,7 +165,7 @@ mod tests {
         // Then
         assert_eq!(1, result.len());
         assert_eq!("31395671", result[0].build_id);
-        assert_eq!(BuildProvider::AppVeyor, result[0].provider);
+        assert_eq!("AppVeyor", result[0].provider);
         assert_eq!("appveyor", result[0].collector);
         assert_eq!("408686", result[0].project_id);
         assert_eq!("spectresystems/spectre.cli", result[0].project_name);

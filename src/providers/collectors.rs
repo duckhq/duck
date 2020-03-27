@@ -1,10 +1,11 @@
 use waithandle::WaitHandleListener;
 
-use crate::builds::{Build, BuildProvider};
+use crate::builds::Build;
 use crate::DuckResult;
 
 mod appveyor;
 mod azure;
+mod duck;
 mod github;
 mod octopus;
 mod teamcity;
@@ -25,5 +26,5 @@ pub trait Collector: Send {
 pub struct CollectorInfo {
     pub id: String,
     pub enabled: bool,
-    pub provider: BuildProvider,
+    pub provider: String,
 }

@@ -76,6 +76,12 @@ mod tests {
                     "project": "${APPVEYOR_PROJECT}",
                     "count": ${APPVEYOR_COUNT}
                 }
+            },
+            {
+                "duck": {
+                    "id": "${DUCK_ID}",
+                    "serverUrl": "${DUCK_SERVER_URL}"
+                }
             }
         ],
         "observers": [
@@ -164,6 +170,8 @@ mod tests {
         variables.add("APPVEYOR_ACCOUNT", "patriksvensson");
         variables.add("APPVEYOR_PROJECT", "spectre-commandline");
         variables.add("APPVEYOR_COUNT", "4");
+        variables.add("DUCK_ID", "duck_localhost");
+        variables.add("DUCK_SERVER_URL", "http://localhost:15825");
         variables.add("HUE_ID", "hue");
         variables.add("HUE_BRIGHTNESS", "128");
         variables.add("HUE_HOST", "192.168.1.155");
@@ -259,6 +267,18 @@ mod tests {
         assert_eq!("spectre-commandline", appveyor.project);
         assert_eq!("SECRET-APPVEYOR-TOKEN", appveyor.get_bearer_token());
         assert_eq!(4, appveyor.get_count());
+    }
+
+    #[test]
+    fn should_expand_duck_configuration() {
+        // Given, When
+        let config = read_config!(CONFIGURATION);
+
+        // Then
+        let duck = find_config!(config.collectors, CollectorConfiguration::Duck);
+
+        assert_eq!("duck_localhost", duck.id);
+        assert_eq!("http://localhost:15825", duck.server_url);
     }
 
     #[test]
