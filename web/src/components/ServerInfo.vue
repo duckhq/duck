@@ -1,15 +1,15 @@
 <template>
   <div>
     <p>
-      <b>Version:</b>
+      <span class="font-bold">Version:</span>
       {{ getVersion() }}
     </p>
     <p v-if="server != null">
-      <b>Server:</b>
+      <span class="font-bold">Server:</span>
       {{ server }}
     </p>
     <p v-if="started != null">
-      <b>Started:</b>
+      <span class="font-bold">Started:</span>
       {{ started | moment("from", "now") }}
     </p>
   </div>
