@@ -2,16 +2,16 @@
   <transition name="modal">
     <div class="modal-mask flex flex-col" v-on:keyup.esc="$emit('close')" tabindex="0" ref="modal">
       <div class="w-full md:w-1/2 xl:w-1/4 min-h-full md:mx-auto my-auto">
-        <div class="bg-gray-100 border border-gray-900 rounded-md p-2">
+        <div class="bg-gray-100 border border-gray-900 rounded-md">
           <div class="">
             <!-- Header -->
-            <div class="my-3">
-              <a>
+            <div>
+              <a  class="ribbon">
                 <fa-icon icon="cog" /> Settings 
               </a>
             </div>
             <!-- Body -->
-            <div class="">
+            <div class="m-2">
               <!-- Tabs -->
               <div>
                 <button class="inline-block p-2 cursor-pointer" :class="{ active: show_views }" @click="current='views'">
@@ -30,8 +30,8 @@
               </div>
             </div>
             <!-- Footer -->
-            <div class="flex justify-end mt-4">
-              <button class="rounded-md border border-blue-900 bg-blue-200 p-2 text-center font-semibold text-blue-900" @click="$emit('close')">Close</button>
+            <div class="flex justify-end m-2 mt-4">
+              <button class="rounded-md border border-blue-900 bg-blue-200 px-2 py-1 text-center font-semibold text-blue-900" @click="$emit('close')">Close</button>
             </div>
           </div>
         </div>
@@ -98,6 +98,19 @@ export default {
   position: relative;
   top: 1px;
   border-bottom: 1px solid white;
+}
+
+.ribbon {
+  @apply my-3 pl-8 pr-3 py-1 inline-block bg-blue-700 text-white font-semibold rounded-l-sm rounded-r-md relative border-blue-800;
+  left: -1.25rem;
+}
+
+.ribbon::after {
+  @apply absolute left-0 bg-transparent border border-transparent w-0 h-0;
+  border-width: 0 1.2em 1.2em 0;
+  border-right-color: inherit;
+  top: 100%;
+  content: '';
 }
 
 @media screen {
