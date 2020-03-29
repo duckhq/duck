@@ -99,7 +99,7 @@ export default {
 }
 
 li button.active {
-  @apply text-black bg-gray-600;
+  @apply text-gray-100 bg-gray-600;
 }
 
 li button {
