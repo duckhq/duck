@@ -243,6 +243,6 @@ Below is an example configuration that specifies multiple collectors and observe
 
 ## License
 
-Copyright © Patrik Svensson, Gary McLean Hall and contributors.
+Copyright © Patrik Svensson and Gary McLean Hall.
 
 Duck is provided as-is under the MIT license. For more information see [LICENSE](https://github.com/duckhq/duck/blob/master/LICENSE).
