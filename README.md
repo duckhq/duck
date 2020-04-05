@@ -6,14 +6,14 @@ Duck is a build system agnostic build monitor written in Rust (backend server) a
 
 ## Table of Contents
 
-1. [Getting started](https://github.com/spectresystems/duck#getting-started)
-2. [How it works](https://github.com/spectresystems/duck#how-it-works)
-3. [Supported providers](https://github.com/spectresystems/duck#supported-providers)
-   - [Collectors](https://github.com/spectresystems/duck#collectors)
-   - [Observers](https://github.com/spectresystems/duck#observers)
-3. [Configuration](https://github.com/spectresystems/duck#configuration)
-   - [Example](https://github.com/spectresystems/duck#example)
-4. [License](https://github.com/spectresystems/duck#license)
+1. [Getting started](https://github.com/duckhq/duck#getting-started)
+2. [How it works](https://github.com/duckhq/duck#how-it-works)
+3. [Supported providers](https://github.com/duckhq/duck#supported-providers)
+   - [Collectors](https://github.com/duckhq/duck#collectors)
+   - [Observers](https://github.com/duckhq/duck#observers)
+3. [Configuration](https://github.com/duckhq/duck#configuration)
+   - [Example](https://github.com/duckhq/duck#example)
+4. [License](https://github.com/duckhq/duck#license)
 
 ## Getting started
 
@@ -73,7 +73,7 @@ Below is an example configuration that specifies multiple collectors and observe
 
 ```json
 {
-    "$schema": "https://raw.githubusercontent.com/spectresystems/duck/master/schemas/v0.9.json",
+    "$schema": "https://raw.githubusercontent.com/duckhq/duck/master/schemas/v0.9.json",
     "interval": 30,
     "views": [
         {
@@ -109,7 +109,7 @@ Below is an example configuration that specifies multiple collectors and observe
         {
             "github": {
                 "id": "github_pullrequests",
-                "owner": "spectresystems",
+                "owner": "duckhq",
                 "repository": "duck",
                 "workflow": "pull_request.yml",
                 "credentials": {
@@ -243,6 +243,6 @@ Below is an example configuration that specifies multiple collectors and observe
 
 ## License
 
-Copyright © Patrik Svensson and contributors.
+Copyright © Patrik Svensson and Gary McLean Hall.
 
-Duck is provided as-is under the MIT license. For more information see [LICENSE](https://github.com/spectresystems/duck/blob/master/LICENSE).
+Duck is provided as-is under the MIT license. For more information see [LICENSE](https://github.com/duckhq/duck/blob/master/LICENSE).

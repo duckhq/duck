@@ -1,7 +1,7 @@
 [package]
 name = "duck"
 version = "0.13.0"
-authors = ["Patrik Svensson <patrik@patriksvensson.se>"]
+authors = ["Patrik Svensson", "Gary McLean Hall"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
 
