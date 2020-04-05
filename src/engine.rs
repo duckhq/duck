@@ -197,6 +197,9 @@ fn run_accumulator(
                 accumulator::ConfigurationResult::Updated => break,
             },
         };
+        if handle.wait(Duration::from_millis(500)).unwrap() {
+            break;
+        }
     }
 
     while !handle.check().unwrap() {
@@ -263,6 +266,7 @@ fn run_aggregator(
 // Utilities
 
 fn try_get_updated_configuration(
+    handle: &WaitHandleListener,
     receiver: &Receiver<EngineThreadMessage>,
 ) -> Option<Configuration> {
     let mut result: Option<Configuration> = None;
@@ -271,6 +275,9 @@ fn try_get_updated_configuration(
             EngineThreadMessage::ConfigurationUpdated(config) => {
                 result = Some(config);
             }
+        }
+        if handle.wait(Duration::from_millis(500)).unwrap() {
+            return None;
         }
     }
     result

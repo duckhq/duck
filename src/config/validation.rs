@@ -46,6 +46,15 @@ fn validate_views(configuration: &Configuration) -> DuckResult<()> {
                     view.id
                 ));
             }
+            for view_collector in view.collectors.iter() {
+                if !configuration.collector_exist(&view_collector) {
+                    return Err(format_err!(
+                        "The view '{}' depends on collector '{}' which does not exist",
+                        view.id,
+                        view_collector
+                    ));
+                }
+            }
             known_ids.insert(view.id.clone());
         }
     };
@@ -158,6 +167,30 @@ mod tests {
                         "id": "foo bar",
                         "name": "Foo",
                         "collectors": [ ]
+                    }
+                ]
+            }
+        "#,
+        )
+        .unwrap();
+        config.validate().unwrap();
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "The view \\'foo\\' depends on collector \\'bar\\' which does not exist"
+    )]
+    fn should_return_error_if_a_view_depends_on_collector_that_does_not_exist() {
+        let config = Configuration::from_json(
+            &TestVariableProvider::new(),
+            r#"
+            { 
+                "collectors": [ ],
+                "views": [
+                    {
+                        "id": "foo",
+                        "name": "Foo",
+                        "collectors": [ "bar" ]
                     }
                 ]
             }

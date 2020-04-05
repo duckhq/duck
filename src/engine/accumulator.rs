@@ -98,7 +98,9 @@ pub enum ConfigurationResult {
 }
 
 pub fn check_for_updated_configuration(context: &mut Context) -> DuckResult<ConfigurationResult> {
-    if let Some(config) = super::try_get_updated_configuration(&context.engine_receiver) {
+    if let Some(config) =
+        super::try_get_updated_configuration(&context.listener, &context.engine_receiver)
+    {
         trace!("Applying new configuration...");
         match providers::create_collectors(&config) {
             Ok(collectors) => {

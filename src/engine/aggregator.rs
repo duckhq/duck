@@ -72,7 +72,9 @@ pub fn aggregate(context: &mut Context) -> AggregateResult {
 }
 
 fn check_for_updated_configuration(context: &mut Context) -> DuckResult<()> {
-    if let Some(config) = super::try_get_updated_configuration(&context.engine_receiver) {
+    if let Some(config) =
+        super::try_get_updated_configuration(&context.listener, &context.engine_receiver)
+    {
         trace!("Applying new configuration...");
         match crate::providers::create_observers(&config) {
             Ok(collectors) => {
