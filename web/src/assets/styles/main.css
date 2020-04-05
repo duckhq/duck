@@ -3,3 +3,7 @@
  @tailwind components;
 
  @tailwind utilities;
+
+ * {
+     font-family: "Roboto", "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+ }
