@@ -115,6 +115,15 @@ export default {
 </script>
 
 <style scoped lang="scss">
+#app .main-enter-active,
+#app .main-leave-active {
+  transition: opacity 0.6s ease;
+}
+#app .main-enter,
+#app .main-leave-to {
+  opacity: 0;
+}
+
 .settings-button {
   @apply text-gray-100 border border-blue-900 bg-blue-500 text-lg py-2 px-3 rounded-full fixed right-0 bottom-0 mr-4 mb-4 transform transition duration-500 ease-in-out opacity-25 z-50
 }
