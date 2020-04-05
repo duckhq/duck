@@ -134,6 +134,7 @@ pub enum BuildStatus {
     Running,
     Canceled,
     Queued,
+    Skipped,
 }
 
 impl BuildStatus {
@@ -145,6 +146,7 @@ impl BuildStatus {
             BuildStatus::Running => false,
             BuildStatus::Canceled => false,
             BuildStatus::Queued => false,
+            BuildStatus::Skipped => false,
         }
     }
 }

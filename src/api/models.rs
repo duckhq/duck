@@ -61,6 +61,7 @@ pub enum BuildStatusViewModel {
     Running,
     Canceled,
     Queued,
+    Skipped,
 }
 
 impl From<&Build> for BuildViewModel {
@@ -91,6 +92,7 @@ impl From<&BuildStatus> for BuildStatusViewModel {
             BuildStatus::Running => BuildStatusViewModel::Running,
             BuildStatus::Canceled => BuildStatusViewModel::Canceled,
             BuildStatus::Queued => BuildStatusViewModel::Queued,
+            BuildStatus::Skipped => BuildStatusViewModel::Skipped,
         }
     }
 }

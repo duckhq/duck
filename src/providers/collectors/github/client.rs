@@ -129,6 +129,7 @@ impl GitHubWorkflowRun {
                     "success" => Ok(BuildStatus::Success),
                     "cancelled" => Ok(BuildStatus::Canceled),
                     "failure" => Ok(BuildStatus::Failed),
+                    "skipped" => Ok(BuildStatus::Skipped),
                     _ => Ok(BuildStatus::Failed),
                 },
             },
