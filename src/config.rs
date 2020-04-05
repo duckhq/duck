@@ -410,6 +410,9 @@ pub struct DuckConfiguration {
     /// # The Duck server URL
     #[serde(rename = "serverUrl")]
     pub server_url: String,
+    /// # The view to get builds from
+    #[serde(default)]
+    pub view: Option<String>,
 }
 
 ///////////////////////////////////////////////////////////

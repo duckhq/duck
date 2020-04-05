@@ -115,18 +115,19 @@ mod tests {
     use crate::utils::http::{HttpMethod, MockHttpClient, MockHttpResponseBuilder};
     use reqwest::StatusCode;
 
-    fn create_collector() -> DuckCollector<MockHttpClient> {
+    fn create_collector(view: Option<String>) -> DuckCollector<MockHttpClient> {
         DuckCollector::<MockHttpClient>::new(&DuckConfiguration {
             id: "duck_other".to_owned(),
             enabled: Some(true),
             server_url: "http://localhost:15826".to_owned(),
+            view,
         })
     }
 
     #[test]
     fn should_return_correct_provider_name() {
         // Given
-        let github = create_collector();
+        let github = create_collector(None);
         // When
         let provider = &github.info().provider;
         // Then
@@ -136,7 +137,7 @@ mod tests {
     #[test]
     fn should_get_correct_data() {
         // Given
-        let duck = create_collector();
+        let duck = create_collector(None);
         let client = duck.get_client();
 
         client.add_response(
@@ -184,5 +185,55 @@ mod tests {
         );
         assert_eq!(1584846026, result[0].started_at);
         assert_eq!(1584846262, result[0].finished_at.unwrap());
+    }
+
+    #[test]
+    fn should_get_correct_data_for_view() {
+        // Given
+        let duck = create_collector(Some("foo".to_owned()));
+        let client = duck.get_client();
+
+        client.add_response(
+            MockHttpResponseBuilder::new(HttpMethod::Get, "http://localhost:15826/api/server")
+                .returns_status(StatusCode::OK)
+                .returns_body(format!("{{ \"version\": \"{}\" }}", crate::utils::VERSION)),
+        );
+        client.add_response(
+            MockHttpResponseBuilder::new(
+                HttpMethod::Get,
+                "http://localhost:15826/api/builds/view/foo",
+            )
+            .returns_status(StatusCode::OK)
+            .returns_body(include_str!("test_data/view.json")),
+        );
+
+        let (_, listener) = waithandle::new();
+
+        // When
+        let mut result = Vec::<Build>::new();
+        duck.collect(listener, &mut |build: Build| {
+            // Store the results
+            result.push(build);
+        })
+        .unwrap();
+
+        // Then
+        assert_eq!(1, result.len());
+        assert_eq!("58880314", result[0].build_id);
+        assert_eq!("GitHub", result[0].provider);
+        assert_eq!("duck_other", result[0].collector);
+        assert_eq!("spectresystems/duck", result[0].project_id);
+        assert_eq!("spectresystems/duck", result[0].project_name);
+        assert_eq!("ci.yaml", result[0].definition_id);
+        assert_eq!("ci.yaml", result[0].definition_name);
+        assert_eq!("24", result[0].build_number);
+        assert_eq!(BuildStatus::Success, result[0].status);
+        assert_eq!("setup-docker-for-local-development", result[0].branch);
+        assert_eq!(
+            "https://github.com/spectresystems/duck/actions/runs/58880314",
+            result[0].url
+        );
+        assert_eq!(1584617069, result[0].started_at);
+        assert_eq!(1584617318, result[0].finished_at.unwrap());
     }
 }
