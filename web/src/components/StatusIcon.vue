@@ -31,6 +31,7 @@ export default {
               case "Running": return "running";
               case "Canceled": return "stop-circle";
               case "Queued": return "clock";
+              case "Skipped": return "stop-circle";
               default: return "question-circle"
 
           }
