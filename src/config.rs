@@ -70,6 +70,15 @@ impl Configuration {
         }
         result
     }
+
+    pub fn collector_exist(&self, id: &str) -> bool {
+        for collector in self.collectors.iter() {
+            if collector.get_id() == id {
+                return true;
+            }
+        }
+        false
+    }
 }
 
 #[derive(Serialize, Deserialize, JsonSchema, Debug, Clone)]
@@ -401,6 +410,9 @@ pub struct DuckConfiguration {
     /// # The Duck server URL
     #[serde(rename = "serverUrl")]
     pub server_url: String,
+    /// # The view to get builds from
+    #[serde(default)]
+    pub view: Option<String>,
 }
 
 ///////////////////////////////////////////////////////////

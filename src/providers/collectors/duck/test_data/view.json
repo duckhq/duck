@@ -1,0 +1,16 @@
+[
+    {
+        "id": 1619989489999387859,
+        "provider": "GitHub",
+        "collector": "duck_other",
+        "project": "spectresystems/duck",
+        "build": "ci.yaml",
+        "branch": "setup-docker-for-local-development",
+        "buildId": "58880314",
+        "buildNumber": "24",
+        "started": 1584617069,
+        "finished": 1584617318,
+        "url": "https://github.com/spectresystems/duck/actions/runs/58880314",
+        "status": "Success"
+    }
+]

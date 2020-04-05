@@ -104,4 +104,9 @@ export default {
 .queued {
   background-color: #999999;
 }
+
+.skipped {
+  background-color: #999999;
+}
+
 </style>

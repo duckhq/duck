@@ -56,7 +56,17 @@ mod tests {
                 &TestVariableProvider::new(),
                 r#"
                 { 
-                    "collectors": [ ],
+                    "collectors": [ 
+                        {  "duck": { "id": "a1", "serverUrl": "http://localhost/a1" } },
+                        {  "duck": { "id": "a2", "serverUrl": "http://localhost/a2" } },
+                        {  "duck": { "id": "b1", "serverUrl": "http://localhost/b1" } },
+                        {  "duck": { "id": "b2", "serverUrl": "http://localhost/b2" } },
+                        {  "duck": { "id": "b3", "serverUrl": "http://localhost/b3" } },
+                        {  "duck": { "id": "c1", "serverUrl": "http://localhost/c1" } },
+                        {  "duck": { "id": "c2", "serverUrl": "http://localhost/c2" } },
+                        {  "duck": { "id": "c3", "serverUrl": "http://localhost/c3" } },
+                        {  "duck": { "id": "c4", "serverUrl": "http://localhost/c4" } }
+                    ],
                     "views": [
                         {
                             "id": "foo",

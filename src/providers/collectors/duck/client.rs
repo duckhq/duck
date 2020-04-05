@@ -7,12 +7,14 @@ use crate::DuckResult;
 
 pub struct DuckClient {
     pub server_url: String,
+    pub view: Option<String>,
 }
 
 impl DuckClient {
     pub fn new(config: &DuckConfiguration) -> Self {
         Self {
             server_url: config.server_url.clone(),
+            view: config.view.clone(),
         }
     }
 
@@ -26,7 +28,14 @@ impl DuckClient {
     }
 
     pub fn get_builds(&self, client: &impl HttpClient) -> DuckResult<Vec<DuckBuild>> {
-        let url = format!("{}/api/builds", owner = self.server_url,);
+        let url = match &self.view {
+            Some(view) => format!(
+                "{owner}/api/builds/view/{view}",
+                owner = self.server_url,
+                view = view
+            ),
+            None => format!("{owner}/api/builds", owner = self.server_url),
+        };
 
         let body = self.send_get_request(client, url)?;
         Ok(serde_json::from_str(&body[..])?)
