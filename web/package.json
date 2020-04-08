@@ -5,6 +5,7 @@
     "scripts": {
         "serve": "npx vue-cli-service serve",
         "build": "npx vue-cli-service build",
+        "test:unit": "vue-cli-service test:unit",
         "lint": "npx vue-cli-service lint"
     },
     "dependencies": {
@@ -22,12 +23,16 @@
         "vue-router": "^3.1.5"
     },
     "devDependencies": {
+        "@types/jest": "^25.2.1",
         "@vue/cli-plugin-babel": "^4.1.0",
         "@vue/cli-plugin-eslint": "^4.1.0",
+        "@vue/cli-plugin-unit-jest": "^4.3.0",
         "@vue/cli-service": "^4.1.0",
+        "@vue/test-utils": "1.0.0-beta.31",
         "babel-eslint": "^10.0.3",
         "eslint": "^5.16.0",
         "eslint-plugin-vue": "^5.0.0",
+        "jest": "^25.2.7",
         "node-sass": "^4.13.0",
         "sass-loader": "^8.0.0",
         "vue-cli-plugin-tailwindcss": "~0.1.1",
