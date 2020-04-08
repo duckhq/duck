@@ -1,4 +1,5 @@
 use std::collections::hash_map::DefaultHasher;
+use std::fmt::Display;
 use std::hash::{Hash, Hasher};
 
 #[derive(Clone, Builder, Debug, PartialEq, Eq)]
@@ -135,6 +136,20 @@ pub enum BuildStatus {
     Canceled,
     Queued,
     Skipped,
+}
+
+impl Display for BuildStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            BuildStatus::Unknown => write!(f, "Unknown"),
+            BuildStatus::Success => write!(f, "Success"),
+            BuildStatus::Failed => write!(f, "Failed"),
+            BuildStatus::Running => write!(f, "Running"),
+            BuildStatus::Canceled => write!(f, "Canceled"),
+            BuildStatus::Queued => write!(f, "Queued"),
+            BuildStatus::Skipped => write!(f, "Skipped"),
+        }
+    }
 }
 
 impl BuildStatus {

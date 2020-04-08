@@ -4,6 +4,7 @@ use std::iter::FromIterator;
 use log::debug;
 
 use crate::config::HueConfiguration;
+use crate::filters::BuildFilter;
 use crate::providers::observers::{Observation, Observer, ObserverInfo, ObserverLoader};
 use crate::utils::http::{HttpClient, ReqwestClient};
 use crate::DuckResult;
@@ -15,7 +16,7 @@ mod validation;
 
 impl ObserverLoader for HueConfiguration {
     fn load(&self) -> DuckResult<Box<dyn Observer>> {
-        Ok(Box::new(HueObserver::<ReqwestClient>::new(self)))
+        Ok(Box::new(HueObserver::<ReqwestClient>::new(self)?))
     }
 }
 
@@ -26,8 +27,8 @@ pub struct HueObserver<T: HttpClient + Default> {
 }
 
 impl<T: HttpClient + Default> HueObserver<T> {
-    pub fn new(config: &HueConfiguration) -> Self {
-        HueObserver {
+    pub fn new(config: &HueConfiguration) -> DuckResult<Self> {
+        Ok(HueObserver {
             client: HueClient::new(config),
             http: Default::default(),
             info: ObserverInfo {
@@ -36,6 +37,7 @@ impl<T: HttpClient + Default> HueObserver<T> {
                     None => true,
                     Some(e) => e,
                 },
+                filter: BuildFilter::new(config.filter.clone())?,
                 collectors: match &config.collectors {
                     Option::None => Option::None,
                     Option::Some(collectors) => {
@@ -43,7 +45,7 @@ impl<T: HttpClient + Default> HueObserver<T> {
                     }
                 },
             },
-        }
+        })
     }
 
     #[cfg(test)]
@@ -60,10 +62,7 @@ impl<T: HttpClient + Default> Observer for HueObserver<T> {
     fn observe(&self, observation: Observation) -> DuckResult<()> {
         match observation {
             Observation::DuckStatusChanged(status) => {
-                debug!(
-                    "[{}] Setting light state to '{:?}'...",
-                    self.info.id, status
-                );
+                debug!("[{}] Setting light state to '{}'...", self.info.id, status);
                 self.client.set_state(&self.http, status)?;
             }
             Observation::ShuttingDown => {
@@ -92,10 +91,12 @@ mod tests {
             enabled: Some(true),
             brightness: Some(255),
             collectors: None,
+            filter: None,
             hub_url: "https://example.com".to_string(),
             username: "patrik".to_string(),
             lights: vec!["foo".to_string()],
-        });
+        })
+        .unwrap();
 
         let client = hue.get_client();
         client.add_response(
@@ -130,10 +131,12 @@ mod tests {
             enabled: Some(true),
             brightness: Some(255),
             collectors: None,
+            filter: None,
             hub_url: "https://example.com".to_string(),
             username: "patrik".to_string(),
             lights: vec!["foo".to_string()],
-        });
+        })
+        .unwrap();
 
         let client = hue.get_client();
         client.add_response(
@@ -163,10 +166,12 @@ mod tests {
             enabled: Some(true),
             brightness: Some(255),
             collectors: None,
+            filter: None,
             hub_url: "https://example.com".to_string(),
             username: "patrik".to_string(),
             lights: vec!["foo".to_string()],
-        });
+        })
+        .unwrap();
 
         let client = hue.get_client();
         client.add_response(

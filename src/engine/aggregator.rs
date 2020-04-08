@@ -7,6 +7,7 @@ use waithandle::WaitHandleListener;
 
 use crate::builds::{Build, BuildStatus};
 use crate::engine::{EngineEvent, EngineState, EngineThreadMessage};
+use crate::filters::FilterResult;
 use crate::providers::observers::*;
 use crate::DuckResult;
 
@@ -76,20 +77,11 @@ fn check_for_updated_configuration(context: &mut Context) -> DuckResult<()> {
         super::try_get_updated_configuration(&context.listener, &context.engine_receiver)
     {
         trace!("Applying new configuration...");
-        match crate::providers::create_observers(&config) {
-            Ok(collectors) => {
-                context.observers.clear();
-                for collector in collectors {
-                    debug!("Loaded collector: {:?}", collector.info().id);
-                    context.observers.push(collector);
-                }
-            }
-            Err(err) => {
-                return Err(format_err!(
-                    "An error occured while loading observers: {}",
-                    err
-                ));
-            }
+        let observers = crate::providers::create_observers(&config)?;
+        context.observers.clear();
+        for observer in observers {
+            debug!("Loaded observer: {}", observer.info().id);
+            context.observers.push(observer);
         }
     }
     Ok(())
@@ -107,6 +99,11 @@ fn build_updated(context: &mut Context, build: Box<Build>) {
 
     // Did the overall build status change for any observers?
     for observer in context.observers.iter() {
+        // Is the build be filtered out by the observer?
+        if should_filter(observer, &build) {
+            continue;
+        }
+
         // Only interested in specific collectors?
         if let Some(collectors) = &observer.info().collectors {
             let previous_status = context
@@ -120,7 +117,7 @@ fn build_updated(context: &mut Context, build: Box<Build>) {
 
             if current_status.is_absolute() && *previous_status != current_status {
                 trace!(
-                    "Collector status changed for observer '{}' ({:?})",
+                    "Collector status changed for observer '{}' ({})",
                     observer.info().id,
                     current_status
                 );
@@ -136,7 +133,7 @@ fn build_updated(context: &mut Context, build: Box<Build>) {
             // So did the overall build status change?
             if overall_status_changed {
                 trace!(
-                    "Overall status changed for observer '{}' ({:?})",
+                    "Overall status changed for observer '{}' ({})",
                     observer.info().id,
                     context.status
                 );
@@ -168,9 +165,24 @@ fn propagate_to_observers<'a>(
             if let Some(collectors) = &observer.info().collectors {
                 if !collectors.contains(collector) {
                     // The observer is not interested in the origin.
-                    return;
+                    continue;
                 }
             }
+        }
+
+        // Should we filter out the observation?
+        match &observation {
+            Observation::BuildUpdated(build) => {
+                if should_filter(observer, build) {
+                    continue;
+                }
+            }
+            Observation::BuildStatusChanged(build) => {
+                if should_filter(observer, build) {
+                    continue;
+                }
+            }
+            _ => {}
         }
 
         propagate_to_observer(observer, observation);
@@ -185,4 +197,23 @@ fn propagate_to_observer(observer: &Box<dyn Observer>, observation: Observation)
             error!("An error occured when sending observation. {}", e);
         }
     };
+}
+
+#[allow(clippy::borrowed_box)]
+fn should_filter(observer: &Box<dyn Observer>, build: &Build) -> bool {
+    match observer.info().filter.evaluate(&build) {
+        FilterResult::Retain => false,
+        FilterResult::Filter => {
+            trace!(
+                "Filtering build '{}' for observer '{}'",
+                build.build_id,
+                observer.info().id
+            );
+            true
+        }
+        FilterResult::Error(e) => {
+            error!("Could not filter build for '{}': {}", observer.info().id, e);
+            true
+        }
+    }
 }

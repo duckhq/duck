@@ -5,6 +5,7 @@ use log::info;
 
 use crate::builds::BuildStatus;
 use crate::config::MattermostConfiguration;
+use crate::filters::BuildFilter;
 use crate::providers::observers::{Observation, Observer, ObserverInfo, ObserverLoader};
 use crate::utils::http::{HttpClient, ReqwestClient};
 use crate::DuckResult;
@@ -16,7 +17,7 @@ mod validation;
 
 impl ObserverLoader for MattermostConfiguration {
     fn load(&self) -> DuckResult<Box<dyn Observer>> {
-        Ok(Box::new(MattermostObserver::<ReqwestClient>::new(self)))
+        Ok(Box::new(MattermostObserver::<ReqwestClient>::new(self)?))
     }
 }
 
@@ -27,8 +28,8 @@ pub struct MattermostObserver<T: HttpClient + Default> {
 }
 
 impl<T: HttpClient + Default> MattermostObserver<T> {
-    pub fn new(config: &MattermostConfiguration) -> Self {
-        MattermostObserver {
+    pub fn new(config: &MattermostConfiguration) -> DuckResult<Self> {
+        Ok(MattermostObserver {
             client: MattermostClient::new(config),
             http: Default::default(),
             info: ObserverInfo {
@@ -37,6 +38,7 @@ impl<T: HttpClient + Default> MattermostObserver<T> {
                     None => true,
                     Some(e) => e,
                 },
+                filter: BuildFilter::new(config.filter.clone())?,
                 collectors: match &config.collectors {
                     Option::None => Option::None,
                     Option::Some(collectors) => {
@@ -44,7 +46,7 @@ impl<T: HttpClient + Default> MattermostObserver<T> {
                     }
                 },
             },
-        }
+        })
     }
 
     #[cfg(test)]
@@ -62,7 +64,7 @@ impl<T: HttpClient + Default> Observer for MattermostObserver<T> {
         if let Observation::BuildStatusChanged(build) = observation {
             if build.status != BuildStatus::Unknown {
                 info!(
-                    "Sending Mattermost message since build status changed ({:?})...",
+                    "Sending Mattermost message since build status changed ({})...",
                     build.status
                 );
                 self.client.send(
@@ -100,10 +102,12 @@ mod tests {
             enabled: Some(true),
             collectors: None,
             channel: None,
+            filter: None,
             credentials: MattermostCredentials::Webhook {
                 url: "https://example.com/webhook".to_string(),
             },
-        });
+        })
+        .unwrap();
 
         let client = mattermost.get_client();
         client.add_response(
@@ -134,10 +138,12 @@ mod tests {
             enabled: Some(true),
             collectors: None,
             channel: None,
+            filter: None,
             credentials: MattermostCredentials::Webhook {
                 url: "https://example.com/webhook".to_string(),
             },
-        });
+        })
+        .unwrap();
 
         let client = mattermost.get_client();
         client.add_response(
@@ -166,11 +172,13 @@ mod tests {
             id: "hue".to_string(),
             enabled: Some(true),
             collectors: None,
+            filter: None,
             channel: Some("foo".to_string()),
             credentials: MattermostCredentials::Webhook {
                 url: "https://example.com/webhook".to_string(),
             },
-        });
+        })
+        .unwrap();
 
         let client = mattermost.get_client();
         client.add_response(
