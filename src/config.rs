@@ -438,6 +438,8 @@ pub struct HueConfiguration {
     pub username: String,
     /// # The lights that should be controlled by this observer
     pub lights: Vec<String>,
+    /// # An optional filter expression
+    pub filter: Option<String>,
 }
 
 ///////////////////////////////////////////////////////////
@@ -458,6 +460,8 @@ pub struct SlackConfiguration {
     /// # The Slack channel to send messages to
     #[serde(default)]
     pub channel: Option<String>,
+    /// # An optional filter expression
+    pub filter: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, JsonSchema, Clone)]
@@ -485,6 +489,8 @@ pub struct MattermostConfiguration {
     pub channel: Option<String>,
     /// # The Mattermost credentials
     pub credentials: MattermostCredentials,
+    /// # An optional filter expression
+    pub filter: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, JsonSchema, Clone)]

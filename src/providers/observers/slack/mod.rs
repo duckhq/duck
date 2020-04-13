@@ -5,6 +5,7 @@ use log::info;
 
 use crate::builds::BuildStatus;
 use crate::config::SlackConfiguration;
+use crate::filters::BuildFilter;
 use crate::providers::observers::{Observation, Observer, ObserverInfo, ObserverLoader};
 use crate::utils::http::{HttpClient, ReqwestClient};
 use crate::DuckResult;
@@ -16,7 +17,7 @@ mod validation;
 
 impl ObserverLoader for SlackConfiguration {
     fn load(&self) -> DuckResult<Box<dyn Observer>> {
-        Ok(Box::new(SlackObserver::<ReqwestClient>::new(self)))
+        Ok(Box::new(SlackObserver::<ReqwestClient>::new(self)?))
     }
 }
 
@@ -27,8 +28,8 @@ pub struct SlackObserver<T: HttpClient + Default> {
 }
 
 impl<T: HttpClient + Default> SlackObserver<T> {
-    pub fn new(config: &SlackConfiguration) -> Self {
-        SlackObserver {
+    pub fn new(config: &SlackConfiguration) -> DuckResult<Self> {
+        Ok(SlackObserver {
             client: SlackClient::new(config),
             http: Default::default(),
             info: ObserverInfo {
@@ -37,6 +38,7 @@ impl<T: HttpClient + Default> SlackObserver<T> {
                     None => true,
                     Some(e) => e,
                 },
+                filter: BuildFilter::new(config.filter.clone())?,
                 collectors: match &config.collectors {
                     Option::None => Option::None,
                     Option::Some(collectors) => {
@@ -44,7 +46,7 @@ impl<T: HttpClient + Default> SlackObserver<T> {
                     }
                 },
             },
-        }
+        })
     }
 
     #[cfg(test)]
@@ -62,13 +64,13 @@ impl<T: HttpClient + Default> Observer for SlackObserver<T> {
         if let Observation::BuildStatusChanged(build) = observation {
             if is_interesting_status(&build.status) {
                 info!(
-                    "Sending Slack message since build status changed ({:?})...",
+                    "Sending Slack message since build status changed ({})...",
                     build.status
                 );
                 self.client.send(
                     &self.http,
                     &format!(
-                        "{} build status for {}::{} ({}) changed to *{:?}*",
+                        "{} build status for {}::{} ({}) changed to *{}*",
                         build.provider,
                         build.project_name,
                         build.definition_name,
@@ -112,10 +114,12 @@ mod tests {
             enabled: Some(true),
             collectors: None,
             channel: None,
+            filter: None,
             credentials: SlackCredentials::Webhook {
                 url: "https://example.com/webhook".to_string(),
             },
-        });
+        })
+        .unwrap();
 
         let client = slack.get_client();
         client.add_response(
@@ -146,10 +150,12 @@ mod tests {
             enabled: Some(true),
             collectors: None,
             channel: None,
+            filter: None,
             credentials: SlackCredentials::Webhook {
                 url: "https://example.com/webhook".to_string(),
             },
-        });
+        })
+        .unwrap();
 
         let client = slack.get_client();
         client.add_response(
@@ -180,10 +186,12 @@ mod tests {
             enabled: Some(true),
             collectors: None,
             channel: None,
+            filter: None,
             credentials: SlackCredentials::Webhook {
                 url: "https://example.com/webhook".to_string(),
             },
-        });
+        })
+        .unwrap();
 
         let client = slack.get_client();
         client.add_response(

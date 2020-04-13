@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
 use crate::builds::{Build, BuildStatus};
+use crate::filters::BuildFilter;
 use crate::DuckResult;
 
 mod hue;
@@ -19,6 +20,7 @@ pub trait Observer: Send {
 pub struct ObserverInfo {
     pub id: String,
     pub enabled: bool,
+    pub filter: BuildFilter,
     pub collectors: Option<HashSet<String>>,
 }
 

@@ -45,7 +45,18 @@ pub fn create_observers(config: &Configuration) -> DuckResult<Vec<Box<dyn Observ
         for config in observers.iter() {
             if config.is_enabled() {
                 let loader = get_observer_loader(&config);
-                result.push(loader.load()?);
+                match loader.load() {
+                    Ok(observer) => {
+                        result.push(observer);
+                    }
+                    Err(e) => {
+                        return Err(format_err!(
+                            "An error occured when loading observer '{}'. {}",
+                            config.get_id(),
+                            e
+                        ))
+                    }
+                }
             } else {
                 debug!("Observer '{}' has been disabled.", config.get_id());
             }

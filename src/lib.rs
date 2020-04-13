@@ -25,8 +25,12 @@ mod api;
 mod builds;
 mod config;
 mod engine;
+mod filters;
 mod providers;
 mod utils;
+
+#[allow(dead_code)]
+mod query;
 
 ///////////////////////////////////////////////////////////
 // Run
