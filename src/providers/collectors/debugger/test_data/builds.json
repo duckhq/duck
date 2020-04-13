@@ -1,0 +1,20 @@
+[
+    {
+        "id": 1,
+        "project": "Cauldron",
+        "definition": "Debug",
+        "branch": "master",
+        "status": 0,
+        "started": "2020-04-13T22:59:22.7241896+02:00",
+        "finished": "2020-04-13T23:03:47.7243751+02:00"
+    },
+    {
+        "id": 2,
+        "project": "Mercury",
+        "definition": "Debug",
+        "branch": "master",
+        "status": 1,
+        "started": "2020-04-13T22:59:25.2815355+02:00",
+        "finished": "2020-04-13T23:01:12.2815786+02:00"
+    }
+]

@@ -92,6 +92,7 @@ impl DuckBuild {
             "Running" => BuildStatus::Running,
             "Canceled" => BuildStatus::Canceled,
             "Queued" => BuildStatus::Queued,
+            "Skipped" => BuildStatus::Skipped,
             _ => BuildStatus::Unknown,
         }
     }

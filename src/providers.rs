@@ -33,6 +33,7 @@ fn get_collector_loader(config: &CollectorConfiguration) -> Box<&dyn CollectorLo
         CollectorConfiguration::OctopusDeploy(config) => Box::new(config),
         CollectorConfiguration::AppVeyor(config) => Box::new(config),
         CollectorConfiguration::Duck(config) => Box::new(config),
+        CollectorConfiguration::Debugger(config) => Box::new(config),
     }
 }
 

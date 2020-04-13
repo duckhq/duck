@@ -1,10 +1,10 @@
-use crate::config::{DuckConfiguration, Validate};
+use crate::config::{DebuggerConfiguration, Validate};
 use crate::DuckResult;
 
-impl Validate for DuckConfiguration {
+impl Validate for DebuggerConfiguration {
     fn validate(&self) -> DuckResult<()> {
         if self.server_url.is_empty() {
-            return Err(format_err!("[{}] Duck server URL is empty", self.id));
+            return Err(format_err!("[{}] Debugger server URL is empty", self.id));
         }
         Ok(())
     }
@@ -25,7 +25,7 @@ mod tests {
             { 
                 "collectors": [ 
                     {
-                        "duck": {
+                        "debugger": {
                             "id": "",
                             "serverUrl": "http://127.0.0.1:8081"
                         }
@@ -40,7 +40,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "[duck_other] Duck server URL is empty")]
+    #[should_panic(expected = "[duck_debugger] Debugger server URL is empty")]
     fn should_return_error_if_duck_server_url_is_empty() {
         let config = Configuration::from_json(
             &TestVariableProvider::new(),
@@ -48,8 +48,8 @@ mod tests {
             { 
                 "collectors": [ 
                     {
-                        "duck": {
-                            "id": "duck_other",
+                        "debugger": {
+                            "id": "duck_debugger",
                             "serverUrl": ""
                         }
                     }

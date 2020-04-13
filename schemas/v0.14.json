@@ -255,8 +255,43 @@
               "$ref": "#/definitions/DuckConfiguration"
             }
           }
+        },
+        {
+          "title": "Debug collector",
+          "description": "Gets builds from a Duck debugger instance",
+          "type": "object",
+          "required": [
+            "debugger"
+          ],
+          "properties": {
+            "debugger": {
+              "$ref": "#/definitions/DebuggerConfiguration"
+            }
+          }
         }
       ]
+    },
+    "DebuggerConfiguration": {
+      "type": "object",
+      "required": [
+        "id",
+        "serverUrl"
+      ],
+      "properties": {
+        "enabled": {
+          "title": "Determines whether or not this collector is enabled",
+          "default": null,
+          "type": "boolean"
+        },
+        "id": {
+          "title": "The Duck debugger collector ID",
+          "type": "string"
+        },
+        "serverUrl": {
+          "title": "The Duck debugger URL",
+          "type": "string"
+        }
+      }
     },
     "DuckConfiguration": {
       "type": "object",

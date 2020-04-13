@@ -7,6 +7,7 @@ pub static AZURE_DEVOPS_FORMAT: &str = "%+";
 pub static GITHUB_FORMAT: &str = "%+";
 pub static OCTOPUS_DEPLOY_FORMAT: &str = "%+";
 pub static APPVEYOR_FORMAT: &str = "%+";
+pub static DEBUGGER_FORMAT: &str = "%+";
 
 pub fn to_timestamp(input: &str, pattern: &str) -> DuckResult<i64> {
     match DateTime::parse_from_str(input, pattern) {
@@ -47,5 +48,11 @@ mod tests {
     fn should_parse_appveyor_format() {
         let result = to_timestamp("2020-03-11T12:09:48.1638791+00:00", APPVEYOR_FORMAT).unwrap();
         assert_eq!(1583928588, result);
+    }
+
+    #[test]
+    fn should_parse_debugger_format() {
+        let result = to_timestamp("2020-04-13T17:04:23.6101884+02:00", DEBUGGER_FORMAT).unwrap();
+        assert_eq!(1586790263, result);
     }
 }
