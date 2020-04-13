@@ -128,6 +128,10 @@ pub enum CollectorConfiguration {
     /// Gets builds from another Duck instance
     #[serde(rename = "duck")]
     Duck(DuckConfiguration),
+    /// # Debug collector
+    /// Gets builds from a Duck debugger instance
+    #[serde(rename = "debugger")]
+    Debugger(DebuggerConfiguration),
 }
 
 impl CollectorConfiguration {
@@ -139,6 +143,7 @@ impl CollectorConfiguration {
             CollectorConfiguration::OctopusDeploy(c) => &c.id,
             CollectorConfiguration::AppVeyor(c) => &c.id,
             CollectorConfiguration::Duck(c) => &c.id,
+            CollectorConfiguration::Debugger(c) => &c.id,
         }
     }
 
@@ -150,6 +155,7 @@ impl CollectorConfiguration {
             CollectorConfiguration::OctopusDeploy(c) => c.enabled,
             CollectorConfiguration::AppVeyor(c) => c.enabled,
             CollectorConfiguration::Duck(c) => c.enabled,
+            CollectorConfiguration::Debugger(c) => c.enabled,
         } {
             return enabled;
         }
@@ -166,6 +172,7 @@ impl Validate for CollectorConfiguration {
             CollectorConfiguration::OctopusDeploy(c) => c.validate(),
             CollectorConfiguration::AppVeyor(c) => c.validate(),
             CollectorConfiguration::Duck(c) => c.validate(),
+            CollectorConfiguration::Debugger(c) => c.validate(),
         }
     }
 }
@@ -395,6 +402,21 @@ pub enum OctopusDeployCredentials {
     /// Authenticate using an API key
     #[serde(rename = "apiKey")]
     ApiKey(String),
+}
+
+///////////////////////////////////////////////////////////
+// Debugger
+
+#[derive(Serialize, Deserialize, JsonSchema, Clone)]
+pub struct DebuggerConfiguration {
+    /// # The Duck debugger collector ID
+    pub id: String,
+    /// # Determines whether or not this collector is enabled
+    #[serde(default)]
+    pub enabled: Option<bool>,
+    /// # The Duck debugger URL
+    #[serde(rename = "serverUrl")]
+    pub server_url: String,
 }
 
 ///////////////////////////////////////////////////////////

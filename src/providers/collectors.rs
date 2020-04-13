@@ -5,6 +5,7 @@ use crate::DuckResult;
 
 mod appveyor;
 mod azure;
+mod debugger;
 mod duck;
 mod github;
 mod octopus;
