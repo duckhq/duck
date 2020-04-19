@@ -1,9 +1,10 @@
-extern crate env_logger;
 extern crate log;
 
-use env_logger::Env;
 use log::error;
+use simplelog::*;
 use structopt::StructOpt;
+
+use duck::DuckResult;
 
 mod commands;
 
@@ -13,6 +14,9 @@ struct Opt {
     /// The log level to use (info, debug, trace)
     #[structopt(short, long, parse(from_str = parse_level), env = "DUCK_LEVEL")]
     level: Option<LogLevel>,
+    /// Whether or not to log to file.
+    #[structopt(long = "file", short = "f")]
+    log_to_file: bool,
     /// Disables the startup banner
     #[structopt(short, long)]
     no_logo: bool,
@@ -22,7 +26,7 @@ struct Opt {
 }
 
 #[derive(Debug)]
-enum LogLevel {
+pub enum LogLevel {
     Information,
     Debug,
     Trace,
@@ -44,6 +48,18 @@ enum Command {
     Schema(commands::schema::Arguments),
     /// Validates the Duck configuration
     Validate(commands::validate::Arguments),
+    /// Starts Duck as a Windows service
+    #[cfg(windows)]
+    #[structopt(setting = structopt::clap::AppSettings::Hidden)]
+    Service,
+    /// Installs Duck as a Windows service.
+    /// Requires administrator user.
+    #[cfg(windows)]
+    Install,
+    /// Uninstalls the Duck Windows service.
+    /// Requires administrator user.
+    #[cfg(windows)]
+    Uninstall,
 }
 
 impl Command {
@@ -52,6 +68,13 @@ impl Command {
             Command::Start(_) => true,
             Command::Schema(_) => false,
             Command::Validate(_) => false,
+
+            #[cfg(windows)]
+            Command::Service => false,
+            #[cfg(windows)]
+            Command::Install => false,
+            #[cfg(windows)]
+            Command::Uninstall => false,
         }
     }
 }
@@ -59,7 +82,9 @@ impl Command {
 #[actix_rt::main]
 async fn main() {
     let args = Opt::from_args();
-    initialize_logging(&args.level);
+
+    initialize_logging(&args.level, args.log_to_file)
+        .expect("An error occured while setting up logging.");
 
     if args.command.show_logo() && !args.no_logo {
         println!(r#"     ____             __  "#);
@@ -73,8 +98,15 @@ async fn main() {
     // Execute the command
     let result = match args.command {
         Command::Start(args) => commands::start::execute(args).await,
-        Command::Schema(args) => commands::schema::execute(args).await,
-        Command::Validate(args) => commands::validate::execute(args).await,
+        Command::Schema(args) => commands::schema::execute(args),
+        Command::Validate(args) => commands::validate::execute(args),
+
+        #[cfg(windows)]
+        Command::Service => commands::service::start(),
+        #[cfg(windows)]
+        Command::Install => commands::service::install(),
+        #[cfg(windows)]
+        Command::Uninstall => commands::service::uninstall(),
     };
 
     // Return the correct exit code
@@ -87,24 +119,43 @@ async fn main() {
     }
 }
 
-fn initialize_logging(level: &Option<LogLevel>) {
+pub fn initialize_logging(level: &Option<LogLevel>, log_to_file: bool) -> DuckResult<()> {
     let level = match level {
-        None => "info",
+        None => LevelFilter::Info,
         Some(level) => match level {
-            LogLevel::Information => "info",
-            LogLevel::Debug => "debug",
-            LogLevel::Trace => "trace",
+            LogLevel::Information => LevelFilter::Info,
+            LogLevel::Debug => LevelFilter::Debug,
+            LogLevel::Trace => LevelFilter::Trace,
         },
     };
 
-    let filter = format!(
-        "{},actix=off,mio=off,tokio=off,want=off,hyper=off,reqwest=off,rustls=off,h2=off",
-        level
-    );
+    let padding = match level {
+        LevelFilter::Info => LevelPadding::Off,
+        _ => LevelPadding::Left,
+    };
 
-    env_logger::init_from_env(
-        Env::default()
-            .filter_or("DUCK_LOG_LEVEL", filter)
-            .write_style_or("DUCK_LOG_STYLE", "always"),
-    );
+    let mut config = ConfigBuilder::new();
+    config.set_level_padding(padding);
+    config.add_filter_ignore_str("actix");
+    config.add_filter_ignore_str("mio");
+    config.add_filter_ignore_str("tokio");
+    config.add_filter_ignore_str("want");
+    config.add_filter_ignore_str("hyper");
+    config.add_filter_ignore_str("reqwest");
+    config.add_filter_ignore_str("rustls");
+    config.add_filter_ignore_str("h2");
+    let config = config.build();
+
+    if log_to_file {
+        // Log both to file
+        let file = std::fs::File::create(std::env::current_exe()?.with_file_name("duck.log"))?;
+        CombinedLogger::init(vec![WriteLogger::new(level, config, file)])?;
+    } else {
+        // Log only to stdout
+        CombinedLogger::init(vec![
+            TermLogger::new(level, config, TerminalMode::Mixed).unwrap()
+        ])?;
+    }
+
+    Ok(())
 }

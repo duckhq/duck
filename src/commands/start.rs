@@ -1,4 +1,7 @@
 use std::path::PathBuf;
+use std::time::Duration;
+
+use log::info;
 
 use duck::DuckResult;
 use structopt::StructOpt;
@@ -37,7 +40,26 @@ impl Default for Arguments {
 // Command
 
 pub async fn execute(args: Arguments) -> DuckResult<()> {
-    duck::run(args.config, args.server_address).await
+    let handle = duck::run(args.config, args.server_address)?;
+
+    wait_for_ctrl_c()?;
+
+    info!("Stopping...");
+    handle.stop().await?;
+    info!("Stopped.");
+
+    Ok(())
+}
+
+fn wait_for_ctrl_c() -> DuckResult<()> {
+    let (signaler, listener) = waithandle::new();
+    ctrlc::set_handler(move || {
+        signaler.signal().expect("Error signaling listener");
+    })
+    .expect("Error setting Ctrl-C handler");
+    info!("Press Ctrl-C to exit");
+    while !listener.wait(Duration::from_millis(50))? {}
+    Ok(())
 }
 
 ///////////////////////////////////////////////////////////
