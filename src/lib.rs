@@ -56,7 +56,7 @@ pub fn run<T: Into<PathBuf>>(
     server_address: Option<String>,
 ) -> DuckResult<DuckHandle> {
     // Write some info to the console.
-    info!("Version {}", utils::VERSION);
+    info!("Version: {}", utils::VERSION);
 
     // Start the engine.
     let loader = JsonConfigurationLoader::new(config_path.into());

@@ -26,7 +26,7 @@ struct Opt {
 }
 
 #[derive(Debug)]
-pub enum LogLevel {
+enum LogLevel {
     Information,
     Debug,
     Trace,
@@ -68,7 +68,6 @@ impl Command {
             Command::Start(_) => true,
             Command::Schema(_) => false,
             Command::Validate(_) => false,
-
             #[cfg(windows)]
             Command::Service => false,
             #[cfg(windows)]
@@ -84,7 +83,7 @@ async fn main() {
     let args = Opt::from_args();
 
     initialize_logging(&args.level, args.log_to_file)
-        .expect("An error occured while setting up logging.");
+        .expect("An error occured while setting up logging");
 
     if args.command.show_logo() && !args.no_logo {
         println!(r#"     ____             __  "#);
@@ -100,7 +99,6 @@ async fn main() {
         Command::Start(args) => commands::start::execute(args).await,
         Command::Schema(args) => commands::schema::execute(args),
         Command::Validate(args) => commands::validate::execute(args),
-
         #[cfg(windows)]
         Command::Service => commands::service::start(),
         #[cfg(windows)]
@@ -119,7 +117,7 @@ async fn main() {
     }
 }
 
-pub fn initialize_logging(level: &Option<LogLevel>, log_to_file: bool) -> DuckResult<()> {
+fn initialize_logging(level: &Option<LogLevel>, log_to_file: bool) -> DuckResult<()> {
     let level = match level {
         None => LevelFilter::Info,
         Some(level) => match level {

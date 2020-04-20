@@ -66,7 +66,7 @@ impl GitHubClient {
                 let cached = self.cached.lock().unwrap();
                 if cached.is_none() {
                     return Err(format_err!(
-                        "Got a 304 not modified, but we didn't have a response cached."
+                        "Got a 304 not modified, but we didn't have a response cached"
                     ));
                 }
                 return Ok(serde_json::from_str(&cached.as_ref().unwrap()[..])?);
@@ -124,7 +124,7 @@ impl GitHubWorkflowRun {
     pub fn get_status(&self) -> DuckResult<BuildStatus> {
         match &self.status[..] {
             "completed" => match &self.conclusion {
-                None => Err(format_err!("Build is completed without conclusion.")),
+                None => Err(format_err!("Build is completed without a conclusion")),
                 Some(conclusion) => match &conclusion[..] {
                     "success" => Ok(BuildStatus::Success),
                     "cancelled" => Ok(BuildStatus::Canceled),

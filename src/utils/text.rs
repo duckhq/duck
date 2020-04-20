@@ -52,7 +52,7 @@ impl VariableProvider for EnvironmentVariableProvider {
         match value {
             Result::Ok(v) => Ok(v),
             Result::Err(_) => Err(format_err!(
-                "Environment variable '{}' has not been set.",
+                "Environment variable '{}' has not been set",
                 name
             )),
         }
@@ -71,7 +71,7 @@ impl VariableProvider for TestVariableProvider {
         match foo {
             Option::Some(t) => Ok(t.clone()),
             Option::None => Err(format_err!(
-                "Environment variable '{}' has not been set.",
+                "Environment variable '{}' has not been set",
                 name
             )),
         }

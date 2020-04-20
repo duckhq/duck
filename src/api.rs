@@ -60,7 +60,7 @@ pub fn start(
 
     // Are we running embedded web?
     if cfg!(feature = "embedded-web") {
-        debug!("Serving embedded UI.");
+        debug!("Serving embedded UI");
     }
 
     let (tx, rx) = mpsc::channel();
@@ -108,11 +108,11 @@ fn get_binding(server_address: &Option<String>) -> String {
         None => {
             if cfg!(feature = "docker") {
                 // Bind to host container
-                info!("Duck is compiled for docker, so binding to host container.");
+                info!("Duck is compiled for docker, so binding to host container");
                 DOCKER_SERVER_ADDRESS.to_owned()
             } else if cfg!(feature = "embedded-web") {
                 // Bind to port 8080
-                info!("Duck is compiled with embedded UI, so binding to port 8080.");
+                info!("Duck is compiled with embedded UI, so binding to port 8080");
                 EMBEDDED_SERVER_ADDRESS.to_owned()
             } else {
                 // Bind to localhost

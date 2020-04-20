@@ -261,7 +261,9 @@ impl MockHttpResponseBuilder {
 
     pub fn build(self) -> DuckResult<MockHttpResponse> {
         if self.status.is_none() {
-            return Err(format_err!("Status is not setup for expectation."));
+            return Err(format_err!(
+                "Cannot build HTTP response since no status have been set"
+            ));
         }
         Ok(MockHttpResponse {
             url: self.url,

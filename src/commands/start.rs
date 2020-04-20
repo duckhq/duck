@@ -46,7 +46,7 @@ pub async fn execute(args: Arguments) -> DuckResult<()> {
 
     info!("Stopping...");
     handle.stop().await?;
-    info!("Stopped.");
+    info!("Duck has been stopped");
 
     Ok(())
 }
