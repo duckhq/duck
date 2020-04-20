@@ -62,7 +62,7 @@ pub fn try_load(context: &mut Context, loader: &impl ConfigurationLoader) -> Opt
 
                 match loader.load(&*context.variables) {
                     Ok(config) => {
-                        debug!("Configuration loaded.");
+                        debug!("Configuration file loaded");
                         context.set_state(State::Loaded);
                         return Some(config);
                     }

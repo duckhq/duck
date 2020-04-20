@@ -124,7 +124,7 @@ impl<T: FilterEvaluatorContext> Visitor<T, Constant> for FilterEvaluator<T> {
         let right = right.accept(ctx, self)?;
         match (&left, &right) {
             (Constant::Boolean(lhs), Constant::Boolean(rhs)) => Ok(Constant::Boolean(*lhs || *rhs)),
-            _ => Err(format_err!("Mismatched types in OR expression.")),
+            _ => Err(format_err!("Mismatched types in OR expression")),
         }
     }
 
@@ -133,7 +133,7 @@ impl<T: FilterEvaluatorContext> Visitor<T, Constant> for FilterEvaluator<T> {
         let right = right.accept(ctx, self)?;
         match (left, right) {
             (Constant::Boolean(lhs), Constant::Boolean(rhs)) => Ok(Constant::Boolean(lhs && rhs)),
-            _ => Err(format_err!("Mismatched types in AND expression.")),
+            _ => Err(format_err!("Mismatched types in AND expression")),
         }
     }
 
@@ -176,7 +176,7 @@ impl<T: FilterEvaluatorContext> Visitor<T, Constant> for FilterEvaluator<T> {
                 }
                 (Constant::String(lhs), Constant::String(rhs)) => Ok(Constant::Boolean(lhs == rhs)),
                 (Constant::Status(lhs), Constant::Status(rhs)) => Ok(Constant::Boolean(lhs == rhs)),
-                _ => Err(format_err!("Mismatched types in '==' expression.")),
+                _ => Err(format_err!("Mismatched types in '==' expression")),
             },
             Operator::NotEqualTo => match (left, right) {
                 (Constant::Integer(lhs), Constant::Integer(rhs)) => {
@@ -187,31 +187,31 @@ impl<T: FilterEvaluatorContext> Visitor<T, Constant> for FilterEvaluator<T> {
                 }
                 (Constant::String(lhs), Constant::String(rhs)) => Ok(Constant::Boolean(lhs != rhs)),
                 (Constant::Status(lhs), Constant::Status(rhs)) => Ok(Constant::Boolean(lhs != rhs)),
-                _ => Err(format_err!("Mismatched types in '!=' expression.")),
+                _ => Err(format_err!("Mismatched types in '!=' expression")),
             },
             Operator::GreaterThan => match (left, right) {
                 (Constant::Integer(lhs), Constant::Integer(rhs)) => {
                     Ok(Constant::Boolean(lhs > rhs))
                 }
-                _ => Err(format_err!("Mismatched types in '>' expression.")),
+                _ => Err(format_err!("Mismatched types in '>' expression")),
             },
             Operator::GreaterThanOrEqualTo => match (left, right) {
                 (Constant::Integer(lhs), Constant::Integer(rhs)) => {
                     Ok(Constant::Boolean(lhs >= rhs))
                 }
-                _ => Err(format_err!("Mismatched types in '>=' expression.")),
+                _ => Err(format_err!("Mismatched types in '>=' expression")),
             },
             Operator::LessThan => match (left, right) {
                 (Constant::Integer(lhs), Constant::Integer(rhs)) => {
                     Ok(Constant::Boolean(lhs < rhs))
                 }
-                _ => Err(format_err!("Mismatched types in '<' expression.")),
+                _ => Err(format_err!("Mismatched types in '<' expression")),
             },
             Operator::LessThanOrEqualTo => match (left, right) {
                 (Constant::Integer(lhs), Constant::Integer(rhs)) => {
                     Ok(Constant::Boolean(lhs <= rhs))
                 }
-                _ => Err(format_err!("Mismatched types in '<=' expression.")),
+                _ => Err(format_err!("Mismatched types in '<=' expression")),
             },
         }
     }

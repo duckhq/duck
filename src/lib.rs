@@ -33,14 +33,30 @@ mod utils;
 mod query;
 
 ///////////////////////////////////////////////////////////
+// Handle
+
+pub struct DuckHandle {
+    engine: engine::EngineHandle,
+    http: api::HttpServerHandle,
+}
+
+impl DuckHandle {
+    pub async fn stop(self) -> DuckResult<()> {
+        self.engine.stop()?;
+        self.http.stop().await;
+        Ok(())
+    }
+}
+
+///////////////////////////////////////////////////////////
 // Run
 
-pub async fn run<T: Into<PathBuf>>(
+pub fn run<T: Into<PathBuf>>(
     config_path: T,
     server_address: Option<String>,
-) -> DuckResult<()> {
+) -> DuckResult<DuckHandle> {
     // Write some info to the console.
-    info!("Version {}", utils::VERSION);
+    info!("Version: {}", utils::VERSION);
 
     // Start the engine.
     let loader = JsonConfigurationLoader::new(config_path.into());
@@ -48,12 +64,12 @@ pub async fn run<T: Into<PathBuf>>(
     let engine_handle = engine.run(loader)?;
 
     // Start the HTTP server.
-    // This will block until CTRL+C is pressed.
-    api::start_and_block(engine.get_state(), server_address).await?;
+    let server = api::start(engine.get_state(), server_address)?;
 
-    // Stop the engine.
-    engine_handle.stop()?;
-    Ok(())
+    Ok(DuckHandle {
+        engine: engine_handle,
+        http: server,
+    })
 }
 
 ///////////////////////////////////////////////////////////
@@ -72,7 +88,7 @@ pub fn get_schema() -> String {
 ///////////////////////////////////////////////////////////
 // Validate
 
-pub async fn validate_config<T: Into<PathBuf>>(config_path: T) -> DuckResult<()> {
+pub fn validate_config<T: Into<PathBuf>>(config_path: T) -> DuckResult<()> {
     // Load and validate the configuration file.
     let loader = JsonConfigurationLoader::new(config_path.into());
     loader.load(&EnvironmentVariableProvider::new())?;

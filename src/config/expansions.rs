@@ -129,7 +129,7 @@ mod tests {
                     $q(c) => Some(c),
                     _ => None,
                 })
-                .expect("Could not find configuration.");
+                .expect("Could not find configuration");
         };
     }
 

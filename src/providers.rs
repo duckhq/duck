@@ -19,7 +19,7 @@ pub fn create_collectors(config: &Configuration) -> DuckResult<Vec<Box<dyn Colle
             let loader = get_collector_loader(&config);
             collectors.push(loader.load()?);
         } else {
-            debug!("Collector '{}' has been disabled.", config.get_id());
+            debug!("Collector '{}' has been disabled", config.get_id());
         }
     }
     Ok(collectors)
@@ -59,7 +59,7 @@ pub fn create_observers(config: &Configuration) -> DuckResult<Vec<Box<dyn Observ
                     }
                 }
             } else {
-                debug!("Observer '{}' has been disabled.", config.get_id());
+                debug!("Observer '{}' has been disabled", config.get_id());
             }
         }
     }

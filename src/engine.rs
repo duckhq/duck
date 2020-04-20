@@ -34,11 +34,11 @@ impl EngineHandle {
         info!("Shutting down engine...");
         self.signaler.signal()?;
         self.watcher.join().unwrap()?;
-        trace!("The configuration watcher stopped.");
+        trace!("The configuration watcher stopped");
         self.accumulator.join().unwrap()?;
-        trace!("The accumulator stopped.");
+        trace!("The accumulator stopped");
         self.aggregator.join().unwrap()?;
-        trace!("The aggregator stopped.");
+        trace!("The aggregator stopped");
         Ok(())
     }
 }
@@ -125,7 +125,7 @@ impl Engine {
             move || -> DuckResult<()> { run_accumulator(barrier, listener, state, sender, bus) }
         });
 
-        info!("Engine started.");
+        debug!("Engine started");
         Ok(EngineHandle {
             signaler,
             watcher,
@@ -151,10 +151,14 @@ fn watch_configuration(
 
     let environment = crate::utils::text::EnvironmentVariableProvider::new();
     let mut context = watcher::Context::new(environment);
+    let mut loaded = false;
     loop {
         // Check if the configuration have changed
         if let Some(config) = watcher::try_load(&mut context, &loader) {
-            info!("Configuration reloaded");
+            if loaded {
+                info!("Reloaded Duck configuration");
+            }
+            loaded = true;
             state.refresh(&config);
             trace!("Sending configuration updated message");
             bus.send(EngineThreadMessage::ConfigurationUpdated(config))?;
@@ -184,7 +188,7 @@ fn run_accumulator(
     let receiver = bus.subscribe();
 
     barrier.wait();
-    debug!("Accumulator thread started.");
+    debug!("Accumulator thread started");
 
     let mut context = accumulator::Context::new(handle.clone(), state, receiver, sender.clone());
 
@@ -207,7 +211,7 @@ fn run_accumulator(
 
         // Wait for a little while
         if handle.wait(std::time::Duration::from_secs(15)).unwrap() {
-            debug!("The accumulator was instructed to stop.");
+            debug!("The accumulator was instructed to stop");
             break;
         }
     }
@@ -236,7 +240,7 @@ fn run_aggregator(
 
     // Wait for other threads to start
     barrier.wait();
-    debug!("Aggregator thread started.");
+    debug!("Aggregator thread started");
 
     let mut context = aggregator::Context {
         observers: Vec::new(),
@@ -251,7 +255,7 @@ fn run_aggregator(
     loop {
         match aggregator::aggregate(&mut context) {
             aggregator::AggregateResult::Stopped => {
-                debug!("The aggregator was instructed to stop.");
+                debug!("The aggregator was instructed to stop");
                 break;
             }
             aggregator::AggregateResult::Disconnected => break,

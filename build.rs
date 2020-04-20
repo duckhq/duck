@@ -6,7 +6,7 @@ fn main() {
     if env::var("CARGO_FEATURE_EMBEDDED_WEB").is_ok() {
         let dir = Path::new("./web/dist");
         if !dir.exists() {
-            panic!("The UI have not been built.");
+            panic!("The UI have not been built");
         }
         resource_dir("./web/dist").build().unwrap();
     }

@@ -32,8 +32,8 @@ impl Default for Arguments {
 ///////////////////////////////////////////////////////////
 // Command
 
-pub async fn execute(args: Arguments) -> DuckResult<()> {
-    duck::validate_config(args.config).await?;
+pub fn execute(args: Arguments) -> DuckResult<()> {
+    duck::validate_config(args.config)?;
     Ok(())
 }
 

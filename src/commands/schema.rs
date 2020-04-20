@@ -17,7 +17,7 @@ pub struct Arguments {
 ///////////////////////////////////////////////////////////
 // Command
 
-pub async fn execute(args: Arguments) -> DuckResult<()> {
+pub fn execute(args: Arguments) -> DuckResult<()> {
     let mut file = File::create(args.output)?;
     file.write_all(duck::get_schema().as_bytes())?;
     Ok(())
