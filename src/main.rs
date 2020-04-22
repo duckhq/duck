@@ -149,10 +149,12 @@ fn initialize_logging(level: &Option<LogLevel>, log_to_file: bool) -> DuckResult
         let file = std::fs::File::create(std::env::current_exe()?.with_file_name("duck.log"))?;
         CombinedLogger::init(vec![WriteLogger::new(level, config, file)])?;
     } else {
-        // Log only to stdout
-        CombinedLogger::init(vec![
-            TermLogger::new(level, config, TerminalMode::Mixed).unwrap()
-        ])?;
+        // Log to stdout
+        let logger = match TermLogger::new(level, config.clone(), TerminalMode::Mixed) {
+            Some(logger) => logger as Box<dyn SharedLogger>,
+            None => SimpleLogger::new(level, config) as Box<dyn SharedLogger>,
+        };
+        CombinedLogger::init(vec![logger])?;
     }
 
     Ok(())
