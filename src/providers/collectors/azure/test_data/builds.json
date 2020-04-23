@@ -1,0 +1,263 @@
+{
+    "count": 2,
+    "value": [
+        {
+            "_links": {
+                "self": {
+                    "href": "https://dev.azure.com/cake-build/af63183c-ac1f-4dbb-93bc-4fa862ea5809/_apis/build/Builds/10059"
+                },
+                "web": {
+                    "href": "https://dev.azure.com/cake-build/af63183c-ac1f-4dbb-93bc-4fa862ea5809/_build/results?buildId=10059"
+                },
+                "sourceVersionDisplayUri": {
+                    "href": "https://dev.azure.com/cake-build/af63183c-ac1f-4dbb-93bc-4fa862ea5809/_apis/build/builds/10059/sources"
+                },
+                "timeline": {
+                    "href": "https://dev.azure.com/cake-build/af63183c-ac1f-4dbb-93bc-4fa862ea5809/_apis/build/builds/10059/Timeline"
+                },
+                "badge": {
+                    "href": "https://dev.azure.com/cake-build/af63183c-ac1f-4dbb-93bc-4fa862ea5809/_apis/build/status/5"
+                }
+            },
+            "properties": {},
+            "tags": [],
+            "validationResults": [],
+            "plans": [
+                {
+                    "planId": "db194189-0db0-4de6-a833-03e34de98a74"
+                }
+            ],
+            "triggerInfo": {},
+            "id": 10059,
+            "buildNumber": "10059",
+            "status": "completed",
+            "result": "succeeded",
+            "queueTime": "2020-04-24T03:00:03.499568Z",
+            "startTime": "2020-04-24T03:00:51.4288062Z",
+            "finishTime": "2020-04-24T03:06:04.7714834Z",
+            "url": "https://dev.azure.com/cake-build/af63183c-ac1f-4dbb-93bc-4fa862ea5809/_apis/build/Builds/10059",
+            "definition": {
+                "drafts": [],
+                "id": 5,
+                "name": "Azure Pipelines - Build Cake Centos 7",
+                "url": "https://dev.azure.com/cake-build/af63183c-ac1f-4dbb-93bc-4fa862ea5809/_apis/build/Definitions/5?revision=9",
+                "uri": "vstfs:///Build/Definition/5",
+                "path": "\\",
+                "type": "build",
+                "queueStatus": "enabled",
+                "revision": 9,
+                "project": {
+                    "id": "af63183c-ac1f-4dbb-93bc-4fa862ea5809",
+                    "name": "Cake",
+                    "description": "Cake (C# Make) is a cross platform build automation system. \n\nhttps://github.com/cake-build/cake",
+                    "url": "https://dev.azure.com/cake-build/_apis/projects/af63183c-ac1f-4dbb-93bc-4fa862ea5809",
+                    "state": "wellFormed",
+                    "revision": 21,
+                    "visibility": "public",
+                    "lastUpdateTime": "2018-09-11T17:45:37.677Z"
+                }
+            },
+            "project": {
+                "id": "af63183c-ac1f-4dbb-93bc-4fa862ea5809",
+                "name": "Cake",
+                "description": "Cake (C# Make) is a cross platform build automation system. \n\nhttps://github.com/cake-build/cake",
+                "url": "https://dev.azure.com/cake-build/_apis/projects/af63183c-ac1f-4dbb-93bc-4fa862ea5809",
+                "state": "wellFormed",
+                "revision": 21,
+                "visibility": "public",
+                "lastUpdateTime": "2018-09-11T17:45:37.677Z"
+            },
+            "uri": "vstfs:///Build/Build/10059",
+            "sourceBranch": "refs/heads/develop",
+            "sourceVersion": "0c46856abe976f6c122f05a5e82ccb854fd923c1",
+            "priority": "normal",
+            "reason": "schedule",
+            "requestedFor": {
+                "displayName": "Microsoft.VisualStudio.Services.TFS",
+                "url": "https://spsprodeus22.vssps.visualstudio.com/Afc5fa09c-5c14-4dc8-a10a-b45f02e792b0/_apis/Identities/00000002-0000-8888-8000-000000000000",
+                "_links": {
+                    "avatar": {
+                        "href": "https://dev.azure.com/cake-build/_apis/GraphProfile/MemberAvatars/s2s.MDAwMDAwMDItMDAwMC04ODg4LTgwMDAtMDAwMDAwMDAwMDAwQDJjODk1OTA4LTA0ZTAtNDk1Mi04OWZkLTU0YjAwNDZkNjI4OA"
+                    }
+                },
+                "id": "00000002-0000-8888-8000-000000000000",
+                "uniqueName": null,
+                "imageUrl": null,
+                "descriptor": "s2s.MDAwMDAwMDItMDAwMC04ODg4LTgwMDAtMDAwMDAwMDAwMDAwQDJjODk1OTA4LTA0ZTAtNDk1Mi04OWZkLTU0YjAwNDZkNjI4OA"
+            },
+            "requestedBy": {
+                "displayName": "Microsoft.VisualStudio.Services.TFS",
+                "url": "https://spsprodeus22.vssps.visualstudio.com/Afc5fa09c-5c14-4dc8-a10a-b45f02e792b0/_apis/Identities/00000002-0000-8888-8000-000000000000",
+                "_links": {
+                    "avatar": {
+                        "href": "https://dev.azure.com/cake-build/_apis/GraphProfile/MemberAvatars/s2s.MDAwMDAwMDItMDAwMC04ODg4LTgwMDAtMDAwMDAwMDAwMDAwQDJjODk1OTA4LTA0ZTAtNDk1Mi04OWZkLTU0YjAwNDZkNjI4OA"
+                    }
+                },
+                "id": "00000002-0000-8888-8000-000000000000",
+                "uniqueName": null,
+                "imageUrl": null,
+                "descriptor": "s2s.MDAwMDAwMDItMDAwMC04ODg4LTgwMDAtMDAwMDAwMDAwMDAwQDJjODk1OTA4LTA0ZTAtNDk1Mi04OWZkLTU0YjAwNDZkNjI4OA"
+            },
+            "lastChangedDate": "2020-04-24T03:06:04.92Z",
+            "lastChangedBy": {
+                "displayName": "Microsoft.VisualStudio.Services.TFS",
+                "url": "https://spsprodeus22.vssps.visualstudio.com/Afc5fa09c-5c14-4dc8-a10a-b45f02e792b0/_apis/Identities/00000002-0000-8888-8000-000000000000",
+                "_links": {
+                    "avatar": {
+                        "href": "https://dev.azure.com/cake-build/_apis/GraphProfile/MemberAvatars/s2s.MDAwMDAwMDItMDAwMC04ODg4LTgwMDAtMDAwMDAwMDAwMDAwQDJjODk1OTA4LTA0ZTAtNDk1Mi04OWZkLTU0YjAwNDZkNjI4OA"
+                    }
+                },
+                "id": "00000002-0000-8888-8000-000000000000",
+                "uniqueName": null,
+                "imageUrl": null,
+                "descriptor": "s2s.MDAwMDAwMDItMDAwMC04ODg4LTgwMDAtMDAwMDAwMDAwMDAwQDJjODk1OTA4LTA0ZTAtNDk1Mi04OWZkLTU0YjAwNDZkNjI4OA"
+            },
+            "orchestrationPlan": {
+                "planId": "db194189-0db0-4de6-a833-03e34de98a74"
+            },
+            "logs": {
+                "id": 0,
+                "type": "Container",
+                "url": "https://dev.azure.com/cake-build/af63183c-ac1f-4dbb-93bc-4fa862ea5809/_apis/build/builds/10059/logs"
+            },
+            "repository": {
+                "id": "cake-build/cake",
+                "type": "GitHub",
+                "clean": null,
+                "checkoutSubmodules": false
+            },
+            "keepForever": true,
+            "retainedByRelease": false,
+            "triggeredByBuild": null
+        },
+        {
+            "_links": {
+                "self": {
+                    "href": "https://dev.azure.com/cake-build/af63183c-ac1f-4dbb-93bc-4fa862ea5809/_apis/build/Builds/10062"
+                },
+                "web": {
+                    "href": "https://dev.azure.com/cake-build/af63183c-ac1f-4dbb-93bc-4fa862ea5809/_build/results?buildId=10062"
+                },
+                "sourceVersionDisplayUri": {
+                    "href": "https://dev.azure.com/cake-build/af63183c-ac1f-4dbb-93bc-4fa862ea5809/_apis/build/builds/10062/sources"
+                },
+                "timeline": {
+                    "href": "https://dev.azure.com/cake-build/af63183c-ac1f-4dbb-93bc-4fa862ea5809/_apis/build/builds/10062/Timeline"
+                },
+                "badge": {
+                    "href": "https://dev.azure.com/cake-build/af63183c-ac1f-4dbb-93bc-4fa862ea5809/_apis/build/status/6"
+                }
+            },
+            "properties": {},
+            "tags": [],
+            "validationResults": [],
+            "plans": [
+                {
+                    "planId": "3ab5522b-a44b-42c0-a8ad-c8034242fb58"
+                }
+            ],
+            "triggerInfo": {},
+            "id": 10062,
+            "buildNumber": "10062",
+            "status": "completed",
+            "result": "succeeded",
+            "queueTime": "2020-04-24T03:00:05.1697834Z",
+            "startTime": "2020-04-24T03:00:52.6220749Z",
+            "finishTime": "2020-04-24T03:05:44.7214846Z",
+            "url": "https://dev.azure.com/cake-build/af63183c-ac1f-4dbb-93bc-4fa862ea5809/_apis/build/Builds/10062",
+            "definition": {
+                "drafts": [],
+                "id": 6,
+                "name": "Azure Pipelines - Build Cake Fedora 28",
+                "url": "https://dev.azure.com/cake-build/af63183c-ac1f-4dbb-93bc-4fa862ea5809/_apis/build/Definitions/6?revision=3",
+                "uri": "vstfs:///Build/Definition/6",
+                "path": "\\",
+                "type": "build",
+                "queueStatus": "enabled",
+                "revision": 3,
+                "project": {
+                    "id": "af63183c-ac1f-4dbb-93bc-4fa862ea5809",
+                    "name": "Cake",
+                    "description": "Cake (C# Make) is a cross platform build automation system. \n\nhttps://github.com/cake-build/cake",
+                    "url": "https://dev.azure.com/cake-build/_apis/projects/af63183c-ac1f-4dbb-93bc-4fa862ea5809",
+                    "state": "wellFormed",
+                    "revision": 21,
+                    "visibility": "public",
+                    "lastUpdateTime": "2018-09-11T17:45:37.677Z"
+                }
+            },
+            "project": {
+                "id": "af63183c-ac1f-4dbb-93bc-4fa862ea5809",
+                "name": "Cake",
+                "description": "Cake (C# Make) is a cross platform build automation system. \n\nhttps://github.com/cake-build/cake",
+                "url": "https://dev.azure.com/cake-build/_apis/projects/af63183c-ac1f-4dbb-93bc-4fa862ea5809",
+                "state": "wellFormed",
+                "revision": 21,
+                "visibility": "public",
+                "lastUpdateTime": "2018-09-11T17:45:37.677Z"
+            },
+            "uri": "vstfs:///Build/Build/10062",
+            "sourceBranch": "refs/heads/develop",
+            "sourceVersion": "0c46856abe976f6c122f05a5e82ccb854fd923c1",
+            "priority": "normal",
+            "reason": "schedule",
+            "requestedFor": {
+                "displayName": "Microsoft.VisualStudio.Services.TFS",
+                "url": "https://spsprodeus22.vssps.visualstudio.com/Afc5fa09c-5c14-4dc8-a10a-b45f02e792b0/_apis/Identities/00000002-0000-8888-8000-000000000000",
+                "_links": {
+                    "avatar": {
+                        "href": "https://dev.azure.com/cake-build/_apis/GraphProfile/MemberAvatars/s2s.MDAwMDAwMDItMDAwMC04ODg4LTgwMDAtMDAwMDAwMDAwMDAwQDJjODk1OTA4LTA0ZTAtNDk1Mi04OWZkLTU0YjAwNDZkNjI4OA"
+                    }
+                },
+                "id": "00000002-0000-8888-8000-000000000000",
+                "uniqueName": null,
+                "imageUrl": null,
+                "descriptor": "s2s.MDAwMDAwMDItMDAwMC04ODg4LTgwMDAtMDAwMDAwMDAwMDAwQDJjODk1OTA4LTA0ZTAtNDk1Mi04OWZkLTU0YjAwNDZkNjI4OA"
+            },
+            "requestedBy": {
+                "displayName": "Microsoft.VisualStudio.Services.TFS",
+                "url": "https://spsprodeus22.vssps.visualstudio.com/Afc5fa09c-5c14-4dc8-a10a-b45f02e792b0/_apis/Identities/00000002-0000-8888-8000-000000000000",
+                "_links": {
+                    "avatar": {
+                        "href": "https://dev.azure.com/cake-build/_apis/GraphProfile/MemberAvatars/s2s.MDAwMDAwMDItMDAwMC04ODg4LTgwMDAtMDAwMDAwMDAwMDAwQDJjODk1OTA4LTA0ZTAtNDk1Mi04OWZkLTU0YjAwNDZkNjI4OA"
+                    }
+                },
+                "id": "00000002-0000-8888-8000-000000000000",
+                "uniqueName": null,
+                "imageUrl": null,
+                "descriptor": "s2s.MDAwMDAwMDItMDAwMC04ODg4LTgwMDAtMDAwMDAwMDAwMDAwQDJjODk1OTA4LTA0ZTAtNDk1Mi04OWZkLTU0YjAwNDZkNjI4OA"
+            },
+            "lastChangedDate": "2020-04-24T03:05:44.9Z",
+            "lastChangedBy": {
+                "displayName": "Microsoft.VisualStudio.Services.TFS",
+                "url": "https://spsprodeus22.vssps.visualstudio.com/Afc5fa09c-5c14-4dc8-a10a-b45f02e792b0/_apis/Identities/00000002-0000-8888-8000-000000000000",
+                "_links": {
+                    "avatar": {
+                        "href": "https://dev.azure.com/cake-build/_apis/GraphProfile/MemberAvatars/s2s.MDAwMDAwMDItMDAwMC04ODg4LTgwMDAtMDAwMDAwMDAwMDAwQDJjODk1OTA4LTA0ZTAtNDk1Mi04OWZkLTU0YjAwNDZkNjI4OA"
+                    }
+                },
+                "id": "00000002-0000-8888-8000-000000000000",
+                "uniqueName": null,
+                "imageUrl": null,
+                "descriptor": "s2s.MDAwMDAwMDItMDAwMC04ODg4LTgwMDAtMDAwMDAwMDAwMDAwQDJjODk1OTA4LTA0ZTAtNDk1Mi04OWZkLTU0YjAwNDZkNjI4OA"
+            },
+            "orchestrationPlan": {
+                "planId": "3ab5522b-a44b-42c0-a8ad-c8034242fb58"
+            },
+            "logs": {
+                "id": 0,
+                "type": "Container",
+                "url": "https://dev.azure.com/cake-build/af63183c-ac1f-4dbb-93bc-4fa862ea5809/_apis/build/builds/10062/logs"
+            },
+            "repository": {
+                "id": "cake-build/cake",
+                "type": "GitHub",
+                "clean": null,
+                "checkoutSubmodules": false
+            },
+            "keepForever": true,
+            "retainedByRelease": false,
+            "triggeredByBuild": null
+        }
+    ]
+}

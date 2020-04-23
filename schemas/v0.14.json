@@ -151,6 +151,11 @@
         "project": {
           "title": "The Azure DevOps project",
           "type": "string"
+        },
+        "serverUrl": {
+          "title": "The Azure DevOps server URL.",
+          "description": "Only required if Duck should collect builds from a self-hosted instance of Azure DevOps Server.",
+          "type": "string"
         }
       }
     },

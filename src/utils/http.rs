@@ -223,7 +223,7 @@ impl HttpClient for MockHttpClient {
         let responses = self.responses.lock().unwrap();
         let response = responses.get(&request.url);
         if response.is_none() {
-            return Err(format_err!("could not find expecation"));
+            return Err(format_err!("could not find expecation: {}", &request.url));
         }
 
         Ok(response.unwrap().clone())

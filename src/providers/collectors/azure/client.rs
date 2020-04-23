@@ -1,48 +1,64 @@
 use log::trace;
-use reqwest::header::ACCEPT;
-use reqwest::{Client, ClientBuilder, RequestBuilder};
+use url::Url;
 
 use crate::config::{AzureDevOpsConfiguration, AzureDevOpsCredentials};
+use crate::utils::http::*;
 use crate::DuckResult;
 
 pub struct AzureDevOpsClient {
-    pub organization: String,
-    pub project: String,
-    client: Client,
+    server_url: Url,
+    organization: String,
+    project: String,
     credentials: AzureDevOpsCredentials,
 }
 
 impl AzureDevOpsClient {
     pub fn new(config: &AzureDevOpsConfiguration) -> Self {
         AzureDevOpsClient {
+            server_url: match &config.server_url {
+                Some(url) => Url::parse(&url[..]).unwrap(),
+                None => Url::parse("https://dev.azure.com").unwrap(),
+            },
             organization: config.organization.clone(),
             project: config.project.clone(),
-            client: ClientBuilder::new().build().unwrap(),
             credentials: config.credentials.clone(),
         }
     }
 
-    pub fn get_builds(&self, branch: &str, definitions: &[String]) -> DuckResult<AzureResponse> {
-        // Get all branches for this build configuration.
-        let mut response = self.send_get_request(format!(
-            "https://dev.azure.com/{organization}/{project}/_apis/build/builds?api-version=5.1\
+    pub fn get_origin(&self) -> String {
+        format!(
+            "{}{}/{}",
+            self.server_url.as_str(),
+            self.organization,
+            self.project
+        )
+    }
+
+    pub fn get_builds(
+        &self,
+        client: &impl HttpClient,
+        branch: &str,
+        definitions: &[String],
+    ) -> DuckResult<AzureResponse> {
+        let url = format!(
+            "{server}{organization}/{project}/_apis/build/builds?api-version=5.0\
              &branchName={branch}&definitions={definitions}&maxBuildsPerDefinition=1\
              &queryOrder=startTimeDescending&deletedFilter=excludeDeleted\
              &statusFilter=cancelling,completed,inProgress",
+            server = self.server_url,
             organization = self.organization,
             project = self.project,
             branch = branch,
             definitions = definitions.join(","),
-        ))?;
+        );
 
-        let result: AzureResponse = response.json()?;
-        Ok(result)
-    }
-
-    fn send_get_request(&self, url: String) -> DuckResult<reqwest::Response> {
         trace!("Sending request to: {}", url);
-        let response = self.client.get(&url).header(ACCEPT, "application/json");
-        let response = self.credentials.authenticate(response).send()?;
+        let mut builder = HttpRequestBuilder::get(&url);
+        builder.add_header("Content-Type", "application/json");
+        builder.add_header("Accept", "application/json");
+
+        self.credentials.authenticate(&mut builder);
+        let mut response = client.send(&builder)?;
 
         trace!("Received response: {}", response.status());
         if !response.status().is_success() {
@@ -52,14 +68,17 @@ impl AzureDevOpsClient {
             ));
         }
 
-        Ok(response)
+        // Get the response body.
+        let body = response.body()?;
+        // Deserialize and return the value.
+        Ok(serde_json::from_str(&body[..])?)
     }
 }
 
 impl AzureDevOpsCredentials {
-    fn authenticate(&self, builder: RequestBuilder) -> RequestBuilder {
+    fn authenticate<'a>(&self, builder: &'a mut HttpRequestBuilder) {
         match self {
-            AzureDevOpsCredentials::Anonymous => builder,
+            AzureDevOpsCredentials::Anonymous => {}
             AzureDevOpsCredentials::PersonalAccessToken(token) => {
                 builder.basic_auth("", Some(token))
             }
