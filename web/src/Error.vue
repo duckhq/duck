@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-5 mt-5 text-red-800 border-red-800 border bg-red-100 p-5 rounded-lg flex flex-col text-center sm:text-left sm:flex-row sm:justify-left">
+  <div class="mx-5 mt-5 text-red-800 dark-mode:text-red-200 border-red-800 border bg-red-100 dark-mode:bg-red-800 p-5 rounded-lg flex flex-col text-center sm:text-left sm:flex-row sm:justify-left">
     <div class="mb-2 sm:mb-0 mx-auto sm:mx-0">
       <fa-icon icon="spinner" spin size="4x" />
     </div>

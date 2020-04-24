@@ -54,4 +54,18 @@ export default {
   .dark {
     @apply bg-gray-500;
   }
+
+  @screen dark-mode {
+    .light {
+      @apply bg-gray-600;
+    }
+
+    .medium {
+      @apply bg-gray-500;
+    }
+
+    .dark {
+      @apply bg-gray-400;
+    }
+  }
 </style>
