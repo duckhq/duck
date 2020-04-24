@@ -311,6 +311,11 @@ pub struct AzureDevOpsConfiguration {
     /// # Determines whether or not this collector is enabled
     #[serde(default)]
     pub enabled: Option<bool>,
+    /// # The Azure DevOps server URL.
+    /// Only required if Duck should collect builds
+    /// from a self-hosted instance of Azure DevOps Server.
+    #[serde(rename = "serverUrl")]
+    pub server_url: Option<String>,
     /// # The Azure DevOps organization
     pub organization: String,
     /// # The Azure DevOps project

@@ -8,7 +8,6 @@ use actix_files as fs;
 use actix_rt::System;
 use actix_web::dev::Server;
 use actix_web::{web, App, HttpServer};
-use actix_web_static_files;
 use log::{debug, info};
 
 mod endpoints;
