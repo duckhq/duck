@@ -1,0 +1,3 @@
+[submodule "ducktor"]
+	path = ducktor
+	url = git@github.com:duckhq/ducktor.git
