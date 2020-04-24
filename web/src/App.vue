@@ -1,5 +1,5 @@
 <template>
-  <div id="app" class="min-h-screen p-4">
+  <div id="app" class="min-h-screen p-4 dark-mode:bg-gray-800">
     <!-- Page title -->
     <vue-headful :title="title" />
 
