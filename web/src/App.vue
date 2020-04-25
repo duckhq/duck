@@ -53,6 +53,11 @@ export default {
       showViewDialog: false
     };
   },
+  methods: {
+    update() {
+      store.update(this.$Progress, process.env.VUE_APP_MY_DUCK_SERVER || this.$route.query.server, this.$route.query.view);
+    }
+  },
   computed: {
     hasError() {
       return data.error;
@@ -105,22 +110,22 @@ export default {
     setInterval(
       function() {
         // Load data for the current view.
-        store.update(this.$Progress, process.env.VUE_APP_MY_DUCK_SERVER || this.$route.query.server, this.$route.query.view);
+        this.update();
       }.bind(this),
       5000
     );
-    store.update(this.$Progress, process.env.VUE_APP_MY_DUCK_SERVER || this.$route.query.server,  this.$route.query.view);
+    this.update(true);
   }
 };
 </script>
 
 <style scoped lang="scss">
-#app .main-enter-active,
-#app .main-leave-active {
+.main-enter-active,
+.main-leave-active {
   transition: opacity 0.6s ease;
 }
-#app .main-enter,
-#app .main-leave-to {
+.main-enter,
+.main-leave-to {
   opacity: 0;
 }
 
