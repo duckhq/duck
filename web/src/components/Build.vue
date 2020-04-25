@@ -94,7 +94,15 @@ export default {
 }
 
 .running {
-  @apply bg-blue-500;
+  animation-name: build-running;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+@keyframes build-running {
+  from { @apply bg-blue-500; }
+  to { @apply bg-blue-600; }
 }
 
 .canceled {
@@ -102,7 +110,15 @@ export default {
 }
 
 .queued {
-  @apply bg-yellow-600;
+  animation-name: build-queued;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+@keyframes build-queued {
+  from { @apply bg-yellow-500; }
+  to { @apply bg-yellow-600; }
 }
 
 .skipped {
@@ -122,12 +138,22 @@ export default {
     @apply bg-blue-600;
   }
 
+  @keyframes build-running {
+    from { @apply bg-blue-700; }
+    to { @apply bg-blue-800; }
+  }
+
   .canceled {
     @apply bg-gray-700;
   }
 
   .queued {
     @apply bg-yellow-700;
+  }
+
+  @keyframes build-queued {
+    from { @apply bg-yellow-600; }
+    to { @apply bg-yellow-700; }
   }
 
   .skipped {
