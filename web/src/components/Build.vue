@@ -86,27 +86,53 @@ export default {
 
 <style scoped>
 .success {
-  background-color: #66bb6a;
+  @apply bg-green-500;
 }
 
 .failed {
-  background-color: #d84b4b;
+  @apply bg-red-600;
 }
 
 .running {
-  background-color: #29b6f6;
+  @apply bg-blue-500;
 }
 
 .canceled {
-  background-color: #999999;
+  @apply bg-gray-600;
 }
 
 .queued {
-  background-color: #999999;
+  @apply bg-yellow-600;
 }
 
 .skipped {
-  background-color: #999999;
+  @apply bg-gray-600;
+}
+
+@screen dark-mode {
+  .success {
+    @apply bg-green-600;
+  }
+
+  .failed {
+    @apply bg-red-700;
+  }
+
+  .running {
+    @apply bg-blue-600;
+  }
+
+  .canceled {
+    @apply bg-gray-700;
+  }
+
+  .queued {
+    @apply bg-yellow-700;
+  }
+
+  .skipped {
+    @apply bg-gray-700;
+  }
 }
 
 </style>
