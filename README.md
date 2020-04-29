@@ -73,7 +73,7 @@ Below is an example configuration that specifies multiple collectors and observe
 
 ```json
 {
-    "$schema": "https://raw.githubusercontent.com/duckhq/duck/master/schemas/v0.9.json",
+    "$schema": "https://raw.githubusercontent.com/duckhq/duck/master/schemas/v0.14.json",
     "interval": 30,
     "views": [
         {
@@ -154,6 +154,7 @@ Below is an example configuration that specifies multiple collectors and observe
             "azure": {
                 "id": "azure_private",
                 "enabled": false,
+                "serverUrl": "https://example.com",
                 "organization": "some-organization",
                 "project": "some-project",
                 "credentials": {
