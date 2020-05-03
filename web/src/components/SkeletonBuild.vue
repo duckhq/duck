@@ -32,13 +32,6 @@
 
 <script>
 export default {
-  props: ["build"],
-  components: {
-    
-  },
-  methods: {
-
-  }
 };
 </script>
 

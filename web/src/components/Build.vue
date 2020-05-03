@@ -4,7 +4,7 @@
       <!-- Project -->
       <div class="flex justify-between align-middle">
         <div class="text-xl font-bold">{{ build.project }}</div>
-        <BuildIcon :build="build" class />
+        <BuildIcon :build="build" :imageLoader="imageLoader" class />
       </div>
       <div>
         <!-- Project -->
@@ -46,6 +46,7 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import { faHashtag, faCodeBranch } from "@fortawesome/free-solid-svg-icons";
 import BuildIcon from "./BuildIcon.vue";
 import StatusIcon from "./StatusIcon.vue";
+import { imageLoader } from "@/js/config";
 
 library.add(faHashtag, faCodeBranch);
 
@@ -54,6 +55,11 @@ export default {
   components: {
     BuildIcon,
     StatusIcon
+  },
+  data: function() {
+    return {
+      imageLoader
+    }
   },
   methods: {
     navigateToBuild: function() {

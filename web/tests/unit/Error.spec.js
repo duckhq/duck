@@ -1,8 +1,10 @@
+jest.mock("@/js/store", () => ({
+  data: {}
+}))
+
 import { shallowMount } from '@vue/test-utils'
 import { data } from "@/js/store"
 import Error from '@/Error.vue'
-
-jest.mock("@/js/store")
 
 const mount = function() {
   return shallowMount(Error, {

@@ -3,12 +3,13 @@
 </template>
 
 <script>
+import { imageLoader } from "@/js/config";
+
 export default {
   props: ["build"],
   methods: {
     getImagePath: function() {
-      var images = require.context("../assets/", false, /\.svg$/);
-      return images("./" + this.build.provider.toLowerCase() + ".svg");
+      return imageLoader("./" + this.build.provider.toLowerCase() + ".svg");
     }
   }
 };
