@@ -33,7 +33,6 @@ export default {
               case "Queued": return "clock";
               case "Skipped": return "stop-circle";
               default: return "question-circle"
-
           }
       }
   }

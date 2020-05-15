@@ -1,41 +1,44 @@
 <template>
   <div>
-    <p>
+    <p v-if="version != null">
       <span class="font-bold">Version:</span>
-      {{ getVersion() }}
+      <span id="version">{{ version }}</span>
     </p>
     <p v-if="server != null">
       <span class="font-bold">Server:</span>
-      {{ server }}
+      <span id="server">{{ server }}</span>
     </p>
     <p v-if="started != null">
       <span class="font-bold">Started:</span>
-      {{ started | moment("from", "now") }}
+      <span id="started">{{ started | moment("from", "now") }}</span>
     </p>
   </div>
 </template>
 
 <script>
-import { data } from "@/js/store.js";
-
 export default {
+  props: {
+    data: {}
+  },
+
   computed: {
     server() {
-      if (data.server == null || data.server === '') {
+      if (this.data?.server == null || this.data?.server === '') {
         return null;
       }
-      return data.server;
+      return this.data.server;
     },
     started() {
-      if (data.info == null) {
+      if (this.data?.info == null) {
         return null;
       }
-      return data.info.started;
-    }
-  },
-  methods: {
-    getVersion: function() {
-      return data.version;
+      return this.data.info.started;
+    },
+    version: function() {
+      if (this.data == null) {
+        return null;
+      }
+      return this.data.version;
     }
   }
 };

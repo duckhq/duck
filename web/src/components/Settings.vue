@@ -14,10 +14,10 @@
             <div class="m-2">
               <!-- Tabs -->
               <div>
-                <button class="inline-block p-2 cursor-pointer" :class="{ active: show_views }" @click="current='views'">
+                <button id="views" class="inline-block p-2 cursor-pointer" :class="{ active: show_views }" @click="current='views'">
                   Views
                 </button>
-                <button class="inline-block p-2 cursor-pointer" :class="{ active: show_info }" @click="current='info'">
+                <button id="info" class="inline-block p-2 cursor-pointer" :class="{ active: show_info }" @click="current='info'">
                   Information
                 </button>
               </div>
@@ -26,7 +26,7 @@
                 <!-- Views -->
                 <ViewList v-if="show_views" @view_changed="$emit('close')" class="" />
                 <!-- Information -->
-                <ServerInfo v-if="show_info" />
+                <ServerInfo v-if="show_info" :data="data" />
               </div>
             </div>
             <!-- Footer -->
@@ -41,6 +41,7 @@
 </template>
 
 <script>
+import { data } from "@/js/store.js";
 import ViewList from "./ViewList.vue";
 import ServerInfo from "./ServerInfo.vue";
 import { library } from "@fortawesome/fontawesome-svg-core";
@@ -56,7 +57,8 @@ export default {
   },
   data() {
     return {
-      current: 'views'
+      current: 'views',
+      data
     };
   },
   computed: {
