@@ -25,15 +25,15 @@ pub fn create_collectors(config: &Configuration) -> DuckResult<Vec<Box<dyn Colle
     Ok(collectors)
 }
 
-fn get_collector_loader(config: &CollectorConfiguration) -> Box<&dyn CollectorLoader> {
+fn get_collector_loader(config: &CollectorConfiguration) -> &dyn CollectorLoader {
     match config {
-        CollectorConfiguration::TeamCity(config) => Box::new(config),
-        CollectorConfiguration::Azure(config) => Box::new(config),
-        CollectorConfiguration::GitHub(config) => Box::new(config),
-        CollectorConfiguration::OctopusDeploy(config) => Box::new(config),
-        CollectorConfiguration::AppVeyor(config) => Box::new(config),
-        CollectorConfiguration::Duck(config) => Box::new(config),
-        CollectorConfiguration::Debugger(config) => Box::new(config),
+        CollectorConfiguration::TeamCity(config) => config,
+        CollectorConfiguration::Azure(config) => config,
+        CollectorConfiguration::GitHub(config) => config,
+        CollectorConfiguration::OctopusDeploy(config) => config,
+        CollectorConfiguration::AppVeyor(config) => config,
+        CollectorConfiguration::Duck(config) => config,
+        CollectorConfiguration::Debugger(config) => config,
     }
 }
 
@@ -66,10 +66,10 @@ pub fn create_observers(config: &Configuration) -> DuckResult<Vec<Box<dyn Observ
     Ok(result)
 }
 
-fn get_observer_loader(config: &ObserverConfiguration) -> Box<&dyn ObserverLoader> {
+fn get_observer_loader(config: &ObserverConfiguration) -> &dyn ObserverLoader {
     match config {
-        ObserverConfiguration::Hue(config) => Box::new(config),
-        ObserverConfiguration::Mattermost(config) => Box::new(config),
-        ObserverConfiguration::Slack(config) => Box::new(config),
+        ObserverConfiguration::Hue(config) => config,
+        ObserverConfiguration::Mattermost(config) => config,
+        ObserverConfiguration::Slack(config) => config,
     }
 }

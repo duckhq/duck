@@ -47,7 +47,7 @@ impl BuildRepository {
         return vec![];
     }
 
-    #[allow(clippy::block_in_if_condition_stmt)] // Clippy does not like what fmt does...
+    #[allow(clippy::blocks_in_if_conditions)] // Clippy does not like what fmt does...
     pub fn update(&self, build: &Build) -> BuildUpdateResult {
         let mut builds = self.builds.lock().unwrap();
 
