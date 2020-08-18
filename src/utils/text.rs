@@ -25,6 +25,7 @@ impl<'a> Expander<'a> {
         }
     }
 
+    #[allow(clippy::redundant_clone)]
     pub fn expand<T: Into<String>>(&self, field: T) -> DuckResult<String> {
         let mut text = field.into();
         for capture in self.regex.captures_iter(&text.clone()[..]) {
