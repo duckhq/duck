@@ -112,7 +112,7 @@ impl Collector for OctopusDeployCollector {
                         .build_number(&deployment.release_version)
                         .status(deployment.get_status())
                         .url(format!(
-                            "{}/app#/projects/{}/releases/{}/deployments/{}",
+                            "{}app#/projects/{}/releases/{}/deployments/{}",
                             self.server_url,
                             found_project.slug,
                             deployment.release_id,
