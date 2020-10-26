@@ -91,10 +91,7 @@ impl<T: HttpClient + Default> Observer for SlackObserver<T> {
 }
 
 fn is_interesting_status(status: &BuildStatus) -> bool {
-    match status {
-        BuildStatus::Success | BuildStatus::Failed => true,
-        _ => false,
-    }
+    matches!(status, BuildStatus::Success | BuildStatus::Failed)
 }
 
 #[cfg(test)]

@@ -104,10 +104,7 @@ impl Display for Token {
 
 impl Token {
     pub fn is_operator(&self) -> bool {
-        match &self {
-            Token::Operator(_) => true,
-            _ => false,
-        }
+        matches!(&self, Token::Operator(_))
     }
 
     pub fn get_operator(&self) -> Option<Operator> {
