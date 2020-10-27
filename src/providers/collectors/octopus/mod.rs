@@ -171,7 +171,7 @@ impl OctopusDeployment {
         match &self.status[..] {
             "Success" => BuildStatus::Success,
             "Queued" => BuildStatus::Queued,
-            "Executing" | "Cancelling" | "Failed" | "" => BuildStatus::Running,
+            "Executing" | "Cancelling" | "" => BuildStatus::Running,
             "Canceled" => BuildStatus::Canceled,
             _ => BuildStatus::Failed,
         }
