@@ -78,9 +78,9 @@ Below is an example configuration that specifies multiple collectors and observe
     "views": [
         {
             "id": "devs",
-            "name": "Developers", 
-            "collectors": [ 
-                "github_pullrequests", 
+            "name": "Developers",
+            "collectors": [
+                "github_pullrequests",
                 "teamcity_internal",
                 "teamcity_local",
                 "octopus_local"
@@ -89,8 +89,8 @@ Below is an example configuration that specifies multiple collectors and observe
         {
             "id": "ops",
             "name": "Operations",
-            "collectors": [ 
-                "octopus_local" 
+            "collectors": [
+                "octopus_local"
             ]
         }
     ],
@@ -175,10 +175,10 @@ Below is an example configuration that specifies multiple collectors and observe
                 },
                 "projects": [
                     {
-                        "projectId": "Project-1",
+                        "projectId": "Projects-1",
                         "environments": [
-                            "Environment-1",
-                            "Environment-2"
+                            "Environments-1",
+                            "Environments-2"
                         ]
                     }
                 ]
