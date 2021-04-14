@@ -6,6 +6,8 @@ use log::warn;
 use super::{Configuration, Validate};
 use crate::DuckResult;
 
+pub const ID_PATTERN: &str = r"^[a-zA-Z0-9_\-.]+$";
+
 impl Validate for Configuration {
     fn validate(&self) -> DuckResult<()> {
         if self.collectors.is_empty() {
@@ -33,7 +35,7 @@ impl Validate for Configuration {
 }
 
 fn validate_views(configuration: &Configuration) -> DuckResult<()> {
-    let valid_id_pattern = Regex::new(r"^[a-zA-Z0-9_]+$")?;
+    let valid_id_pattern = Regex::new(ID_PATTERN)?;
     if let Some(views) = &configuration.views {
         let mut known_ids = HashSet::<String>::new();
         for view in views.iter() {
@@ -65,7 +67,7 @@ fn validate_views(configuration: &Configuration) -> DuckResult<()> {
 fn validate_ids(configuration: &Configuration) -> DuckResult<()> {
     // Make sure that all ids are unique and well formed.
     let mut unique_ids = std::collections::HashSet::<String>::new();
-    let valid_id_pattern = Regex::new(r"^[a-zA-Z0-9_]+$")?;
+    let valid_id_pattern = Regex::new(ID_PATTERN)?;
     for id in configuration.get_all_ids() {
         if !valid_id_pattern.is_match(&id) {
             return Err(format_err!("The id '{}' is invalid", id));
