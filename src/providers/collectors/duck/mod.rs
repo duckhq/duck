@@ -36,10 +36,7 @@ impl<T: HttpClient + Default> DuckCollector<T> {
             version_error_switch: Switch::new(false),
             info: CollectorInfo {
                 id: config.id.clone(),
-                enabled: match config.enabled {
-                    Option::None => true,
-                    Option::Some(e) => e,
-                },
+                enabled: config.enabled.unwrap_or(true),
                 provider: "Duck".to_owned(),
             },
         };

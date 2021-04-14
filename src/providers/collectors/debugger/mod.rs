@@ -33,10 +33,7 @@ impl<T: HttpClient + Default> DebuggerCollector<T> {
             server_url: config.server_url.clone(),
             info: CollectorInfo {
                 id: config.id.clone(),
-                enabled: match config.enabled {
-                    Option::None => true,
-                    Option::Some(e) => e,
-                },
+                enabled: config.enabled.unwrap_or(true),
                 provider: "Debugger".to_owned(),
             },
         };

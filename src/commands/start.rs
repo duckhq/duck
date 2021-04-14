@@ -54,11 +54,11 @@ pub async fn execute(args: Arguments) -> DuckResult<()> {
 fn wait_for_ctrl_c() -> DuckResult<()> {
     let (signaler, listener) = waithandle::new();
     ctrlc::set_handler(move || {
-        signaler.signal().expect("Error signaling listener");
+        signaler.signal();
     })
     .expect("Error setting Ctrl-C handler");
     info!("Press Ctrl-C to exit");
-    while !listener.wait(Duration::from_millis(50))? {}
+    while !listener.wait(Duration::from_millis(50)) {}
     Ok(())
 }
 

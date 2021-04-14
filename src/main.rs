@@ -150,10 +150,7 @@ fn initialize_logging(level: &Option<LogLevel>, log_to_file: bool) -> DuckResult
         CombinedLogger::init(vec![WriteLogger::new(level, config, file)])?;
     } else {
         // Log to stdout
-        let logger = match TermLogger::new(level, config.clone(), TerminalMode::Mixed) {
-            Some(logger) => logger as Box<dyn SharedLogger>,
-            None => SimpleLogger::new(level, config) as Box<dyn SharedLogger>,
-        };
+        let logger = TermLogger::new(level, config, TerminalMode::Mixed, ColorChoice::Auto);
         CombinedLogger::init(vec![logger])?;
     }
 

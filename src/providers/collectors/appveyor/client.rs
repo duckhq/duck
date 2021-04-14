@@ -55,7 +55,7 @@ impl AppVeyorClient {
 }
 
 impl AppVeyorCredentials {
-    fn authenticate<'a>(&self, builder: &'a mut HttpRequestBuilder) {
+    fn authenticate(&self, builder: &mut HttpRequestBuilder) {
         match self {
             AppVeyorCredentials::Bearer(token) => {
                 builder.bearer(token);

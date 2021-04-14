@@ -36,10 +36,7 @@ impl<T: HttpClient + Default> AppVeyorCollector<T> {
             count: config.get_count(),
             info: CollectorInfo {
                 id: config.id.clone(),
-                enabled: match config.enabled {
-                    Option::None => true,
-                    Option::Some(e) => e,
-                },
+                enabled: config.enabled.unwrap_or(true),
                 provider: "AppVeyor".to_owned(),
             },
         }
@@ -66,7 +63,7 @@ impl<T: HttpClient + Default> Collector for AppVeyorCollector<T> {
                 .get_builds(&self.http, &self.account, &self.project, self.count)?;
 
         for (count, build) in result.builds.iter().enumerate() {
-            if listener.check().unwrap() {
+            if listener.check() {
                 break;
             }
             if count >= self.count as usize {

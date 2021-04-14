@@ -16,10 +16,7 @@ pub struct HueClient {
 impl HueClient {
     pub fn new(config: &HueConfiguration) -> Self {
         HueClient {
-            brightness: match config.brightness {
-                Option::Some(b) => b,
-                Option::None => 255,
-            },
+            brightness: config.brightness.unwrap_or(255),
             url: Url::parse(&config.hub_url[..]).unwrap(),
             username: config.username.clone(),
             lights: config.lights.clone(),

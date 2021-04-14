@@ -76,7 +76,7 @@ impl AzureDevOpsClient {
 }
 
 impl AzureDevOpsCredentials {
-    fn authenticate<'a>(&self, builder: &'a mut HttpRequestBuilder) {
+    fn authenticate(&self, builder: &mut HttpRequestBuilder) {
         match self {
             AzureDevOpsCredentials::Anonymous => {}
             AzureDevOpsCredentials::PersonalAccessToken(token) => {

@@ -1,6 +1,3 @@
-use std::collections::HashSet;
-use std::iter::FromIterator;
-
 use log::debug;
 
 use crate::config::HueConfiguration;
@@ -33,16 +30,11 @@ impl<T: HttpClient + Default> HueObserver<T> {
             http: Default::default(),
             info: ObserverInfo {
                 id: config.id.clone(),
-                enabled: match config.enabled {
-                    None => true,
-                    Some(e) => e,
-                },
+                enabled: config.enabled.unwrap_or(true),
                 filter: BuildFilter::new(config.filter.clone())?,
                 collectors: match &config.collectors {
                     Option::None => Option::None,
-                    Option::Some(collectors) => {
-                        Some(HashSet::from_iter(collectors.iter().cloned()))
-                    }
+                    Option::Some(collectors) => Some(collectors.iter().cloned().collect()),
                 },
             },
         })

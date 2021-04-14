@@ -20,10 +20,7 @@ impl CollectorLoader for TeamCityConfiguration {
             build_types: self.builds.clone(),
             info: CollectorInfo {
                 id: self.id.clone(),
-                enabled: match self.enabled {
-                    Option::None => true,
-                    Option::Some(e) => e,
-                },
+                enabled: self.enabled.unwrap_or(true),
                 provider: "TeamCity".to_string(),
             },
         }))
@@ -57,7 +54,7 @@ impl Collector for TeamCityCollector {
 
         // Get builds for all build types.
         for build_type in self.build_types.iter() {
-            if listener.check().unwrap() {
+            if listener.check() {
                 return Ok(());
             }
 
@@ -76,7 +73,7 @@ impl Collector for TeamCityCollector {
             trace!("Getting builds for {}...", build_type);
             let result = self.client.get_builds(found)?;
             for branch in result.branches {
-                if listener.check().unwrap() {
+                if listener.check() {
                     return Ok(());
                 }
 
@@ -116,10 +113,7 @@ impl Collector for TeamCityCollector {
             }
 
             // Wait for a little time between calls.
-            if listener
-                .wait(std::time::Duration::from_millis(300))
-                .unwrap()
-            {
+            if listener.wait(std::time::Duration::from_millis(300)) {
                 return Ok(());
             }
         }

@@ -32,7 +32,7 @@ pub struct EngineHandle {
 impl EngineHandle {
     pub fn stop(self) -> DuckResult<()> {
         info!("Shutting down engine...");
-        self.signaler.signal()?;
+        self.signaler.signal();
         self.watcher.join().unwrap()?;
         trace!("The configuration watcher stopped");
         self.accumulator.join().unwrap()?;
@@ -165,7 +165,7 @@ fn watch_configuration(
         }
 
         // Time to bail?
-        if stopping.wait(Duration::from_secs(5))? {
+        if stopping.wait(Duration::from_secs(5)) {
             debug!("The configuration watcher was instructed to stop");
             break;
         }
@@ -201,16 +201,16 @@ fn run_accumulator(
                 accumulator::ConfigurationResult::Updated => break,
             },
         };
-        if handle.wait(Duration::from_millis(500)).unwrap() {
+        if handle.wait(Duration::from_millis(500)) {
             break;
         }
     }
 
-    while !handle.check().unwrap() {
+    while !handle.check() {
         accumulator::accumulate(&mut context);
 
         // Wait for a little while
-        if handle.wait(std::time::Duration::from_secs(15)).unwrap() {
+        if handle.wait(std::time::Duration::from_secs(15)) {
             debug!("The accumulator was instructed to stop");
             break;
         }
@@ -280,7 +280,7 @@ fn try_get_updated_configuration(
                 result = Some(config);
             }
         }
-        if handle.wait(Duration::from_millis(500)).unwrap() {
+        if handle.wait(Duration::from_millis(500)) {
             return None;
         }
     }

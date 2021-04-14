@@ -30,10 +30,7 @@ impl<T: HttpClient + Default> GitHubCollector<T> {
             http: Default::default(),
             info: CollectorInfo {
                 id: config.id.clone(),
-                enabled: match config.enabled {
-                    Option::None => true,
-                    Option::Some(e) => e,
-                },
+                enabled: config.enabled.unwrap_or(true),
                 provider: "GitHub".to_owned(),
             },
         };
@@ -60,7 +57,7 @@ impl<T: HttpClient + Default> Collector for GitHubCollector<T> {
         // Convert the workflow run to a Duck build representation.
         let mut builds = Vec::<Build>::new();
         for run in response.workflow_runs.iter() {
-            if listener.check().unwrap() {
+            if listener.check() {
                 return Ok(());
             }
 

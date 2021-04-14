@@ -22,10 +22,7 @@ impl CollectorLoader for OctopusDeployConfiguration {
             ),
             info: CollectorInfo {
                 id: self.id.clone(),
-                enabled: match self.enabled {
-                    Option::None => true,
-                    Option::Some(e) => e,
-                },
+                enabled: self.enabled.unwrap_or(true),
                 provider: "OctopusDeploy".to_owned(),
             },
         }))
@@ -52,7 +49,7 @@ impl Collector for OctopusDeployCollector {
         let response = self.client.get_dashboard()?;
 
         for project in self.projects.iter() {
-            if listener.check().unwrap() {
+            if listener.check() {
                 return Ok(());
             }
 
@@ -66,7 +63,7 @@ impl Collector for OctopusDeployCollector {
             };
 
             for environment in project.environments.iter() {
-                if listener.check().unwrap() {
+                if listener.check() {
                     return Ok(());
                 }
 

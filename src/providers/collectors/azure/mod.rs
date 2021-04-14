@@ -36,10 +36,7 @@ impl<T: HttpClient + Default> AzureDevOpsCollector<T> {
             definitions: config.definitions.clone(),
             info: CollectorInfo {
                 id: config.id.clone(),
-                enabled: match config.enabled {
-                    Option::None => true,
-                    Option::Some(e) => e,
-                },
+                enabled: config.enabled.unwrap_or(true),
                 provider: "AzureDevOps".to_string(),
             },
         }
@@ -62,7 +59,7 @@ impl<T: HttpClient + Default> Collector for AzureDevOpsCollector<T> {
         callback: &mut dyn FnMut(Build),
     ) -> DuckResult<()> {
         for branch in self.branches.iter() {
-            if listener.check().unwrap() {
+            if listener.check() {
                 return Ok(());
             }
 
@@ -70,7 +67,7 @@ impl<T: HttpClient + Default> Collector for AzureDevOpsCollector<T> {
                 .client
                 .get_builds(&self.http, branch, &self.definitions)?;
             for build in builds.value.iter() {
-                if listener.check().unwrap() {
+                if listener.check() {
                     return Ok(());
                 }
 
@@ -105,7 +102,7 @@ impl<T: HttpClient + Default> Collector for AzureDevOpsCollector<T> {
             }
 
             // Wait for a litle time between calls.
-            if listener.wait(Duration::from_millis(300)).unwrap() {
+            if listener.wait(Duration::from_millis(300)) {
                 return Ok(());
             }
         }
