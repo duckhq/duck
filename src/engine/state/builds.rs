@@ -1,3 +1,5 @@
+#![allow(clippy::suspicious_operation_groupings)]
+
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Mutex;
