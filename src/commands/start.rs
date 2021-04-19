@@ -42,7 +42,7 @@ impl Default for Arguments {
 pub async fn execute(args: Arguments) -> DuckResult<()> {
     let handle = duck::run(args.config, args.server_address)?;
 
-    wait_for_ctrl_c()?;
+    wait_for_ctrl_c();
 
     info!("Stopping...");
     handle.stop().await?;
@@ -51,15 +51,16 @@ pub async fn execute(args: Arguments) -> DuckResult<()> {
     Ok(())
 }
 
-fn wait_for_ctrl_c() -> DuckResult<()> {
+fn wait_for_ctrl_c() {
     let (signaler, listener) = waithandle::new();
     ctrlc::set_handler(move || {
         signaler.signal();
     })
     .expect("Error setting Ctrl-C handler");
     info!("Press Ctrl-C to exit");
-    while !listener.wait(Duration::from_millis(50)) {}
-    Ok(())
+    while !listener.wait(Duration::from_millis(50)) {
+        // Idle
+    }
 }
 
 ///////////////////////////////////////////////////////////

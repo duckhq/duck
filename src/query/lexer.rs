@@ -129,7 +129,7 @@ pub fn tokenize(text: &str) -> DuckResult<TokenStream> {
                     stream.next();
                 }
                 'a'..='z' | 'A'..='Z' => {
-                    let word = read_word(&mut stream)?;
+                    let word = read_word(&mut stream);
                     match &word.to_lowercase()[..] {
                         "or" => result.push(Token::Or),
                         "and" => result.push(Token::And),
@@ -144,7 +144,7 @@ pub fn tokenize(text: &str) -> DuckResult<TokenStream> {
                     result.push(Token::Integer(integer))
                 }
                 '=' | '!' | '>' | '<' | '&' | '|' => {
-                    let symbols = read_symbols(&mut stream)?;
+                    let symbols = read_symbols(&mut stream);
                     match &symbols[..] {
                         "!" => result.push(Token::Not),
                         "&&" => result.push(Token::And),
@@ -187,7 +187,7 @@ pub fn tokenize(text: &str) -> DuckResult<TokenStream> {
     Ok(TokenStream::new(result))
 }
 
-fn read_word(stream: &mut Peekable<Chars>) -> DuckResult<String> {
+fn read_word(stream: &mut Peekable<Chars>) -> String {
     let mut accumulator: Vec<char> = Vec::new();
     loop {
         match stream.peek() {
@@ -201,7 +201,7 @@ fn read_word(stream: &mut Peekable<Chars>) -> DuckResult<String> {
             },
         }
     }
-    Ok(accumulator.into_iter().collect())
+    accumulator.into_iter().collect()
 }
 
 fn read_literal(stream: &mut Peekable<Chars>) -> DuckResult<String> {
@@ -242,7 +242,7 @@ fn read_integer(stream: &mut Peekable<Chars>) -> DuckResult<i64> {
     Ok(result.parse::<i64>()?)
 }
 
-fn read_symbols(stream: &mut Peekable<Chars>) -> DuckResult<String> {
+fn read_symbols(stream: &mut Peekable<Chars>) -> String {
     let mut accumulator: Vec<char> = Vec::new();
     loop {
         match stream.peek() {
@@ -256,7 +256,7 @@ fn read_symbols(stream: &mut Peekable<Chars>) -> DuckResult<String> {
             },
         }
     }
-    Ok(accumulator.into_iter().collect())
+    accumulator.into_iter().collect()
 }
 
 ///////////////////////////////////////////////////////////

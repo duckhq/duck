@@ -54,7 +54,7 @@ fn parse_predicate(stream: &mut TokenStream) -> DuckResult<Expression> {
         }
     }
 
-    Ok(parse_relation(stream)?)
+    parse_relation(stream)
 }
 
 fn parse_relation(stream: &mut TokenStream) -> DuckResult<Expression> {

@@ -38,7 +38,7 @@ impl DebuggerClient {
             ));
         }
 
-        Ok(response.body()?)
+        response.body()
     }
 }
 

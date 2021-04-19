@@ -153,7 +153,7 @@ impl<T: FilterEvaluatorContext> Visitor<T, Constant> for FilterEvaluator<T> {
     }
 
     fn scope(&self, ctx: &T, exp: &Expression) -> DuckResult<Constant> {
-        Ok(exp.accept(ctx, self)?)
+        exp.accept(ctx, self)
     }
 
     fn relational(

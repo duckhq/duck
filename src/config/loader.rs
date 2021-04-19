@@ -1,7 +1,7 @@
-use std::fs;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
+use std::{fs, path::Path};
 
 use crate::config::{Configuration, ConfigurationLoader};
 use crate::utils::text::VariableProvider;
@@ -60,18 +60,18 @@ impl<'a> ConfigurationLoader for JsonConfigurationLoader<'a> {
 
 trait FileReader: Send + Sync {
     /// Returns the content of the file as a string
-    fn read_to_string(&self, path: &PathBuf) -> DuckResult<String>;
+    fn read_to_string(&self, path: &Path) -> DuckResult<String>;
     /// Gets the modified time as Epoch time
-    fn modified(&self, path: &PathBuf) -> DuckResult<u64>;
+    fn modified(&self, path: &Path) -> DuckResult<u64>;
 }
 
 struct DefaultFileReader {}
 impl FileReader for DefaultFileReader {
-    fn read_to_string(&self, path: &PathBuf) -> DuckResult<String> {
+    fn read_to_string(&self, path: &Path) -> DuckResult<String> {
         Ok(fs::read_to_string(path)?)
     }
 
-    fn modified(&self, path: &PathBuf) -> DuckResult<u64> {
+    fn modified(&self, path: &Path) -> DuckResult<u64> {
         Ok(fs::metadata(path)?
             .modified()?
             .duration_since(SystemTime::UNIX_EPOCH)?
@@ -107,11 +107,11 @@ mod tests {
     }
 
     impl FileReader for FakeFileReader {
-        fn read_to_string(&self, _path: &PathBuf) -> DuckResult<String> {
+        fn read_to_string(&self, _path: &Path) -> DuckResult<String> {
             Ok(self.json.clone())
         }
 
-        fn modified(&self, _path: &PathBuf) -> DuckResult<u64> {
+        fn modified(&self, _path: &Path) -> DuckResult<u64> {
             let modified = self.modified.lock().unwrap();
             Ok(*modified)
         }

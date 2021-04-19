@@ -25,8 +25,8 @@ pub mod state;
 pub struct EngineHandle {
     signaler: WaitHandleSignaler,
     watcher: JoinHandle<DuckResult<()>>,
-    accumulator: JoinHandle<DuckResult<()>>,
-    aggregator: JoinHandle<DuckResult<()>>,
+    accumulator: JoinHandle<()>,
+    aggregator: JoinHandle<()>,
 }
 
 impl EngineHandle {
@@ -35,9 +35,9 @@ impl EngineHandle {
         self.signaler.signal();
         self.watcher.join().unwrap()?;
         trace!("The configuration watcher stopped");
-        self.accumulator.join().unwrap()?;
+        self.accumulator.join().unwrap();
         trace!("The accumulator stopped");
-        self.aggregator.join().unwrap()?;
+        self.aggregator.join().unwrap();
         trace!("The aggregator stopped");
         Ok(())
     }
@@ -116,13 +116,13 @@ impl Engine {
             let state = self.state.clone();
             let barrier = barrier.clone();
             let bus = bus.clone();
-            move || -> DuckResult<()> { run_aggregator(barrier, listener, state, receiver, bus) }
+            move || run_aggregator(barrier, listener, state, receiver, bus)
         });
 
         debug!("Starting accumulator thread...");
         let accumulator = std::thread::spawn({
             let state = self.state.clone();
-            move || -> DuckResult<()> { run_accumulator(barrier, listener, state, sender, bus) }
+            move || run_accumulator(barrier, listener, state, sender, bus)
         });
 
         debug!("Engine started");
@@ -183,7 +183,7 @@ fn run_accumulator(
     state: Arc<EngineState>,
     sender: Sender<EngineEvent>,
     bus: Arc<NaiveMessageBus<EngineThreadMessage>>,
-) -> DuckResult<()> {
+) {
     // Subscribe to engine messages
     let receiver = bus.subscribe();
 
@@ -221,8 +221,6 @@ fn run_accumulator(
         Result::Ok(_) => (),
         Result::Err(e) => error!("Failed to send shut down event. {}", e),
     }
-
-    Ok(())
 }
 
 ///////////////////////////////////////////////////////////
@@ -234,7 +232,7 @@ fn run_aggregator(
     state: Arc<EngineState>,
     accumulator_receiver: Receiver<EngineEvent>,
     bus: Arc<NaiveMessageBus<EngineThreadMessage>>,
-) -> DuckResult<()> {
+) {
     // Subscribe to engine messages
     let engine_receiver = bus.subscribe();
 
@@ -262,8 +260,6 @@ fn run_aggregator(
             _ => {}
         }
     }
-
-    Ok(())
 }
 
 ///////////////////////////////////////////////////////////

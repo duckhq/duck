@@ -57,7 +57,7 @@ impl DuckClient {
             ));
         }
 
-        Ok(response.body()?)
+        response.body()
     }
 }
 
